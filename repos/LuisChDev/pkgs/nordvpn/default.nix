@@ -21,7 +21,7 @@ let
 
     src = fetchurl {
       url =
-        "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn_${version}_amd64.deb";
+        "https://repo.nord-help.com/deb/nordvpn/debian/pool/main/nordvpn_${version}_amd64.deb";
       hash = "sha256-6aAslJ2xwj+khF6HOMtkF0iclrUzhBV64xrHgs5Nc2s=";
     };
 
@@ -86,7 +86,7 @@ in stdenv.mkDerivation {
 
   meta = with lib; {
     description = "CLI client for NordVPN";
-    homepage = "https://www.nordvpn.com";
+    homepage = "https://www.nord-help.com";
     license = licenses.unfree;
     maintainers = with maintainers; [ LuisChDev ];
     platforms = [ "x86_64-linux" ];
