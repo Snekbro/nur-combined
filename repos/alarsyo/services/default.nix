@@ -4,10 +4,12 @@
     ./fail2ban.nix
     ./fava.nix
     ./gitea
+    ./immich.nix
     ./jellyfin.nix
     ./lohr.nix
     ./matrix.nix
     ./media.nix
+    ./microbin.nix
     ./miniflux.nix
     ./monitoring.nix
     ./navidrome.nix

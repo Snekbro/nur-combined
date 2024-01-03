@@ -49,6 +49,14 @@
   sane.ids.media.gid = 2414;
   sane.ids.ntfy-sh.uid = 2415;
   sane.ids.ntfy-sh.gid = 2415;
+  sane.ids.monero.uid = 2416;
+  sane.ids.monero.gid = 2416;
+  sane.ids.slskd.uid = 2417;
+  sane.ids.slskd.gid = 2417;
+  sane.ids.bitcoind-mainnet.uid = 2418;
+  sane.ids.bitcoind-mainnet.gid = 2418;
+  sane.ids.clightning.uid = 2419;
+  sane.ids.clightning.gid = 2419;
 
   sane.ids.colin.uid = 1000;
   sane.ids.guest.uid = 1100;
@@ -63,6 +71,8 @@
   sane.ids.systemd-oom.uid = 2005;
   sane.ids.systemd-oom.gid = 2005;
   sane.ids.wireshark.gid = 2006;
+  sane.ids.nixremote.uid = 2007;
+  sane.ids.nixremote.gid = 2007;
 
   # found on graphical hosts
   sane.ids.nm-iodine.uid = 2101;  # desko/moby/lappy

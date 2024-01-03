@@ -66,6 +66,11 @@ let
       pyPkgs = [ "sane-lib.bt" ];
       pkgs = [ "sane-scripts.lib.bt.propagatedBuildInputs" ];
     };
+    clone = static-nix-shell.mkBash {
+      pname = "sane-clone";
+      src = ./src;
+      pkgs = [ "nix" ];
+    };
     deadlines = static-nix-shell.mkBash {
       pname = "sane-deadlines";
       src = ./src;
@@ -166,11 +171,6 @@ let
       src = ./src;
       pkgs = [ "inetutils" "systemd" ];
     };
-    ssl-dump = static-nix-shell.mkBash {
-      pname = "sane-ssl-dump";
-      src = ./src;
-      pkgs = [ "openssl" ];
-    };
     stop-all-servo = static-nix-shell.mkBash {
       pname = "sane-stop-all-servo";
       src = ./src;
@@ -197,6 +197,11 @@ let
       pkgs = [ "ffmpeg" "sox" ];
       pyPkgs = [ "unidecode" ];
     };
+    tag-music = static-nix-shell.mkPython3Bin {
+      pname = "sane-tag-music";
+      src = ./src;
+      pyPkgs = [ "mutagen" ];
+    };
     vpn = static-nix-shell.mkBash {
       pname = "sane-vpn";
       src = ./src;
@@ -207,19 +212,10 @@ let
       src = ./src;
       pkgs = [ "coreutils-full" "file" ];
     };
-    wipe-browser = static-nix-shell.mkBash {
-      pname = "sane-wipe-browser";
+    wipe = static-nix-shell.mkBash {
+      pname = "sane-wipe";
       src = ./src;
-    };
-    wipe-flare = static-nix-shell.mkBash {
-      pname = "sane-wipe-flare";
-      src = ./src;
-      pkgs = [ "dconf" "libsecret" ];
-    };
-    wipe-fractal = static-nix-shell.mkBash {
-      pname = "sane-wipe-fractal";
-      src = ./src;
-      pkgs = [ "libsecret" "systemd" ];
+      pkgs = [ "dconf" "libsecret" "systemd" ];
     };
   };
 in sane-bin // {

@@ -96,7 +96,15 @@ let
       cp $src $out
     '';
 
-    passthru.updateScript = nix-update-script { };
+    passthru.updateScript = nix-update-script {
+      extraArgs = [
+        # uBlock mixes X.YY.ZbN and X.YY.ZrcN style.
+        # default nix-update accepts the former but rejects the later as unstable.
+        # that's problematic because beta releases later get pulled.
+        # ideally i'd reject both, but i don't know how.
+        "--version=unstable"
+      ];
+    };
     passthru.extid = extid;
   };
 
@@ -107,13 +115,21 @@ in (lib.makeScope newScope (self: with self; {
     # `wget ...xpi`; `unar ...xpi`; `cat */manifest.json | jq '.browser_specific_settings.gecko.id'`
     browserpass-extension = callPackage ./browserpass-extension { };
     bypass-paywalls-clean = callPackage ./bypass-paywalls-clean { };
+    ctrl-shift-c-should-copy = callPackage ./ctrl-shift-c-should-copy { };
 
     ether-metamask = fetchVersionedAddon rec {
       extid = "webextension@metamask.io";
       pname = "ether-metamask";
       url = "https://github.com/MetaMask/metamask-extension/releases/download/v${version}/metamask-firefox-${version}.zip";
-      version = "11.5.0";
-      hash = "sha256-B15GvPNTPZDkwS1l3K1ET42gCBnc74Vnomt907/4kPo=";
+      version = "11.7.3";
+      hash = "sha256-0zlXjQq2lyZu31J2wJYf+pfp6J307tYS8xzJKZjrGOk=";
+    };
+    fx_cast = fetchVersionedAddon rec {
+      extid = "fx_cast@matt.tf";
+      pname = "fx_cast";
+      url = "https://github.com/hensm/fx_cast/releases/download/v${version}/fx_cast-${version}.xpi";
+      version = "0.3.1";
+      hash = "sha256-zaYnUJpJkRAPSCpM3S20PjMS4aeBtQGhXB2wgdlFkSQ=";
     };
     i2p-in-private-browsing = fetchVersionedAddon rec {
       extid = "i2ppb@eyedeekay.github.io";
@@ -121,6 +137,17 @@ in (lib.makeScope newScope (self: with self; {
       url = "https://github.com/eyedeekay/I2P-in-Private-Browsing-Mode-Firefox/releases/download/${version}/i2ppb@eyedeekay.github.io.xpi";
       version = "1.47";
       hash = "sha256-LnR5z3fqNJywlr/khFdV4qloKGQhbxNZQvWCEgz97DU=";
+    };
+    open-in-mpv = fetchVersionedAddon rec {
+      # usage:
+      # - click the "puzzle" icon in top-right of browser -> open in mpv
+      # - or, (shift)right-click a video and select "open in mpv"
+      #   - but note that this option does not work for Youtube videos
+      extid = "{d66c8515-1e0d-408f-82ee-2682f2362726}";
+      pname = "open-in-mpv";
+      url = "https://github.com/Baldomo/open-in-mpv/releases/download/v${version}/firefox.xpi";
+      version = "2.1.0";
+      hash = "sha256-jRP0hvEyScGnQ2K5EFX+ggtu6B0h9Y3fJxYYnI8cMbc=";
     };
     sidebery = fetchVersionedAddon rec {
       extid = "{3c078156-979c-498b-8990-85f7987dd929}";
@@ -134,15 +161,15 @@ in (lib.makeScope newScope (self: with self; {
       extid = "sponsorBlocker@ajay.app";
       pname = "sponsorblock";
       url = "https://github.com/ajayyy/SponsorBlock/releases/download/${version}/FirefoxSignedInstaller.xpi";
-      version = "5.4.27";
-      hash = "sha256-jPbAR3Ccp7ZG8f2+ttcAjRb/xvC4bJJ38lIK+tgVVtY=";
+      version = "5.4.29";
+      hash = "sha256-AR4SxbCffgupZMcbVgBB+vmd/u4ADsi4GXKg4oKWt34=";
     };
     ublacklist = fetchVersionedAddon rec {
       extid = "@ublacklist";
       pname = "ublacklist";
       url = "https://github.com/iorate/ublacklist/releases/download/v${version}/ublacklist-v${version}-firefox.zip";
-      version = "8.3.6";
-      hash = "sha256-tl6Xdv58zoEfpA4GaeI+by2i8k7aqI6CKbRMUiDGZxc=";
+      version = "8.4.0";
+      hash = "sha256-mZOSx+2Zyjap0EYPzqV8CrNZ4lobP13E8ei7zeHAn/M=";
     };
     ublock-origin = fetchVersionedAddon rec {
       extid = "uBlock0@raymondhill.net";
@@ -150,8 +177,8 @@ in (lib.makeScope newScope (self: with self; {
       # N.B.: a handful of versions are released unsigned
       # url = "https://github.com/gorhill/uBlock/releases/download/${version}/uBlock0_${version}.signed.xpi";
       url = "https://github.com/gorhill/uBlock/releases/download/${version}/uBlock0_${version}.firefox.signed.xpi";
-      version = "1.53.1b9";
-      hash = "sha256-MfNwm47VGKmuJATz/bUryyzOIovz2a+1UOuiQZLkXvg=";
+      version = "1.54.1b21";
+      hash = "sha256-baF8399byq4vOm0OSNe/3bz3mZAV/cf1ohmIJg5MGkA=";
     };
   };
 })).overrideScope (self: super:
@@ -166,9 +193,9 @@ in (lib.makeScope newScope (self: with self; {
       # but web shit is absolutely cursed and building from source requires a fucking PhD
       # (if you have one, feel free to share your nix package)
       #
-      # NB: in source this is `if (!userID)...`, but the build process mangles the names
-      substituteInPlace js/background.js \
-        --replace 'default.config.userID)' 'default.config.userID && false)'
+      # NB: in source this is `alreadyInstalled: false`, but the build process hates Booleans or something
+      substituteInPlace js/*.js \
+        --replace 'alreadyInstalled:!1' 'alreadyInstalled:!0'
     '';
   }
 )

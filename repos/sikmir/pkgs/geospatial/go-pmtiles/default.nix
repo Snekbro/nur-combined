@@ -2,16 +2,18 @@
 
 buildGoModule rec {
   pname = "go-pmtiles";
-  version = "2021-12-21";
+  version = "1.11.2";
 
   src = fetchFromGitHub {
     owner = "protomaps";
     repo = "go-pmtiles";
-    rev = "82ab855965337a9497eb6d1ff1026c125b8c2a7d";
-    hash = "sha256-jUDaTQ4vImKWaSAdKrIZqO7YjwWvzi1ob7MTbieDeCQ=";
+    rev = "v${version}";
+    hash = "sha256-wKfBL5L77wbNk1YC87G7pAPYb+l4vSG1sB3TI9Qe9vI=";
   };
 
-  vendorHash = null;
+  vendorHash = "sha256-gLFwGEUeH41bObG32MZznF7clct3h2GEvdZ2/KIiVb4=";
+
+  ldflags = [ "-X main.version=${version}" ];
 
   meta = with lib; {
     description = "Read/write library & concurrent caching proxy for PMTiles archives";

@@ -31,22 +31,22 @@ let
         sha512 = "Cu96Sd2By9mCNTx2iyKOmq10v22jUVQv0lQnlGNy16oE9589yE+QADPbrMGCkA51cKZSg3Pu/aTJVTGfL/qjUA==";
       };
     };
-    "@eslint/eslintrc-2.1.3" = {
+    "@eslint/eslintrc-2.1.4" = {
       name = "_at_eslint_slash_eslintrc";
       packageName = "@eslint/eslintrc";
-      version = "2.1.3";
+      version = "2.1.4";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-2.1.3.tgz";
-        sha512 = "yZzuIG+jnVu6hNSzFEN07e8BxF3uAzYtQb6uDkaYZLo6oYZDCq454c5kB8zxnzfCYyP4MIuyBn10L0DqwujTmA==";
+        url = "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-2.1.4.tgz";
+        sha512 = "269Z39MS6wVJtsoUl10L60WdkhJVdPG24Q4eZTH3nnF6lpvSShEK3wQjDX9JRWAUPvPh7COouPpU9IrqaZFvtQ==";
       };
     };
-    "@eslint/js-8.53.0" = {
+    "@eslint/js-8.56.0" = {
       name = "_at_eslint_slash_js";
       packageName = "@eslint/js";
-      version = "8.53.0";
+      version = "8.56.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@eslint/js/-/js-8.53.0.tgz";
-        sha512 = "Kn7K8dx/5U6+cT1yEhpX1w4PCSg0M+XyRILPgvwcEBjerFWCwQj5sbr3/VmxqV0JGHCBCzyd6LxypEuehypY1w==";
+        url = "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz";
+        sha512 = "gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==";
       };
     };
     "@humanwhocodes/config-array-0.11.13" = {
@@ -112,13 +112,13 @@ let
         sha512 = "zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==";
       };
     };
-    "acorn-8.11.2" = {
+    "acorn-8.11.3" = {
       name = "acorn";
       packageName = "acorn";
-      version = "8.11.2";
+      version = "8.11.3";
       src = fetchurl {
-        url = "https://registry.npmjs.org/acorn/-/acorn-8.11.2.tgz";
-        sha512 = "nc0Axzp/0FILLEVsm4fNwLCwMttvhEI263QtVPQcbpfZZ3ts0hLsZGOpE6czNlid7CJ9MlyH8reXkpsf3YUY4w==";
+        url = "https://registry.npmjs.org/acorn/-/acorn-8.11.3.tgz";
+        sha512 = "Y9rRfJG5jcKOE0CLisYbojUjIrIEE7AGMzA/Sm4BslANhbS+cDMpgBdcPT91oJ7OuJ9hYJBx59RjbhxVnrF8Xg==";
       };
     };
     "acorn-jsx-5.3.2" = {
@@ -274,13 +274,13 @@ let
         sha512 = "TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==";
       };
     };
-    "eslint-8.53.0" = {
+    "eslint-8.56.0" = {
       name = "eslint";
       packageName = "eslint";
-      version = "8.53.0";
+      version = "8.56.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/eslint/-/eslint-8.53.0.tgz";
-        sha512 = "N4VuiPjXDUa4xVeV/GC/RV3hQW9Nw+Y463lkWaKKXKYMvmRiRDAtfpuPFLN+E1/6ZhyR8J2ig+eVREnYgUsiag==";
+        url = "https://registry.npmjs.org/eslint/-/eslint-8.56.0.tgz";
+        sha512 = "Go19xM6T9puCOWntie1/P997aXxFsOi37JIHRWI514Hc6ZnaHGKY9xFhrU65RT6CcBEzZoGG1e6Nq+DT04ZtZQ==";
       };
     };
     "eslint-scope-7.2.2" = {
@@ -373,13 +373,13 @@ let
         sha512 = "DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==";
       };
     };
-    "fastq-1.15.0" = {
+    "fastq-1.16.0" = {
       name = "fastq";
       packageName = "fastq";
-      version = "1.15.0";
+      version = "1.16.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/fastq/-/fastq-1.15.0.tgz";
-        sha512 = "wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==";
+        url = "https://registry.npmjs.org/fastq/-/fastq-1.16.0.tgz";
+        sha512 = "ifCoaXsDrsdkWTtiNJX5uzHDsrck5TzfKKDcuFFTIrrc/BS076qgEIfoIy1VeZqViznfKiysPYTh/QeHtnIsYA==";
       };
     };
     "file-entry-cache-6.0.1" = {
@@ -400,13 +400,13 @@ let
         sha512 = "78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==";
       };
     };
-    "flat-cache-3.1.1" = {
+    "flat-cache-3.2.0" = {
       name = "flat-cache";
       packageName = "flat-cache";
-      version = "3.1.1";
+      version = "3.2.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/flat-cache/-/flat-cache-3.1.1.tgz";
-        sha512 = "/qM2b3LUIaIgviBQovTLvijfyOQXPtSRnRK26ksj2J7rzPIecePUIpJsZ4T02Qg+xiAEKIs5K8dsHEd+VaKa/Q==";
+        url = "https://registry.npmjs.org/flat-cache/-/flat-cache-3.2.0.tgz";
+        sha512 = "CYcENa+FtcUKLmhhqyctpclsq7QF38pKjZHsGNiSQF5r4FtoKDWabFDl3hzaEQMvT1LHEysw5twgLvpYYb4vbw==";
       };
     };
     "flatted-3.2.9" = {
@@ -445,13 +445,13 @@ let
         sha512 = "XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==";
       };
     };
-    "globals-13.23.0" = {
+    "globals-13.24.0" = {
       name = "globals";
       packageName = "globals";
-      version = "13.23.0";
+      version = "13.24.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/globals/-/globals-13.23.0.tgz";
-        sha512 = "XAmF0RjlrjY23MA51q3HltdlGxUpXPvg0GioKiD9X6HD28iMjo2dKC8Vqwm7lne4GNr78+RHTfliktR6ZH09wA==";
+        url = "https://registry.npmjs.org/globals/-/globals-13.24.0.tgz";
+        sha512 = "AhO5QUcj8llrbG09iWhPU2B204J1xnPeL8kQmVorSsy+Sjj1sk8gIyh6cUocGmH4L0UuhAJy+hJMRA4mgA4mFQ==";
       };
     };
     "graphemer-1.4.0" = {
@@ -472,13 +472,13 @@ let
         sha512 = "EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==";
       };
     };
-    "ignore-5.2.4" = {
+    "ignore-5.3.0" = {
       name = "ignore";
       packageName = "ignore";
-      version = "5.2.4";
+      version = "5.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/ignore/-/ignore-5.2.4.tgz";
-        sha512 = "MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==";
+        url = "https://registry.npmjs.org/ignore/-/ignore-5.3.0.tgz";
+        sha512 = "g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==";
       };
     };
     "import-fresh-3.3.0" = {
@@ -899,14 +899,14 @@ let
   args = {
     name = "eslint";
     packageName = "eslint";
-    version = "8.53.0";
-    src = fetchurl { url = "https://registry.npmjs.org/eslint/-/eslint-8.53.0.tgz"; sha1 = "14f2c8244298fcae1f46945459577413ba2697ce"; };
+    version = "8.56.0";
+    src = fetchurl { url = "https://registry.npmjs.org/eslint/-/eslint-8.56.0.tgz"; sha1 = "4957ce8da409dc0809f99ab07a1b94832ab74b15"; };
     dependencies = [
       sources."@aashutoshrathi/word-wrap-1.2.6"
       sources."@eslint-community/eslint-utils-4.4.0"
       sources."@eslint-community/regexpp-4.10.0"
-      sources."@eslint/eslintrc-2.1.3"
-      sources."@eslint/js-8.53.0"
+      sources."@eslint/eslintrc-2.1.4"
+      sources."@eslint/js-8.56.0"
       sources."@humanwhocodes/config-array-0.11.13"
       sources."@humanwhocodes/module-importer-1.0.1"
       sources."@humanwhocodes/object-schema-2.0.1"
@@ -914,7 +914,7 @@ let
       sources."@nodelib/fs.stat-2.0.5"
       sources."@nodelib/fs.walk-1.2.8"
       sources."@ungap/structured-clone-1.2.0"
-      sources."acorn-8.11.2"
+      sources."acorn-8.11.3"
       sources."acorn-jsx-5.3.2"
       sources."ajv-6.12.6"
       sources."ansi-regex-5.0.1"
@@ -932,7 +932,7 @@ let
       sources."deep-is-0.1.4"
       sources."doctrine-3.0.0"
       sources."escape-string-regexp-4.0.0"
-      sources."eslint-8.53.0"
+      sources."eslint-8.56.0"
       sources."eslint-scope-7.2.2"
       sources."eslint-visitor-keys-3.4.3"
       sources."espree-9.6.1"
@@ -943,18 +943,18 @@ let
       sources."fast-deep-equal-3.1.3"
       sources."fast-json-stable-stringify-2.1.0"
       sources."fast-levenshtein-2.0.6"
-      sources."fastq-1.15.0"
+      sources."fastq-1.16.0"
       sources."file-entry-cache-6.0.1"
       sources."find-up-5.0.0"
-      sources."flat-cache-3.1.1"
+      sources."flat-cache-3.2.0"
       sources."flatted-3.2.9"
       sources."fs.realpath-1.0.0"
       sources."glob-7.2.3"
       sources."glob-parent-6.0.2"
-      sources."globals-13.23.0"
+      sources."globals-13.24.0"
       sources."graphemer-1.4.0"
       sources."has-flag-4.0.0"
-      sources."ignore-5.2.4"
+      sources."ignore-5.3.0"
       sources."import-fresh-3.3.0"
       sources."imurmurhash-0.1.4"
       sources."inflight-1.0.6"

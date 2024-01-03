@@ -6,13 +6,13 @@
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "firefox-gnome-theme";
-  version = "119";
+  version = "121";
 
   src = fetchFromGitHub {
     owner = "rafaelmardojai";
     repo = "firefox-gnome-theme";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-OU6LyGeePS31pG7o10su7twDzDL5Z3a1sHtV68SzEwI=";
+    hash = "sha256-M+Cw6vh7xCDmIhyVuEPNmaNVUwpmdFQq8zlsXZTKees=";
   };
 
   installPhase = ''

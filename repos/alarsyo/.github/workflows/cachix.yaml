@@ -46,6 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         name:
+        - ansel
         - grafanaDashboards/nginx
         - grafanaDashboards/node-exporter
         - kaleidoscope-udev-rules
@@ -78,7 +79,7 @@ jobs:
         - boreal
         - hades
         - hephaestus
-        - poseidon
+        - thanatos
 
     steps:
     - uses: actions/checkout@v4

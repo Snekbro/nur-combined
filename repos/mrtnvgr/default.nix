@@ -29,6 +29,17 @@ in rec {
   celeste = p ./pkgs/games/wine/celeste { inherit (lib) wrapWine; };
   celesteMods = p ./pkgs/games/wine/celeste/mods.nix { };
 
+  # Fonts
+  comic-code = p ./pkgs/fonts/comic-code { };
+
+  # Overrides
+  obs-wayland = (pkgs.wrapOBS {
+    plugins = with pkgs.obs-studio-plugins; [
+      wlrobs
+      obs-pipewire-audio-capture
+    ];
+  });
+
   # some-qt5-package = pkgs.libsForQt5.callPackage ./pkgs/some-qt5-package { };
   # ...
 }

@@ -65,16 +65,15 @@ in
       ensureUsers = [
         {
           name = "tandoor_recipes";
-          ensurePermissions."DATABASE tandoor_recipes" = "ALL PRIVILEGES";
+          ensureDBOwnership = true;
         }
       ];
     };
 
-    my.services.nginx.virtualHosts = [
-      {
-        subdomain = "recipes";
+    my.services.nginx.virtualHosts = {
+      recipes = {
         inherit (cfg) port;
-      }
-    ];
+      };
+    };
   };
 }

@@ -20,6 +20,7 @@ in
       "sane-scripts.bt-show"
     ];
     "sane-scripts.dev" = declPackageSet [
+      "sane-scripts.clone"
       "sane-scripts.dev-cargo-loop"
       "sane-scripts.git-init"
     ];
@@ -41,14 +42,12 @@ in
       "sane-scripts.secrets-unlock"
       "sane-scripts.secrets-update-keys"
       "sane-scripts.shutdown"
-      "sane-scripts.ssl-dump"
       "sane-scripts.sudo-redirect"
       "sane-scripts.sync-from-servo"
+      "sane-scripts.tag-music"
       "sane-scripts.vpn"
       "sane-scripts.which"
-      "sane-scripts.wipe-browser"
-      "sane-scripts.wipe-flare"
-      "sane-scripts.wipe-fractal"
+      "sane-scripts.wipe"
     ];
     "sane-scripts.sys-utils" = declPackageSet [
       "sane-scripts.ip-port-forward"
@@ -110,6 +109,7 @@ in
       "wget"
       "wirelesstools"  # iwlist
       "xq"  # jq for XML
+      # "zfs"  # doesn't cross-compile (requires samba)
     ];
     sysadminExtraUtils = declPackageSet [
       "backblaze-b2"
@@ -144,6 +144,7 @@ in
       "lshw"
       # "memtester"
       "mercurial"  # hg
+      "mimeo"  # like xdg-open
       "neovim"  # needed as a user package, for swap persistence
       # "nettools"
       # "networkmanager"
@@ -173,7 +174,7 @@ in
       "zsh"
     ];
 
-    desktopConsoleUtils = declPackageSet [
+    pcConsoleUtils = declPackageSet [
       "gh"  # MS GitHub cli
       "nix-index"
       "nixpkgs-review"
@@ -182,17 +183,19 @@ in
     ];
 
     consoleMediaUtils = declPackageSet [
+      "catt"  # cast videos to chromecast
       "ffmpeg"
+      "go2tv"  # cast videos to UPNP/DLNA device (i.e. tv). TODO: needs firewall opened to allow sending of local files. (lappy sends a SSDP request to broadcast address, then gets response from concrete addr to the port it sent the req from).
       "imagemagick"
       "sox"
       "yt-dlp"
     ];
 
-    tuiApps = declPackageSet [
+    pcTuiApps = declPackageSet [
       "aerc"  # email client
       "msmtp"  # sendmail
       "offlineimap"  # email mailbox sync
-      "sfeed"  # RSS fetcher
+      # "sfeed"  # RSS fetcher
       "visidata"  # TUI spreadsheet viewer/editor
       "w3m"  # web browser
     ];
@@ -217,12 +220,15 @@ in
 
     # INDIVIDUAL PACKAGE DEFINITIONS
 
-    animatch.persist.byStore.plaintext = [ ".local/share/Holy Pangolin/Animatch" ];  # game progress
-
     cargo.persist.byStore.plaintext = [ ".cargo" ];
+
+    # auth token, preferences
+    delfin.persist.byStore.private = [ ".config/delfin" ];
 
     # creds, but also 200 MB of node modules, etc
     discord.persist.byStore.private = [ ".config/discord" ];
+
+    endless-sky.persist.byStore.plaintext = [ ".local/share/endless-sky" ];
 
     # `emote` will show a first-run dialog based on what's in this directory.
     # mostly, it just keeps a LRU of previously-used emotes to optimize display order.
@@ -263,18 +269,19 @@ in
     # printer/filament settings
     slic3r.persist.byStore.plaintext = [ ".Slic3r" ];
 
+    space-cadet-pinball.persist.byStore.plaintext = [ ".local/share/SpaceCadetPinball" ];
+
     superTux.persist.byStore.plaintext = [ ".local/share/supertux2" ];
 
     tdesktop.persist.byStore.private = [ ".local/share/TelegramDesktop" ];
 
     tokodon.persist.byStore.private = [ ".cache/KDE/tokodon" ];
 
+    vvvvvv.persist.byStore.plaintext = [ ".local/share/VVVVVV" ];
+
     whalebird.persist.byStore.private = [ ".config/Whalebird" ];
 
     yarn.persist.byStore.plaintext = [ ".cache/yarn" ];
-
-    # zcash coins. safe to delete, just slow to regenerate (10-60 minutes)
-    zecwallet-lite.persist.byStore.private = [ ".zcash" ];
   };
 
   programs.feedbackd = lib.mkIf config.sane.programs.feedbackd.enabled {

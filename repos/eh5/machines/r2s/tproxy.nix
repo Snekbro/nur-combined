@@ -51,8 +51,6 @@ in
         strategy = "ipv4_only";
       };
       route = {
-        geoip.path = "/var/lib/sing-box/geoip.db";
-        geosite.path = "/var/lib/sing-box/geosite.db";
         default_interface = "extern0";
         default_mark = 255;
       };
@@ -62,6 +60,7 @@ in
           type = "tun";
           interface_name = "tun0";
           inet4_address = "198.18.0.1/15";
+          mtu = 9000;
           auto_route = false;
           stack = "gvisor";
           endpoint_independent_nat = true;
@@ -73,6 +72,16 @@ in
   environment.etc."sing-box/other.json".source = secrets."sb-config.json".path;
   sops.secrets."sb-config.json".restartUnits = [ "sing-box.service" ];
   services.v2ray-rules-dat.reloadServices = [ "sing-box.service" ];
+
+  systemd.services.udpspeeder = {
+    description = "UDPspeeder";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      xargs -a ${secrets."udpspeeder.conf".path} ${pkgs.udpspeeder}/bin/speederv2
+    '';
+  };
+  sops.secrets."udpspeeder.conf".restartUnits = [ "udpspeeder.service" ];
 
   systemd.services.setup-tproxy = {
     unitConfig.ReloadPropagatedFrom = [ "nftables.service" ];

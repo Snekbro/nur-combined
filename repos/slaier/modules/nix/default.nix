@@ -1,9 +1,10 @@
-{ inputs, config, ... }:
+{ inputs, config, lib, options, ... }:
 {
   nix.settings = {
+    auto-allocate-uids = true;
     auto-optimise-store = true;
     connect-timeout = 5;
-    experimental-features = "cgroups nix-command flakes";
+    experimental-features = "auto-allocate-uids cgroups nix-command flakes";
     flake-registry = "/etc/nix/registry.json";
     stalled-download-timeout = 10;
     substituters = [
@@ -20,11 +21,12 @@
 
   nix.gc = {
     automatic = true;
-    dates = "daily";
+    dates = "Wed *-*-* 12:00:00";
     options = "--delete-older-than 5d";
+    persistent = false;
   };
 
-  nix.extraOptions = ''
+  nix.extraOptions = lib.mkIf (options.sops ? secrets) ''
     !include ${config.sops.secrets.nix_access_token.path}
   '';
 
@@ -44,5 +46,5 @@
     allowUnfree = true;
   };
 
-  system.stateVersion = "23.05";
+  system.stateVersion = "23.11";
 }

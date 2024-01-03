@@ -98,10 +98,10 @@ in
     # Other packages
     amule-dlp = pkg ./uncategorized/amule-dlp {};
     asterisk-g72x = pkg ./uncategorized/asterisk-g72x {};
+    baidunetdisk = pkg ./uncategorized/baidunetdisk {};
     baidupcs-go = pkg ./uncategorized/baidupcs-go {};
     bepasty = pkg ./uncategorized/bepasty {};
     bilibili = pkg ./uncategorized/bilibili {};
-    bird-babel-rtt = throw "Babel RTT extension support is in official BIRD 2.14";
     bird-lg-go = pkg ./uncategorized/bird-lg-go {};
     bird-lgproxy-go = pkg ./uncategorized/bird-lgproxy-go {};
     boringssl-oqs = pkg ./uncategorized/boringssl-oqs {};
@@ -110,7 +110,7 @@ in
     chromium-oqs-bin = pkg ./uncategorized/chromium-oqs-bin {};
     cloudpan189-go = pkg ./uncategorized/cloudpan189-go {};
     cockpy = pkg ./uncategorized/cockpy {};
-    deepspeech-gpu = pkg ./uncategorized/deepspeech-gpu {};
+    deepspeech-gpu = ifNotCI (pkg ./uncategorized/deepspeech-gpu {});
     deepspeech-wrappers = ifNotCI (pkg ./uncategorized/deepspeech-gpu/wrappers.nix {});
     dingtalk = pkg ./uncategorized/dingtalk {};
     dn42-pingfinder = pkg ./uncategorized/dn42-pingfinder {};
@@ -129,6 +129,7 @@ in
     google-earth-pro = pkg ./uncategorized/google-earth-pro {};
     gopherus = pkg ./uncategorized/gopherus {};
     grasscutter = pkg ./uncategorized/grasscutter {};
+    hanyi-wenhei = pkg ./uncategorized/hanyi-wenhei {};
     hath = pkg ./uncategorized/hath {};
 
     # This package is failing on CI for unknown reason
@@ -143,6 +144,7 @@ in
     libnftnl-fullcone = pkg ./uncategorized/libnftnl-fullcone {};
     liboqs = pkg ./uncategorized/liboqs {};
     netboot-xyz = pkg ./uncategorized/netboot-xyz {};
+    netease-cloud-music = pkg ./uncategorized/netease-cloud-music {};
     netns-exec = pkg ./uncategorized/netns-exec {};
     nftables-fullcone = pkg ./uncategorized/nftables-fullcone {};
     noise-suppression-for-voice = pkg ./uncategorized/noise-suppression-for-voice {};
@@ -160,6 +162,7 @@ in
     pterodactyl-wings = pkg ./uncategorized/pterodactyl-wings {};
     qbittorrent-enhanced-edition = pkg ./uncategorized/qbittorrent-enhanced-edition {};
     qbittorrent-enhanced-edition-nox = pkg ./uncategorized/qbittorrent-enhanced-edition/nox.nix {};
+    libqcef = pkg ./uncategorized/libqcef {};
     qemu-user-static = pkg ./uncategorized/qemu-user-static {};
     qq = pkg ./uncategorized/qq {};
     qqmusic = pkg ./uncategorized/qqmusic {};
@@ -169,11 +172,13 @@ in
     rime-moegirl = pkg ./uncategorized/rime-moegirl {};
     rime-zhwiki = pkg ./uncategorized/rime-zhwiki {};
     route-chain = pkg ./uncategorized/route-chain {};
+    sam-toki-mouse-cursors = pkg ./uncategorized/sam-toki-mouse-cursors {};
     smartrent_py = pkg ./uncategorized/smartrent_py {};
     sgx-software-enable = pkg ./uncategorized/sgx-software-enable {};
     soggy = pkg ./uncategorized/soggy {};
     space-cadet-pinball-full-tilt = pkg ./uncategorized/space-cadet-pinball-full-tilt {};
     svp = pkg ./uncategorized/svp {};
+    svp-mpv = pkg ./uncategorized/svp/mpv.nix {};
     tachidesk-server = pkg ./uncategorized/tachidesk-server {};
     undetected-chromedriver = pkg ./uncategorized/undetected-chromedriver {};
     undetected-chromedriver-bin = pkg ./uncategorized/undetected-chromedriver-bin {};
@@ -181,6 +186,7 @@ in
     vs-rife = pkg ./uncategorized/vs-rife {};
     wechat-uos = pkg ./uncategorized/wechat-uos {};
     wechat-uos-bin = pkg ./uncategorized/wechat-uos/official-bin.nix {};
+    win2xcur = pkg ./uncategorized/win2xcur {};
     wine-wechat = lib.makeOverridable pkg ./uncategorized/wine-wechat {};
     wine-wechat-x86 = lib.makeOverridable pkg ./uncategorized/wine-wechat-x86 {};
     xstatic-asciinema-player = pkg ./uncategorized/xstatic-asciinema-player {};

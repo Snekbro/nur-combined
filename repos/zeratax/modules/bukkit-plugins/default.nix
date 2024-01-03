@@ -8,7 +8,6 @@ let
   serviceConfig = {
     Type = "simple";
     User = "minecraft";
-    WorkingDirectory = cfg.pluginsDir;
   };
 
   bukkitPlugin = import ./bukkit-plugin.nix {
@@ -62,13 +61,12 @@ in {
 
       pluginsDir = mkOption {
         type = types.path;
-        default = if config.services.minecraft-server.enable then 
+        default = if config.services.minecraft-server.enable then
           "${config.services.minecraft-server.dataDir}/plugins"
         else if config.services.bukkit-server.enable then
           "${config.services.bukkit-server.dataDir}/plugins"
         else
-          null
-        ;
+          null;
         description = ''
           Plugins directory of the minecraft server
         '';
@@ -117,9 +115,8 @@ in {
           [ "minecraft-server.service" ]
         else if config.services.bukkit-server.enable then
           [ "bukkit-server.service" ]
-        else 
-          []
-        ;
+        else
+          [ ];
 
         serviceConfig = let
           # findExceptions = concatStringsSep " " mapAttrsToList (n: v: "! -name ${n}.jar") cfg.plugins;
@@ -131,6 +128,9 @@ in {
           # delete all symlinked jars before and after every start
           # to make sure no disabled plugins will be loaded
           RemainAfterExit = true;
+          ExecStartPre = ''
+            ${pkgs.coreutils}/bin/mkdir -p ${cfg.pluginsDir}
+          '';
           ExecStart = "${deletePluginJars}/bin/deletePluginJars";
           ExecStop = "${deletePluginJars}/bin/deletePluginJars";
         } // serviceConfig;

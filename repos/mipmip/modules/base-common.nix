@@ -23,13 +23,14 @@
     # cli searchers
     silver-searcher
     fzf
+    ripgrep
 
     # Security
     openssl
     apg
 
     # Markdown
-    glow
+    #glow
 
     #help
     cheat

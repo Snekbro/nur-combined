@@ -1,3 +1,6 @@
+# docs:
+# - `man 5 sway`
+#
 # xwayland enable|disable|force
 # - enable: lazily launch xwayland on first client connection
 # - disable: never launch xwayland
@@ -142,21 +145,37 @@ bar {
 for_window [app_id="pinentry-.*"] floating true
 for_window [app_id="foot" title=".*sxmo/modem/.*/draft.txt.*"] resize set height 25
 for_window [title="megapixels"] inhibit_idle open
-# Dino (XMPP) is ordinarily started for the purpose of daemonizing (but still visible). keep it on a predictable, out-of-the-way workspace
-# TODO: could be neat to somehow do this in a way that it never steals focus from anything...
+
+# workspace assignments
+# mostly, messengers belong on WS 1
 for_window [app_id="im.dino.Dino"] move container to workspace number 1
 for_window [app_id="org.gnome.Fractal"] move container to workspace number 1
 for_window [app_id="geary"] move container to workspace number 1
+for_window [app_id="signal"] move container to workspace number 1
+# class=Signal for when it's running with Xwayland
+for_window [class="Signal"] move container to workspace number 1
+for_window [app_id="so.libdb.gtkcord4"] move container to workspace number 1
+for_window [app_id="abaddon"] move container to workspace number 1
+
+# window display settings
+# force KOReader to always display a titlebar, even when the only window being rendered.
+# desirable primarily to avoid slooow reflows when another app is opened. but also nice to have the book title rendered.
+for_window [app_id="KOReader"] border normal
 
 ### displays
 ## DESKTOP
-output "Samsung Electric Company S22C300 0x00007F35" {
+output "Goldstar Company Ltd LG ULTRAWIDE 0x00004E94" {
   pos 0,0
+  res 3440x1440
+}
+output "Samsung Electric Company S22C300 0x00007F35" {
+  pos 3440,0
   res 1920x1080
 }
-output "Goldstar Company Ltd LG ULTRAWIDE 0x00004E94" {
-  pos 1920,0
-  res 3440x1440
+# projector
+output "MS Telematica TV 0x00000001" {
+  pos 5360,0
+  res 1920x1080
 }
 
 ## LAPTOP

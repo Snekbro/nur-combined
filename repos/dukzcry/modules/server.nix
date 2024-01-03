@@ -1,12 +1,10 @@
-imports: { config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 with lib;
 let
   cfg = config.services.server;
   ip4 = pkgs.nur.repos.dukzcry.lib.ip4;
 in {
-  inherit imports;
-
   options.services.server = {
     enable = mkEnableOption ''
       Support for my home server
@@ -52,7 +50,7 @@ in {
     })
     (mkIf cfg.remote {
       virtualisation.libvirtd.enable = lib.mkForce false;
-      services.tailscale.enable = true;
+      environment.systemPackages = [ pkgs.nur.repos.dukzcry.awl-tray ];
     })
   ];
 }

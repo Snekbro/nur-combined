@@ -1,4 +1,4 @@
-imports: { config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 with lib;
 let
@@ -15,16 +15,15 @@ let
       supportedFeatures = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
       maxJobs = 4;
     }];
-    nix.extraOptions = ''
-      builders-use-substitutes = true
-    '';
     nix.distributedBuilds = true;
     nix.settings.substituters = [ "http://powerhorse:5000" ];
     nix.settings.trusted-public-keys = [ "powerhorse-1:d6cps6qy6UuAaTquP0RwSePLhrmzz9xFjk+rVlmP2sY=" ];
+    nix.extraOptions = ''
+      builders-use-substitutes = true
+      fallback = true
+    '';
   };
 in {
-  inherit imports;
-
   options.services.hardware = {
     enable = mkEnableOption ''
       Hardware tweaks for different hosts
@@ -58,24 +57,30 @@ in {
         percentageLow = 7;
         percentageCritical = 6;
         percentageAction = 5;
+        criticalPowerAction = "Hibernate";
       };
+      services.logind.extraConfig = ''
+        HandlePowerKey=hibernate
+      '';
+      services.autosuspend = {
+        enable = true;
+        settings.idle_time = 0;
+        checks = {
+          XIdleTime.method = "logind";
+          ExternalCommand.command = "[ `cat /sys/class/power_supply/AC/online` == 1 ] && true";
+        };
+      };
+      programs.xss-lock.enable = true;
+      programs.xss-lock.lockerCommand = "${pkgs.i3lock}/bin/i3lock --color 000000";
       programs.light.enable = true;
       users.users.${cfg.user}.extraGroups = [ "video" ];
       boot.kernelParams = [ "mitigations=off" ];
       services.tlp.enable = true;
       hardware.opengl.extraPackages = [ pkgs.vaapiIntel ];
-      services.picom = {
-        enable = true;
-        vSync = true;
-        backend = "glx";
-      };
       services.xserver.displayManager.sessionCommands = ''
         printf "%s\n" "Xft.dpi: 120" | xrdb -merge
       '';
       services.redshift.enable = true;
-      services.logind.extraConfig = ''
-        HandlePowerKey=hibernate
-      '';
     } // builder))
     (mkIf (cfg.enable && desktop) {
       services.nix-serve = {
@@ -83,7 +88,6 @@ in {
         secretKeyFile = "/var/cache-priv-key.pem";
       };
       nix.settings.cores = 8;
-      boot.loader.systemd-boot.configurationLimit = 70;
       hardware.bluetooth.enable = true;
       powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
       services.xserver.displayManager.sessionCommands = ''

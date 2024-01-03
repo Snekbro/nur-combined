@@ -2,13 +2,17 @@
 
 {
   imports = [
+    ./abaddon.nix
     ./aerc.nix
     ./alacritty.nix
+    ./animatch.nix
     ./assorted.nix
+    ./audacity.nix
     ./bemenu.nix
     ./brave.nix
     ./calls.nix
     ./cantata.nix
+    ./catt.nix
     ./chatty.nix
     ./conky
     ./cozy.nix
@@ -30,8 +34,10 @@
     ./gnome-feeds.nix
     ./gnome-keyring.nix
     ./gnome-weather.nix
+    ./go2tv.nix
     ./gpodder.nix
     ./gthumb.nix
+    ./gtkcord4.nix
     ./helix.nix
     ./imagemagick.nix
     ./jellyfin-media-player.nix
@@ -39,19 +45,24 @@
     ./koreader
     ./libreoffice.nix
     ./lemoa.nix
+    ./loupe.nix
     ./mako.nix
-    ./megapixels.nix
     ./mepo.nix
+    ./mimeo
     ./mopidy.nix
     ./mpv.nix
     ./msmtp.nix
+    ./nautilus.nix
     ./neovim.nix
     ./newsflash.nix
     ./nheko.nix
     ./nix-index.nix
+    ./notejot.nix
     ./ntfy-sh.nix
     ./obsidian.nix
     ./offlineimap.nix
+    ./open-in-mpv.nix
+    ./planify.nix
     ./playerctl.nix
     ./rhythmbox.nix
     ./ripgrep.nix
@@ -64,15 +75,19 @@
     ./stepmania.nix
     ./sublime-music.nix
     ./supertuxkart.nix
+    ./sway-autoscaler
     ./swaynotificationcenter.nix
     ./tangram.nix
     ./tor-browser-bundle-bin.nix
     ./tuba.nix
     ./vlc.nix
     ./wike.nix
+    ./wine.nix
     ./wireshark.nix
+    ./wob.nix
     ./xarchiver.nix
     ./zeal.nix
+    ./zecwallet-lite.nix
     ./zsh
   ];
 

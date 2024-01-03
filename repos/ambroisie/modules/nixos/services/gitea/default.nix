@@ -65,6 +65,7 @@ in
         database = {
           type = "postgres"; # Automatic setup
           user = "git"; # User needs to be the same as gitea user
+          name = "git"; # Name must be the same as user for `ensureDBOwnership`
         };
 
         # NixOS module uses `gitea dump` to backup repositories and the database,
@@ -115,18 +116,16 @@ in
     };
     users.groups.git = { };
 
-    my.services.nginx.virtualHosts = [
+    my.services.nginx.virtualHosts = {
       # Proxy to Gitea
-      {
-        subdomain = "git";
+      git = {
         inherit (cfg) port;
-      }
+      };
       # Redirect `gitea.` to actual forge subdomain
-      {
-        subdomain = "gitea";
+      gitea = {
         redirect = config.services.gitea.settings.server.ROOT_URL;
-      }
-    ];
+      };
+    };
 
     my.services.backup = {
       paths = [

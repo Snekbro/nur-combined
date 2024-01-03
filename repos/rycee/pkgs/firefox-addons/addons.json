@@ -81,6 +81,9 @@
     "slug": "beyond-20"
   },
   {
+    "slug": "bibbot"
+  },
+  {
     "slug": "bitwarden-password-manager",
     "pname": "bitwarden"
   },
@@ -189,6 +192,16 @@
     "slug": "darkreader"
   },
   {
+    "slug": "dashlane",
+    "license": {
+      "tag": "custom",
+      "shortName": "dashlane",
+      "fullName": "Dashlane Terms of Service",
+      "url": "https://www.dashlane.com/terms",
+      "free": false
+    }
+  },
+  {
     "slug": "dearrow"
   },
   {
@@ -202,6 +215,9 @@
   },
   {
     "slug": "dictionaries"
+  },
+  {
+    "slug": "dictionary-german"
   },
   {
     "slug": "dictionnaire-français1",
@@ -278,6 +294,16 @@
     "license": {
       "tag": "predefined",
       "shortName": "unlicense"
+    }
+  },
+  {
+    "slug": "faststream",
+    "license": {
+      "tag": "custom",
+      "shortName": "allrightsreserved",
+      "fullName": "All Rights Reserved",
+      "url": "https://en.wikipedia.org/w/index.php?title=All_rights_reserved&oldid=1101263186",
+      "free": false
     }
   },
   {
@@ -452,10 +478,23 @@
     "slug": "i-dont-care-about-cookies"
   },
   {
+    "slug": "iina-open-in-mpv"
+  },
+  {
     "slug": "image-search-options",
     "license": {
       "tag": "predefined",
       "shortName": "mpl11"
+    }
+  },
+  {
+    "slug": "immersive-translate",
+    "license": {
+      "tag": "custom",
+      "shortName": "immersive-translate",
+      "fullName": "End-User License Agreement for Immersive Translate",
+      "url": "https://addons.mozilla.org/en-US/firefox/addon/immersive-translate/eula/",
+      "free": false
     }
   },
   {
@@ -478,8 +517,7 @@
     "slug": "ipfs-companion"
   },
   {
-    "slug": "ipvfoo-pmarks",
-    "pname": "ipvfoo",
+    "slug": "ipvfoo",
     "license": {
       "tag": "predefined",
       "shortName": "asl20"
@@ -602,6 +640,9 @@
   },
   {
     "slug": "mailvelope"
+  },
+  {
+    "slug": "mal-sync"
   },
   {
     "slug": "markdownload"
@@ -854,7 +895,8 @@
     "slug": "proton-pass"
   },
   {
-    "slug": "proton-vpn"
+    "slug": "proton-vpn-firefox-extension",
+    "pname": "proton-vpn"
   },
   {
     "slug": "protondb-for-steam"
@@ -916,6 +958,16 @@
     "slug": "save-page-we"
   },
   {
+    "slug": "scroll_anywhere",
+    "license": {
+      "tag": "custom",
+      "shortName": "scroll-anywhere",
+      "fullName": "Scroll Anywhere License",
+      "url": "https://github.com/fastaddons/ScrollAnywhere/blob/master/LICENSE",
+      "free": false
+    }
+  },
+  {
     "slug": "search-engines-helper"
   },
   {
@@ -939,6 +991,9 @@
   },
   {
     "slug": "simple-tab-groups"
+  },
+  {
+    "slug": "simple-translate"
   },
   {
     "slug": "simplelogin"

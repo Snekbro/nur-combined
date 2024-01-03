@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixosConfig, ... }: {
+{ pkgs, lib, ... }: {
   home.sessionVariables.EDITOR = "code -w";
   programs.vscode = {
     enable = true;
@@ -7,6 +7,7 @@
       with pkgs.vscode-extensions; [
         eamodio.gitlens
         file-icons.file-icons
+        grafana.vscode-jsonnet
         jnoortheen.nix-ide
         llvm-vs-code-extensions.vscode-clangd
         mkhl.direnv
@@ -86,8 +87,12 @@
         "shardulm94.trailing-spaces"
       ];
       "dev.containers.dockerComposePath" = lib.getExe pkgs.podman-compose;
-      "dev.containers.dockerPath" = lib.getExe pkgs.podman;
+      "dev.containers.dockerPath" = lib.getExe' pkgs.podman "podman";
       "direnv.restart.automatic" = true;
+      "jsonnet.languageServer" = {
+        enableAutoUpdate = false;
+        pathToBinary = lib.getExe' pkgs.jsonnet-language-server "jsonnet-language-server";
+      };
       "nix.enableLanguageServer" = true;
       "nix.serverPath" = "${lib.getExe pkgs.nil}";
       "nix.serverSettings" = {

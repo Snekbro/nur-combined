@@ -85,6 +85,7 @@ in {
         type = "postgres";
         # user needs to be the same as gitea user
         user = giteaUser;
+        name = giteaUser;
       };
     };
 
@@ -102,7 +103,7 @@ in {
     # NOTE: no need to use postgresql.ensureDatabases because the gitea module
     # takes care of this automatically
     services.postgresqlBackup = {
-      databases = ["gitea"];
+      databases = [config.services.gitea.database.name];
     };
 
     services.nginx = {

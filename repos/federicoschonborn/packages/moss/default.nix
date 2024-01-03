@@ -5,21 +5,20 @@
 , sqlite
 , zstd
 , unstableGitUpdater
-, rustc
 }:
 
 rustPlatform.buildRustPackage {
   pname = "moss";
-  version = "unstable-2023-11-11";
+  version = "unstable-2023-12-17";
 
   src = fetchFromGitHub {
     owner = "serpent-os";
     repo = "moss-rs";
-    rev = "93a5a1ef2ea738e3429d07e545d53fef26804054";
-    hash = "sha256-WlHLcvqpyAzeWazltfs5h3QjandTaOgc093egPmBuwY=";
+    rev = "bb68b260f7a83be86f38179e2139659feee96d56";
+    hash = "sha256-cmUbpDIf5sepeeJvNGgb9D1+yM1RFUwZKQU6YB0v+PY=";
   };
 
-  cargoHash = "sha256-e+UmqS2zIMNiqob3OKxay5cnxxfx7+9gfG2oaF2TAjo=";
+  cargoHash = "sha256-1CiWZ7CAtlUfmfgdTRN5qxAN0Rodrgq7PMaW4j2NwbI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -41,6 +40,5 @@ rustPlatform.buildRustPackage {
     license = lib.licenses.mpl20;
     platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ federicoschonborn ];
-    broken = lib.versionOlder rustc.version "1.70";
   };
 }

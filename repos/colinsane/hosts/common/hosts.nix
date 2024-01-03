@@ -19,7 +19,7 @@
   };
 
   sane.hosts.by-name."moby" = {
-    ssh.authorized = lib.mkDefault false;  # moby's too easy to hijack: don't let it ssh places
+    # ssh.authorized = lib.mkDefault false;  # moby's too easy to hijack: don't let it ssh places
     ssh.user_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICrR+gePnl0nV/vy7I5BzrGeyVL+9eOuXHU1yNE3uCwU";
     ssh.host_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO1N/IT3nQYUD+dBlU1sTEEVMxfOyMkrrDeyHcYgnJvw";
     wg-home.pubkey = "I7XIR1hm8bIzAtcAvbhWOwIAabGkuEvbWH/3kyIB1yA=";
@@ -35,5 +35,11 @@
     wg-home.ip = "10.0.10.5";
     wg-home.endpoint = "uninsane.org:51820";
     lan-ip = "10.78.79.51";
+  };
+
+  sane.hosts.by-name."supercap" = {
+    ssh.authorized = false;
+    ssh.host_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf/mqqkX45EWAcquV04MC3SUljTApdclH1gjI19F+PA";
+    lan-ip = "10.78.79.232";
   };
 }

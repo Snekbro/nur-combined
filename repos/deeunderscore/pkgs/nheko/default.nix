@@ -25,6 +25,7 @@
 , re2
 , spdlog
 , httplib
+, kdsingleapplication
 , voipSupport ? true
 , gst_all_1
 , libnice
@@ -32,13 +33,13 @@
 
 stdenv.mkDerivation {
   pname = "nheko";
-  version = "unstable-2023-10-23";
+  version = "unstable-2023-12-04";
 
   src = fetchFromGitHub {
     owner = "Nheko-Reborn";
     repo = "nheko";
-    rev = "491809e853b1330c83b3a98c5e9e5e870223ff2c";
-    hash = "sha256-2TPL6FK8OqjORBLM0c9dzyZvGZ19OAirvVAyUzgVahU=";
+    rev = "b4afeada58dbf2695a8dd4cac675a8d6c06ad251";
+    hash = "sha256-EnC+uhgBHqakr6c5m/D0aTRNOGVKLfnFZ71t0P2NxPc=";
   };
 
   nativeBuildInputs = [
@@ -67,6 +68,7 @@ stdenv.mkDerivation {
     re2
     spdlog
     httplib
+    kdsingleapplication
   ] ++ lib.optionals voipSupport (with gst_all_1; [
     gstreamer
     gst-plugins-base

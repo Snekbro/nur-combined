@@ -2,10 +2,11 @@
   inputs = {
 
     ## MAIN NIXPKGS
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11"; # GNOME 43.2
+
+    nixpkgs-2311.url = "github:NixOS/nixpkgs/nixos-23.11"; # GNOME 45.2
     unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    nixpkgs-gnome-45.url = "github:NixOS/nixpkgs?ref=gnome";
 
     nixpkgs-inkscape13.url = "github:leiserfg/nixpkgs?ref=staging";
 
@@ -17,7 +18,11 @@
 
     ## OTHER
     agenix.url = "github:ryantm/agenix";
-    utils.url = "github:numtide/flake-utils";
+
+    peerix = {
+      url = "github:cid-chan/peerix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nixified-ai = { url = "github:nixified-ai/flake"; };
 
@@ -27,64 +32,53 @@
     self,
     home-manager,
     nixpkgs,
+    nixpkgs-2311,
+    peerix,
     unstable,
     nixpkgs-inkscape13,
-    nixpkgs-gnome-45,
-    utils,
     agenix,
     nixified-ai
   }:
 
   let
-    localOverlay = prev: final: {
-    };
 
     pkgsForSystem = system: import nixpkgs {
       overlays = [
-        localOverlay
+        (import ./overlays)
       ];
-
       inherit system;
       config.allowUnfree = true;
     };
 
     nixpkgs-inkscape13ForSystem = system: import nixpkgs-inkscape13 {
-      overlays = [
-        localOverlay
-      ];
-
       inherit system;
       config.allowUnfree = true;
     };
+
     unstableForSystem = system: import unstable {
-      overlays = [
-        localOverlay
-      ];
-
       inherit system;
       config.allowUnfree = true;
     };
-    gnome45ForSystem = system: import nixpkgs-gnome-45 {
-      overlays = [
-        localOverlay
+
+    peerixPubkeys = " peerix-lego1:UEbvvZ0dbQbFqktNWaeo4hyTIBovOb/3Is/AuzBUNJI= peerix-ojs:6QILJzG+gTv8JlT8AT1ObVB3h+AXxWLQEkOI8ACEGm0= peerix-rodin:GKCOspilVSQTzFLxzzrtLtVAkB9X3Rkrw5qku4E8wkk=";
+
+  in {
+
+    homeConfigurations."pim@rodin" = home-manager.lib.homeManagerConfiguration {
+      modules = [
+        (import ./home/pim/home-machine-rodin.nix)
       ];
 
-      inherit system;
-      config.allowUnfree = true;
-      config.allowUnsupportedSystem = true;
-      config.allowBroken = true;
+      pkgs = pkgsForSystem "x86_64-linux";
+      extraSpecialArgs = {
+        username = "pim";
+        homedir = "/home/pim";
+        withLinny = true;
+        isDesktop = true;
+        tmuxPrefix = "a";
+        unstable = unstableForSystem "x86_64-linux";
+      };
     };
-
-  in utils.lib.eachSystem [ "x86_64-linux" "aarch64-darwin" "x86_64-darwin" ] (system: rec {
-    legacyPackages = pkgsForSystem system;
-  }) // {
-
-    overlays = import ./overlays;
-    overlay = localOverlay;
-
-    /*
-    DOT FILES
-    */
 
     homeConfigurations = {
       "pim@adevintamac" = home-manager.lib.homeManagerConfiguration {
@@ -97,11 +91,8 @@
           isDesktop = true;
           tmuxPrefix = "a";
           unstable = unstableForSystem "x86_64-darwin";
-          inherit localOverlay;
         };
       };
-
-
 
       "pim@lego1" = home-manager.lib.homeManagerConfiguration {
         modules = [ (import ./home/pim/home-machine-lego1.nix) ];
@@ -113,7 +104,6 @@
           isDesktop = true;
           tmuxPrefix = "a";
           unstable = unstableForSystem "x86_64-linux";
-          inherit localOverlay;
         };
       };
 
@@ -128,175 +118,166 @@
           isDesktop = true;
           tmuxPrefix = "a";
           unstable = unstableForSystem "x86_64-linux";
-          inherit localOverlay;
-        };
-      };
-
-      "pim@rodin" = home-manager.lib.homeManagerConfiguration {
-        modules = [ (import ./home/pim/home-machine-rodin.nix) ];
-
-        pkgs = pkgsForSystem "x86_64-linux";
-        extraSpecialArgs = {
-          username = "pim";
-          homedir = "/home/pim";
-          withLinny = true;
-          isDesktop = true;
-          tmuxPrefix = "a";
-          unstable = unstableForSystem "x86_64-linux";
-          inherit localOverlay;
         };
       };
     };
-
-    inherit home-manager;
-    inherit (home-manager) packages;
-
-    /*
-    MACHINES
-    */
 
     nixosConfigurations.rodin = nixpkgs.lib.nixosSystem {
 
+      system = "x86_64-linux";
       modules =
         let
           system = "x86_64-linux";
+
           defaults = { pkgs, ... }: {
             _module.args.unstable = unstableForSystem "x86_64-linux";
             _module.args.nixpkgs-inkscape13 = nixpkgs-inkscape13ForSystem "x86_64-linux";
           };
+
+          agenixBin = {
+            environment.systemPackages = [ agenix.packages."${system}".default ];
+          };
+
         in [
-          defaults
           ./hosts/rodin/configuration.nix
-          { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+          defaults
+          peerix.nixosModules.peerix {
+              services.peerix = {
+                enable = true;
+                package = peerix.packages.x86_64-linux.peerix;
+                openFirewall = true; # UDP/12304
+                privateKeyFile = ./hosts/lego1/peerix-private;
+                publicKeyFile =  ./hosts/lego1/peerix-public;
+                publicKey = peerixPubkeys;
+              };
+            }
+
+          agenixBin
           agenix.nixosModules.default
-          home-manager.nixosModules.home-manager
-          {
+          home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
           }
 
-##          {
-##              imports = [
-##                nixified-ai.nixosModules.invokeai
-##              ];
-##
-##              environment.systemPackages = [
-##                nixified-ai.packages.${system}.invokeai-nvidia
-##              ];
-##
-##  #            services.invokeai = {
-##  #              enable = false;
-##  #              host = "0.0.0.0";
-##  #              nsfwChecker = false;
-##  #              package = nixified-ai.packages.${system}.invokeai-nvidia;
-##  #            };
-##
-##            }
+  ##          {
+  ##              imports = [
+  ##                nixified-ai.nixosModules.invokeai
+  ##              ];
+  ##
+  ##              environment.systemPackages = [
+  ##                nixified-ai.packages.${system}.invokeai-nvidia
+  ##              ];
+  ##
+  ##  #            services.invokeai = {
+  ##  #              enable = false;
+  ##  #              host = "0.0.0.0";
+  ##  #              nsfwChecker = false;
+  ##  #              package = nixified-ai.packages.${system}.invokeai-nvidia;
+  ##  #            };
+  ##
+  ##            }
 
 
-      ];
-    };
+];
+      };
 
-    nixosConfigurations.lego1 = nixpkgs.lib.nixosSystem {
 
-      modules =
-        let
-          system = "x86_64-linux";
-          defaults = { pkgs, ... }: {
-            _module.args.unstable = unstableForSystem "x86_64-linux";
-            _module.args.nixpkgs-inkscape13 = nixpkgs-inkscape13ForSystem "x86_64-linux";
+      nixosConfigurations.lego1 = nixpkgs.lib.nixosSystem {
+
+        modules =
+          let
+            system = "x86_64-linux";
+            defaults = { pkgs, ... }: {
+
+              _module.args.unstable = unstableForSystem "x86_64-linux";
+              _module.args.nixpkgs-inkscape13 = nixpkgs-inkscape13ForSystem "x86_64-linux";
+            };
+          in [
+            defaults
+            ./hosts/lego1/configuration.nix
+            peerix.nixosModules.peerix {
+              services.peerix = {
+                enable = true;
+                package = peerix.packages.x86_64-linux.peerix;
+                openFirewall = true; # UDP/12304
+                privateKeyFile = ./hosts/lego1/peerix-private;
+                publicKeyFile =  ./hosts/lego1/peerix-public;
+                publicKey = peerixPubkeys;
+              };
+            }
+
+            { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+            agenix.nixosModules.default
+
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+            }
+          ];
+        };
+
+        nixosConfigurations.ojs = nixpkgs.lib.nixosSystem {
+
+          modules =
+            let
+              system = "x86_64-linux";
+              defaults = { pkgs, ... }: {
+                _module.args.unstable = unstableForSystem "x86_64-linux";
+                _module.args.nixpkgs-inkscape13 = nixpkgs-inkscape13ForSystem "x86_64-linux";
+              };
+            in [
+              defaults
+              ./hosts/ojs/configuration.nix
+              peerix.nixosModules.peerix {
+                services.peerix = {
+                  enable = true;
+                  package = peerix.packages.x86_64-linux.peerix;
+                  openFirewall = true; # UDP/12304
+                  privateKeyFile = ./hosts/ojs/peerix-private;
+                  publicKeyFile =  ./hosts/ojs/peerix-public;
+                  publicKey = peerixPubkeys;
+                };
+              }
+
+              { environment.systemPackages = [ agenix.packages."${system}".default ]; }
+              agenix.nixosModules.default
+
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+              }
+            ];
           };
-        in [
-          defaults
-          ./hosts/lego1/configuration.nix
-          { environment.systemPackages = [ agenix.packages."${system}".default ]; }
-          agenix.nixosModules.default
 
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-          }
-      ];
-    };
-
-    nixosConfigurations.ojs = nixpkgs.lib.nixosSystem {
-
-      modules =
-        let
-          system = "x86_64-linux";
-          defaults = { pkgs, ... }: {
-            _module.args.unstable = unstableForSystem "x86_64-linux";
-            _module.args.nixpkgs-inkscape13 = nixpkgs-inkscape13ForSystem "x86_64-linux";
+        nixosConfigurations.grannyos = nixpkgs-2311.lib.nixosSystem {
+          modules =
+            let
+              system = "x86_64-linux";
+            in
+            [
+              {
+                nixpkgs.config.pkgs = import nixpkgs-2311 { inherit system; };
+              }
+              ./hosts/grannyos/configuration.nix
+            ];
           };
-        in [
-          defaults
-          ./hosts/ojs/configuration.nix
 
-          { environment.systemPackages = [ agenix.packages."${system}".default ]; }
-          agenix.nixosModules.default
+        nixosConfigurations.billquick = nixpkgs.lib.nixosSystem {
 
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-          }
-      ];
-    };
+          modules =
+            let
+              defaults = { pkgs, ... }: {
+                _module.args.unstable = unstableForSystem "x86_64-linux";
+              };
+            in [
+              defaults
+              ./hosts/billquick/configuration.nix
+              .home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+              }
+            ];
 
-    nixosConfigurations.grannyos = nixpkgs.lib.nixosSystem {
-
-      modules =
-        let
-          system = "x86_64-linux";
-          defaults = { pkgs, ... }: {
-            _module.args.unstable = unstableForSystem "x86_64-linux";
           };
-        in [
-          defaults
-          ./hosts/grannyos/configuration.nix
-
-          { environment.systemPackages = [ agenix.packages."${system}".default ]; }
-          agenix.nixosModules.default
-
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-          }
-      ];
-    };
-
-    nixosConfigurations.gnome-45 = nixpkgs-gnome-45.lib.nixosSystem {
-
-      pkgs = gnome45ForSystem "x86_64-linux";
-      modules =
-        let
-          system = "x86_64-linux";
-          defaults = { gnome45ForSystem, ... }: {
-            _module.args.unstable = unstableForSystem "x86_64-linux";
-          };
-        in [
-          defaults
-          ./hosts/gnome-45/configuration.nix
-
-
-      ];
-    };
-
-    nixosConfigurations.billquick = nixpkgs.lib.nixosSystem {
-
-      modules =
-        let
-          defaults = { pkgs, ... }: {
-            _module.args.unstable = unstableForSystem "x86_64-linux";
-          };
-        in [
-          defaults
-          ./hosts/billquick/configuration.nix
-          .home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-          }
-      ];
-
-    };
-
   };
+
 }

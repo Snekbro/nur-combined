@@ -48,22 +48,18 @@ in
       ensureDatabases = [ "woodpecker" ];
       ensureUsers = [{
         name = "woodpecker";
-        ensurePermissions = {
-          "DATABASE woodpecker" = "ALL PRIVILEGES";
-        };
+        ensureDBOwnership = true;
       }];
     };
 
-    my.services.nginx.virtualHosts = [
-      {
-        subdomain = "woodpecker";
+    my.services.nginx.virtualHosts = {
+      woodpecker = {
         inherit (cfg) port;
-      }
+      };
       # I might want to be able to RPC from other hosts in the future
-      {
-        subdomain = "woodpecker-rpc";
+      woodpecker-rpc = {
         port = cfg.rpcPort;
-      }
-    ];
+      };
+    };
   };
 }

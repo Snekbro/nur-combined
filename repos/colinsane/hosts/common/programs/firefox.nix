@@ -13,7 +13,14 @@ let
   mobile-prefs = lib.optionals false pkgs.librewolf-pmos-mobile.extraPrefsFiles;
   # allow easy switching between firefox and librewolf with `defaultSettings`, below
   librewolfSettings = {
-    browser = pkgs.librewolf-unwrapped;
+    browser = pkgs.librewolf-unwrapped.overrideAttrs (upstream: {
+      # TEMP(2023/11/21): fix eval bug in wrapFirefox
+      # see: <https://github.com/NixOS/nixpkgs/pull/244591>
+      passthru = upstream.passthru // {
+        requireSigning = false;
+        allowAddonSideload = true;
+      };
+    });
     extraPrefsFiles = pkgs.librewolf-unwrapped.extraPrefsFiles ++ mobile-prefs;
     libName = "librewolf";
     dotDir = ".librewolf";
@@ -31,25 +38,16 @@ let
   # defaultSettings = firefoxSettings;
   defaultSettings = librewolfSettings;
 
-  addon = name: extid: hash: pkgs.fetchFirefoxAddon {
-    inherit name hash;
-    url = "https://addons.mozilla.org/firefox/downloads/latest/${name}/latest.xpi";
-    # extid can be found by unar'ing the above xpi, and copying browser_specific_settings.gecko.id field
-    fixedExtid = extid;
-  };
-  localAddon = pkg: pkgs.fetchFirefoxAddon {
-    inherit (pkg) name;
-    src = "${pkg}/share/mozilla/extensions/\\{ec8030f7-c20a-464f-9b0e-13a3a9e97384\\}/${pkg.extid}.xpi";
-    fixedExtid = pkg.extid;
-  };
-
-  package = pkgs.wrapFirefox cfg.browser.browser {
+  package = (pkgs.wrapFirefox cfg.browser.browser {
     # inherit the default librewolf.cfg
     # it can be further customized via ~/.librewolf/librewolf.overrides.cfg
     inherit (cfg.browser) extraPrefsFiles libName;
 
-    extraNativeMessagingHosts = optional cfg.addons.browserpass-extension.enable pkgs.browserpass;
-    # extraNativeMessagingHosts = [ pkgs.gopass-native-messaging-host ];
+    nativeMessagingHosts = lib.optionals cfg.addons.browserpass-extension.enable [
+      pkgs.browserpass
+    ] ++ lib.optionals cfg.addons.fxCast.enable [
+      pkgs.fx-cast-bridge
+    ];
 
     nixExtensions = concatMap (ext: optional ext.enable ext.package) (attrValues cfg.addons);
 
@@ -106,7 +104,17 @@ let
       # NewTabPage = true;
     };
     # extraPrefs = ...
-  };
+  }).overrideAttrs (base: {
+    # de-associate `ctrl+shift+c` from activating the devtools.
+    # based on <https://stackoverflow.com/a/54260938>
+    buildCommand = (base.buildCommand or "") + ''
+      mkdir omni
+      ${pkgs.buildPackages.unzip}/bin/unzip $out/lib/${cfg.browser.libName}/browser/omni.ja -d omni
+      rm $out/lib/${cfg.browser.libName}/browser/omni.ja
+      ${pkgs.buildPackages.gnused}/bin/sed -i s'/devtools-commandkey-inspector = C/devtools-commandkey-inspector = VK_F12/' omni/localization/en-US/devtools/startup/key-shortcuts.ftl
+      pushd omni; ${pkgs.buildPackages.zip}/bin/zip $out/lib/${cfg.browser.libName}/browser/omni.ja -r ./*; popd
+    '';
+  });
 
   addonOpts = types.submodule {
     options = {
@@ -150,6 +158,16 @@ in
         default = {};
       };
       sane.programs.firefox.config.addons = {
+        fxCast = {
+          # add a menu to cast to chromecast devices, but it doesn't seem to work very well.
+          # right click (or shift+rc) a video, then select "cast".
+          # - asciinema.org: icon appears, but glitches when clicked.
+          # - youtube.com: no icon appears, even when site is whitelisted.
+          # future: maybe better to have browser open all videos in mpv, and then use mpv for casting.
+          # see e.g. `ff2mpv`, `open-in-mpv` (both are packaged in nixpkgs)
+          package = pkgs.firefox-extensions.fx_cast;
+          enable = lib.mkDefault false;
+        };
         browserpass-extension = {
           package = pkgs.firefox-extensions.browserpass-extension;
           enable = lib.mkDefault true;
@@ -158,6 +176,10 @@ in
           package = pkgs.firefox-extensions.bypass-paywalls-clean;
           enable = lib.mkDefault true;
         };
+        ctrl-shift-c-should-copy = {
+          package = pkgs.firefox-extensions.ctrl-shift-c-should-copy;
+          enable = lib.mkDefault false;  # prefer patching firefox source code, so it works in more places
+        };
         ether-metamask = {
           package = pkgs.firefox-extensions.ether-metamask;
           enable = lib.mkDefault false;  # until i can disable the first-run notification
@@ -165,6 +187,10 @@ in
         i2p-in-private-browsing = {
           package = pkgs.firefox-extensions.i2p-in-private-browsing;
           enable = lib.mkDefault config.services.i2p.enable;
+        };
+        open-in-mpv = {
+          package = pkgs.firefox-extensions.open-in-mpv;
+          enable = lib.mkDefault config.sane.programs.open-in-mpv.enabled;
         };
         sidebery = {
           package = pkgs.firefox-extensions.sidebery;
@@ -187,6 +213,10 @@ in
     ({
       sane.programs.firefox = {
         inherit package;
+
+        suggestedPrograms = [
+          "open-in-mpv"
+        ];
 
         mime.associations = let
           inherit (cfg.browser) desktop;
@@ -229,8 +259,17 @@ in
           // scrollbar configuration, see: <https://artemis.sh/2023/10/12/scrollbars.html>
           // style=4 gives rectangular scrollbars
           // could also enable "always show scrollbars" in about:preferences -- not sure what the actual pref name for that is
-          defaultPref("widget.non-native-theme.scrollbar.size.override", 50);
+          // note that too-large scrollbars (like 50px wide) tend to obscure content (and make buttons unclickable)
+          defaultPref("widget.non-native-theme.scrollbar.size.override", 20);
           defaultPref("widget.non-native-theme.scrollbar.style", 4);
+
+          // auto-dispatch mpv:// URIs to xdg-open without prompting.
+          // can do this with other protocols too (e.g. matrix?). see about:config for common handlers.
+          defaultPref("network.protocol-handler.external.mpv", true);
+          // element:// for Element matrix client
+          defaultPref("network.protocol-handler.external.element", true);
+          // matrix: for Nheko matrix client
+          defaultPref("network.protocol-handler.external.matrix", true);
         '';
         fs."${cfg.browser.dotDir}/default".dir = {};
         # instruct Firefox to put the profile in a predictable directory (so we can do things like persist just it).

@@ -19,9 +19,14 @@ in {
     ./postgresql.nix
     ./sshfs.nix
     ./zfs.nix
+    ./binary-cache.nix
     # ./container-inet-rdp.nix
     ./container-nat.nix
   ];
+
+  services.ollama.enable = true;
+
+  networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
   services.restic.server.enable = true;
   services.restic.server.dataDir = "/media/storage/backup/restic";
@@ -110,11 +115,11 @@ in {
     settings = {
       search = {
         paths = [
-          "/storage/games/steam/steamapps/compatdata"
+          "/media/downloads/steam/steamapps/compatdata"
         ];
       };
       flatout-2 = {
-        installdir = [ "/storage/games/steam/steamapps/common/FlatOut2" ];
+        installdir = [ "/media/downloads/steam/steamapps/common/FlatOut2" ];
       };
     };
   };

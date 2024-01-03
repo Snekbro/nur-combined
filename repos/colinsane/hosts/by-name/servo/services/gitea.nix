@@ -13,6 +13,10 @@
   services.gitea.appName = "Perfectly Sane Git";
   # services.gitea.disableRegistration = true;
 
+  services.gitea.database.createDatabase = false;  #< silence warning which wants db user and name to be equal
+  # TODO: remove this after merge: <https://github.com/NixOS/nixpkgs/pull/268849>
+  services.gitea.database.socket = "/run/postgresql";  #< would have been set if createDatabase = true
+
   # gitea doesn't create the git user
   users.users.git = {
     description = "Gitea Service";

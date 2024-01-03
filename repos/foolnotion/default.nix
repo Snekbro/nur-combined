@@ -26,6 +26,8 @@
 
   cmaketools = pkgs.python3Packages.callPackage ./pkgs/cmaketools { };
 
+  cpp-flux = pkgs.callPackage ./pkgs/cpp-flux { };
+
   cpp-lazy = pkgs.callPackage ./pkgs/cpp-lazy { };
 
   cpp-sort = pkgs.callPackage ./pkgs/cpp-sort { };
@@ -46,6 +48,10 @@
   expected-lite = pkgs.callPackage ./pkgs/expected-lite { };
 
   fast_float = pkgs.callPackage ./pkgs/fast_float { };
+  
+  fastor = pkgs.callPackage ./pkgs/fastor { };
+
+  fplus = pkgs.callPackage ./pkgs/fplus { };
 
   gch-small-vector = pkgs.callPackage ./pkgs/gch-small-vector { };
 
@@ -60,6 +66,8 @@
   mathpresso = pkgs.callPackage ./pkgs/mathpresso { };
 
   mdspan = pkgs.callPackage ./pkgs/mdspan { };
+
+  mppp = pkgs.callPackage ./pkgs/mppp { };
 
   nanobind = pkgs.callPackage ./pkgs/nanobind { python = pkgs.python3; };
 
@@ -95,6 +103,10 @@
   tessil-robin-map = pkgs.callPackage ./pkgs/tessil-robin-map { };
 
   trng = pkgs.callPackage ./pkgs/trng { };
+
+  tlx = pkgs.callPackage ./pkgs/tlx { };
+
+  vdt = pkgs.callPackage ./pkgs/vdt { };
 
   vectorclass = pkgs.callPackage ./pkgs/vectorclass {
     vectorclass-cmake = ./pkgs/vectorclass/vectorclass-cmake;

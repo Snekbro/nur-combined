@@ -2,10 +2,10 @@
   {
     "10ten-ja-reader" = buildFirefoxXpiAddon {
       pname = "10ten-ja-reader";
-      version = "1.15.1";
+      version = "1.17.0";
       addonId = "{59812185-ea92-4cca-8ab7-cfcacee81281}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4162143/10ten_ja_reader-1.15.1.xpi";
-      sha256 = "cf638be78da479ccd54fe6ace7990a5ba7757562ec48b2a177e24c86d2ee235c";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4205187/10ten_ja_reader-1.17.0.xpi";
+      sha256 = "b403f9f361f685a8c674d864efc050850b0e4f042a83b906d9828b3835b51db6";
       meta = with lib;
       {
         homepage = "https://github.com/birchill/10ten-ja-reader/";
@@ -71,10 +71,10 @@
       };
     "adnauseam" = buildFirefoxXpiAddon {
       pname = "adnauseam";
-      version = "3.18.0";
+      version = "3.19.0";
       addonId = "adnauseam@rednoise.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4174127/adnauseam-3.18.0.xpi";
-      sha256 = "7a68641d944803100ef7a54abc7e9fabf5d9e12a826155b303bfd62aae746dd4";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4200304/adnauseam-3.19.0.xpi";
+      sha256 = "3905de2ab2d5cf519dba1693b426b0ebe33d3193254ff23e2fb2349b59843a64";
       meta = with lib;
       {
         homepage = "https://adnauseam.io";
@@ -102,6 +102,9 @@
           "https://github.com/*"
           "https://*.github.io/*"
           "https://*.letsblock.it/*"
+          "https://github.com/uBlockOrigin/*"
+          "https://ublockorigin.github.io/*"
+          "https://*.reddit.com/r/uBlockOrigin/*"
           ];
         platforms = platforms.all;
         };
@@ -187,10 +190,10 @@
       };
     "angular-devtools" = buildFirefoxXpiAddon {
       pname = "angular-devtools";
-      version = "1.0.8";
+      version = "1.0.9";
       addonId = "{20a9bb38-ed7c-4faf-9aaf-7c5d241fd747}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191894/angular_devtools-1.0.8.xpi";
-      sha256 = "9f1d3f1331bc70ca96afe4bcb906792483c696eb5cc42d84b6675ccb11769468";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195504/angular_devtools-1.0.9.xpi";
+      sha256 = "d1066b1b0d6df063a25dcc829bd424d2964c9c80e26499b5877ec4774e243cca";
       meta = with lib;
       {
         homepage = "https://angular.io/devtools";
@@ -583,10 +586,10 @@
       };
     "betterttv" = buildFirefoxXpiAddon {
       pname = "betterttv";
-      version = "7.5.9";
+      version = "7.5.10";
       addonId = "firefox@betterttv.net";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191288/betterttv-7.5.9.xpi";
-      sha256 = "e261fd00a12aec6a6af640b0dadf43add7c2da64e759f6eeb307bfdc7f1ced29";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195663/betterttv-7.5.10.xpi";
+      sha256 = "00d390c9ad3855ad1ea12ec59afe2ca36286679d28478f20ad4aeb6d7161f376";
       meta = with lib;
       {
         homepage = "https://betterttv.com";
@@ -639,12 +642,90 @@
         platforms = platforms.all;
         };
       };
+    "bibbot" = buildFirefoxXpiAddon {
+      pname = "bibbot";
+      version = "0.33.2";
+      addonId = "voebbot@stefanwehrmeyer.com";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4213753/bibbot-0.33.2.xpi";
+      sha256 = "715da2f429f0764cebe92dd2004499f75669c445aa10d0de03476d6dbdaf7ea8";
+      meta = with lib;
+      {
+        homepage = "https://github.com/stefanw/bibbot";
+        description = "Durch ein Bibliothekskonto mit Pressedatenbankzugriff entfernt dieses Add-On die Paywall bei deutschen Nachrichtenseiten. Ein solches Bibliothekskonto ist Voraussetzung zur Nutzung des Add-On.";
+        license = licenses.gpl3;
+        mozPermissions = [
+          "tabs"
+          "storage"
+          "https://*.genios.de/*"
+          "https://www.spiegel.de/*"
+          "https://www.zeit.de/*"
+          "https://www.wiwo.de/*"
+          "https://www.welt.de/*"
+          "https://www.tagesspiegel.de/*"
+          "https://www.sueddeutsche.de/*"
+          "https://sz-magazin.sueddeutsche.de/*"
+          "https://www.handelsblatt.com/*"
+          "https://www.berliner-zeitung.de/*"
+          "https://www.morgenpost.de/*"
+          "https://www.nordkurier.de/*"
+          "https://www.abendblatt.de/*"
+          "https://www.moz.de/*"
+          "https://www.noz.de/*"
+          "https://www.waz.de/*"
+          "https://www.heise.de/*"
+          "https://www.maz-online.de/*"
+          "https://www.lr-online.de/*"
+          "https://www.nachrichten.at/*"
+          "https://ga.de/*"
+          "https://www.ksta.de/*"
+          "https://www.rundschau-online.de/*"
+          "https://rp-online.de/*"
+          "https://www.tagesanzeiger.ch/*"
+          "https://www.falter.at/*"
+          "https://www.stuttgarter-zeitung.de/*"
+          "https://www.stuttgarter-nachrichten.de/*"
+          "https://www.ostsee-zeitung.de/*"
+          "https://www.stimme.de/*"
+          "https://kurier.at/*"
+          "https://freizeit.at/*"
+          "https://www.diepresse.com/*"
+          "https://www.sn.at/*"
+          "https://www.kleinezeitung.at/*"
+          "https://www.vn.at/*"
+          "https://www.thueringer-allgemeine.de/*"
+          "https://www.mopo.de/*"
+          "https://www.saechsische.de/*"
+          "https://www.freiepresse.de/*"
+          "https://www.haz.de/*"
+          "https://www.lvz.de/*"
+          "https://www.dnn.de/*"
+          "https://www.swp.de/*"
+          "https://www.ruhrnachrichten.de/*"
+          "https://www.businessinsider.de/*"
+          "https://www.badische-zeitung.de/*"
+          "https://www.stern.de/*"
+          "https://www.mittelbayerische.de/*"
+          "https://www.tagblatt.de/*"
+          "https://www.mz.de/*"
+          "https://www.capital.de/*"
+          "https://www.iz.de/*"
+          "https://www.shz.de/*"
+          "https://www.aerztezeitung.de/*"
+          "https://www.geo.de/*"
+          "https://www.nzz.ch/*"
+          "https://www.manager-magazin.de/*"
+          "https://www.nwzonline.de/*"
+          "https://www.saarbruecker-zeitung.de/*"
+          ];
+        platforms = platforms.all;
+        };
+      };
     "bitwarden" = buildFirefoxXpiAddon {
       pname = "bitwarden";
-      version = "2023.10.2";
+      version = "2023.12.1";
       addonId = "{446900e4-71c2-419f-a6a7-df9c091e268b}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191732/bitwarden_password_manager-2023.10.2.xpi";
-      sha256 = "3eac55c07a2802a6192e2788da86578d45158fca21ccdeb521e5281137ecc24a";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211087/bitwarden_password_manager-2023.12.1.xpi";
+      sha256 = "40f695fbe5153a7614f25289a9388f95c59a952fb039b8b9c33fd7bd99ea2da2";
       meta = with lib;
       {
         homepage = "https://bitwarden.com";
@@ -1272,10 +1353,10 @@
       };
     "control-panel-for-twitter" = buildFirefoxXpiAddon {
       pname = "control-panel-for-twitter";
-      version = "3.21.4";
+      version = "3.22.0";
       addonId = "{5cce4ab5-3d47-41b9-af5e-8203eea05245}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4187793/control_panel_for_twitter-3.21.4.xpi";
-      sha256 = "3b51d307e2dfa56d83eab412e2ae1575882b4084d74cd36cb3e9f758a57b4211";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208890/control_panel_for_twitter-3.22.0.xpi";
+      sha256 = "f9f3310ee34b9d2dd8c9c9b9d28cd65f93ad9755f9ef42ddb7c5e9059bc04f62";
       meta = with lib;
       {
         homepage = "https://github.com/insin/control-panel-for-twitter";
@@ -1317,10 +1398,10 @@
       };
     "cookies-txt" = buildFirefoxXpiAddon {
       pname = "cookies-txt";
-      version = "0.4";
+      version = "0.6";
       addonId = "{12cf650b-1822-40aa-bff0-996df6948878}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4037589/cookies_txt-0.4.xpi";
-      sha256 = "6b07b6e478cae96c6eb5e669d90a233439458a00f866d88cb7c8275b054153e2";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4203553/cookies_txt-0.6.xpi";
+      sha256 = "62344e9fc9c24f8dad1fd2ee48b7b90fe818db4216c9e950c5070886593b28ad";
       meta = with lib;
       {
         description = "Exports all cookies to a Netscape HTTP Cookie File, as used by curl, wget, and youtube-dl, among others.";
@@ -1372,10 +1453,10 @@
       };
     "copy-selected-tabs-to-clipboard" = buildFirefoxXpiAddon {
       pname = "copy-selected-tabs-to-clipboard";
-      version = "1.6.0";
+      version = "1.6.2";
       addonId = "copy-selected-tabs-to-clipboard@piro.sakura.ne.jp";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4192673/copy_selected_tabs_to_clipboar-1.6.0.xpi";
-      sha256 = "cac5dce8529d6485c6bce523e388285b3ddb1fe71d87f2649a74a985b3349b78";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4194967/copy_selected_tabs_to_clipboar-1.6.2.xpi";
+      sha256 = "e311bdf51289ee2a1df13b46a030a677064deab55ba39912e88d16fd6d5e4c9d";
       meta = with lib;
       {
         description = "Provides ability to copy title and URL of selected tabs to the clipboard.";
@@ -1474,10 +1555,10 @@
       };
     "darkreader" = buildFirefoxXpiAddon {
       pname = "darkreader";
-      version = "4.9.67";
+      version = "4.9.73";
       addonId = "addon@darkreader.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4175386/darkreader-4.9.67.xpi";
-      sha256 = "128a151f04af774463448fe1cdb944f6c5095fb17991f82d9aec3c8c4513308e";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4205543/darkreader-4.9.73.xpi";
+      sha256 = "7c399ff32561886bb80dad0cafaf8f629792b0b71ff1efcf12667e05a2b38f1a";
       meta = with lib;
       {
         homepage = "https://darkreader.org/";
@@ -1490,6 +1571,38 @@
           "tabs"
           "theme"
           "<all_urls>"
+          ];
+        platforms = platforms.all;
+        };
+      };
+    "dashlane" = buildFirefoxXpiAddon {
+      pname = "dashlane";
+      version = "6.2349.1";
+      addonId = "jetpack-extension@dashlane.com";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204784/dashlane-6.2349.1.xpi";
+      sha256 = "92084f8059ffe83d8eb01c8a5ad8c8095328bd966b72f787cb0ed3c9de68e88a";
+      meta = with lib;
+      {
+        homepage = "https://www.dashlane.com";
+        description = "Dashlane makes the internet easier. Save all your passwords, fill forms fast, and keep your data accessible and safe.";
+        license = {
+          shortName = "dashlane";
+          fullName = "Dashlane Terms of Service";
+          url = "https://www.dashlane.com/terms";
+          free = false;
+          };
+        mozPermissions = [
+          "http://*/*"
+          "https://*/*"
+          "contextMenus"
+          "cookies"
+          "idle"
+          "privacy"
+          "storage"
+          "tabs"
+          "unlimitedStorage"
+          "webRequest"
+          "webRequestBlocking"
           ];
         platforms = platforms.all;
         };
@@ -1545,10 +1658,10 @@
       };
     "deutsch-de-language-pack" = buildFirefoxXpiAddon {
       pname = "deutsch-de-language-pack";
-      version = "120.0.20231110.91750";
+      version = "122.0.20231222.91904";
       addonId = "langpack-de@firefox.mozilla.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4193233/deutsch_de_language_pack-120.0.20231110.91750.xpi";
-      sha256 = "264b8edae9c07aa17fae5f16c4e92f7a851c7e5372eff184f7a78a33c1f5b8e6";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4212513/deutsch_de_language_pack-122.0.20231222.91904.xpi";
+      sha256 = "71fa10c46ef41ad2771bb43ee9ab9bdad539938126c428583145b3ac003410ba";
       meta = with lib;
       {
         description = "Firefox Language Pack for Deutsch (de) – German";
@@ -1597,6 +1710,20 @@
           "contextMenus"
           "<all_urls>"
           ];
+        platforms = platforms.all;
+        };
+      };
+    "dictionary-german" = buildFirefoxXpiAddon {
+      pname = "dictionary-german";
+      version = "2.1";
+      addonId = "de-DE@dictionaries.addons.mozilla.org";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4034565/dictionary_german-2.1.xpi";
+      sha256 = "00ef6eb3c10171a87fb22ab6e516846678b73c56ae828cc19d11e32e43b8457a";
+      meta = with lib;
+      {
+        description = "German Dictionary (new Orthography) for spellchecking in Firefox";
+        license = licenses.lgpl21;
+        mozPermissions = [];
         platforms = platforms.all;
         };
       };
@@ -1712,10 +1839,10 @@
       };
     "duckduckgo-privacy-essentials" = buildFirefoxXpiAddon {
       pname = "duckduckgo-privacy-essentials";
-      version = "2023.11.2";
+      version = "2023.12.6";
       addonId = "jid1-ZAdIEUB7XOzOJw@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4189794/duckduckgo_for_firefox-2023.11.2.xpi";
-      sha256 = "73ec345a77bf945c6eeafc341fc8f3ab9d16687fe870f2f2bfad89109f87b0f8";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4205925/duckduckgo_for_firefox-2023.12.6.xpi";
+      sha256 = "48f84600dba95266fda6e7cf28792d7bdfcc9837d259f8fc4df0b5fc3b1a20ce";
       meta = with lib;
       {
         homepage = "https://duckduckgo.com/app";
@@ -1738,10 +1865,10 @@
       };
     "ebates" = buildFirefoxXpiAddon {
       pname = "ebates";
-      version = "5.33.0";
+      version = "5.36.1";
       addonId = "{35d6291e-1d4b-f9b4-c52f-77e6410d1326}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4174443/ebates-5.33.0.xpi";
-      sha256 = "b52e10f622f8ba5f444728bff09e78e29fdc554a2bc09f20f853f7f6c39986b0";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211144/ebates-5.36.1.xpi";
+      sha256 = "b1855be21121fbeb151dc26910749e9f8d89bda5913d8424b930c78ea46c0826";
       meta = with lib;
       {
         homepage = "https://www.rakuten.com";
@@ -1824,10 +1951,10 @@
       };
     "elasticvue" = buildFirefoxXpiAddon {
       pname = "elasticvue";
-      version = "0.44.0";
+      version = "1.0.0";
       addonId = "{2879bc11-6e9e-4d73-82c9-1ed8b78df296}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4036001/elasticvue-0.44.0.xpi";
-      sha256 = "2805fb9b89669f30a644aa555fd6090300792668df38cd33540e65ccc5249c6d";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4213025/elasticvue-1.0.0.xpi";
+      sha256 = "38f20caa9ebbdd5140098706070f8f4222bfe65d2b6c4132b8b40ef9103caf00";
       meta = with lib;
       {
         homepage = "https://elasticvue.com/";
@@ -1960,6 +2087,32 @@
         platforms = platforms.all;
         };
       };
+    "faststream" = buildFirefoxXpiAddon {
+      pname = "faststream";
+      version = "1.2.15";
+      addonId = "faststream@andrews";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211933/faststream-1.2.15.xpi";
+      sha256 = "12d6ad1fe412bd75d1ce8fc5bf6f58457e219b9cb1cd124f2b57dd437809a10e";
+      meta = with lib;
+      {
+        homepage = "https://faststream.online/";
+        description = "Stream without buffering, a great video player and download accelerator all in one.";
+        license = {
+          shortName = "allrightsreserved";
+          fullName = "All Rights Reserved";
+          url = "https://en.wikipedia.org/w/index.php?title=All_rights_reserved&oldid=1101263186";
+          free = false;
+          };
+        mozPermissions = [
+          "storage"
+          "tabs"
+          "webRequest"
+          "declarativeNetRequest"
+          "<all_urls>"
+          ];
+        platforms = platforms.all;
+        };
+      };
     "fediact" = buildFirefoxXpiAddon {
       pname = "fediact";
       version = "0.9.8.7";
@@ -2084,10 +2237,10 @@
       };
     "flagfox" = buildFirefoxXpiAddon {
       pname = "flagfox";
-      version = "6.1.68";
+      version = "6.1.69";
       addonId = "{1018e4d6-728f-4b20-ad56-37578a4de76b}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188371/flagfox-6.1.68.xpi";
-      sha256 = "47dcb6394a38a909dd1c8596ed8e8a4ddff745bebdbc2c5f78e5403b74bb38ae";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202613/flagfox-6.1.69.xpi";
+      sha256 = "76110aa0ffa225c3530013f372d7d2be6310f0783afa1e467a451571e207147b";
       meta = with lib;
       {
         homepage = "https://flagfox.wordpress.com/";
@@ -2116,18 +2269,16 @@
       };
     "floccus" = buildFirefoxXpiAddon {
       pname = "floccus";
-      version = "4.19.1";
+      version = "5.0.5";
       addonId = "floccus@handmadeideas.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4090997/floccus-4.19.1.xpi";
-      sha256 = "a806d218c2e8eb11d115f3cd85d877ee8b0ec4f043a3c3edf1e41f78738ca314";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211719/floccus-5.0.5.xpi";
+      sha256 = "8056785c4455fa7f6a8e6f896c417ba02503723d7432b200518d0c3992afec66";
       meta = with lib;
       {
         homepage = "https://floccus.org";
         description = "Sync your bookmarks across browsers via Nextcloud, WebDAV or Google Drive";
         license = licenses.mpl20;
         mozPermissions = [
-          "https://*/"
-          "http://*/"
           "alarms"
           "bookmarks"
           "storage"
@@ -2193,24 +2344,23 @@
       };
     "foxyproxy-standard" = buildFirefoxXpiAddon {
       pname = "foxyproxy-standard";
-      version = "7.5.1";
+      version = "8.7";
       addonId = "foxyproxy@eric.h.jung";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3616824/foxyproxy_standard-7.5.1.xpi";
-      sha256 = "42109bc250e20aafd841183d09c7336008ab49574b5e8aa9206991bb306c3a65";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209841/foxyproxy_standard-8.7.xpi";
+      sha256 = "4f0761eac3493689a4968b7f6625fe37c7bad38bb604e625c5aec7573fa7d246";
       meta = with lib;
       {
         homepage = "https://getfoxyproxy.org";
-        description = "FoxyProxy is an advanced proxy management tool that completely replaces Firefox's limited proxying capabilities. For a simpler tool and less advanced configuration options, please use FoxyProxy Basic.";
+        description = "FoxyProxy is an open-source, advanced proxy management tool that completely replaces Firefox's limited proxying capabilities. No paid accounts are necessary; bring your own proxies or buy from any vendor. The original proxy tool, since 2006.";
         license = licenses.gpl2;
         mozPermissions = [
-          "browsingData"
+          "downloads"
+          "notifications"
           "proxy"
           "storage"
           "tabs"
           "webRequest"
           "webRequestBlocking"
-          "downloads"
-          "notifications"
           "<all_urls>"
           ];
         platforms = platforms.all;
@@ -2345,10 +2495,10 @@
       };
     "french-language-pack" = buildFirefoxXpiAddon {
       pname = "french-language-pack";
-      version = "120.0.20231110.91750";
+      version = "122.0.20231222.91904";
       addonId = "langpack-fr@firefox.mozilla.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4193245/francais_language_pack-120.0.20231110.91750.xpi";
-      sha256 = "0370ba2ddfa05e506fa2d3ea291f5a456bee242eb23feb7bf7079cfda04aa435";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4212499/francais_language_pack-122.0.20231222.91904.xpi";
+      sha256 = "30543e9e6fc37b2aa4e323e5fed57432b5fa1479a24da31827112c92118773d5";
       meta = with lib;
       {
         description = "Firefox Language Pack for Français (fr) – French";
@@ -2382,10 +2532,10 @@
       };
     "gesturefy" = buildFirefoxXpiAddon {
       pname = "gesturefy";
-      version = "3.2.9";
+      version = "3.2.10";
       addonId = "{506e023c-7f2b-40a3-8066-bc5deb40aebe}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4177077/gesturefy-3.2.9.xpi";
-      sha256 = "e639eb9666c7658db403e9408d33e01fd6b47db65362d246808087e329e78a57";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4198500/gesturefy-3.2.10.xpi";
+      sha256 = "9c151ef61203773ca530742f251e2abb56292641f05fed5f3bc6e6192dc6fef3";
       meta = with lib;
       {
         homepage = "https://github.com/Robbendebiene/Gesturefy";
@@ -2402,10 +2552,10 @@
       };
     "ghostery" = buildFirefoxXpiAddon {
       pname = "ghostery";
-      version = "8.11.1";
+      version = "8.12.5";
       addonId = "firefox@ghostery.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4142024/ghostery-8.11.1.xpi";
-      sha256 = "df20c00c94603ca153c8f10d6ee63694af024fd069fbfb369a70624859ba4e6a";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207768/ghostery-8.12.5.xpi";
+      sha256 = "2353897aad45f9fd035a569d4dfa2e2f1d1b9dedf5a319508558fb8c2f9b70d3";
       meta = with lib;
       {
         homepage = "http://www.ghostery.com/";
@@ -2424,6 +2574,7 @@
           "https://account.ghosterystage.com/*"
           "https://checkout.ghostery.com/*"
           "https://checkout.ghosterystage.com/*"
+          "*://www.youtube.com/*"
           "*://*.google.com/*"
           "*://*.google.ad/*"
           "*://*.google.ae/*"
@@ -2645,10 +2796,10 @@
       };
     "gitako-github-file-tree" = buildFirefoxXpiAddon {
       pname = "gitako-github-file-tree";
-      version = "3.11.6";
+      version = "3.11.7";
       addonId = "{983bd86b-9d6f-4394-92b8-63d844c4ce4c}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4152377/gitako_github_file_tree-3.11.6.xpi";
-      sha256 = "1988cc8cbe3cd035daec0bc039e9ccf97093912093366cebc5c0d992065de561";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209511/gitako_github_file_tree-3.11.7.xpi";
+      sha256 = "e5d528e5772a42154c4aa461984cb66f8239f8bbdb4b165db5fd6d68678f1fc5";
       meta = with lib;
       {
         homepage = "https://github.com/EnixCoda/Gitako";
@@ -2691,10 +2842,10 @@
       };
     "github-isometric-contributions" = buildFirefoxXpiAddon {
       pname = "github-isometric-contributions";
-      version = "1.1.27";
+      version = "1.1.28";
       addonId = "isometric-contributions@jasonlong.me";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190088/github_isometric_contributions-1.1.27.xpi";
-      sha256 = "1af1666a046a5d43a6dc1607e289b066fdb7cd7a3cdfe6a1b67f2a5850153437";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4196768/github_isometric_contributions-1.1.28.xpi";
+      sha256 = "fff29a12f3b4dbdd0ab67969af582d321ff2f14f50f8283ce55d7330f0da1a59";
       meta = with lib;
       {
         description = "Renders an isometric pixel view of GitHub contribution graphs.";
@@ -2705,10 +2856,10 @@
       };
     "gitpod" = buildFirefoxXpiAddon {
       pname = "gitpod";
-      version = "2.1.2";
+      version = "2.1.4";
       addonId = "{dbcc42f9-c979-4f53-8a95-a102fbff3bbe}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4183101/gitpod-2.1.2.xpi";
-      sha256 = "9344a8d4eea73bf4bdc3feb621c81d2f7de2520916a423063129a86e1d3418e2";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4206091/gitpod-2.1.4.xpi";
+      sha256 = "72af5dcacfe25d05f4445a8caf3a317b9799ae2ea5c8457c2db0d0f473af0b68";
       meta = with lib;
       {
         homepage = "http://www.gitpod.io";
@@ -2721,12 +2872,13 @@
           };
         mozPermissions = [
           "storage"
-          "https://github.com/*"
+          "scripting"
           "contextMenus"
           "activeTab"
           "https://gitpod.io/*"
           "https://*.gitpod.cloud/*"
           "https://*.gitpod.dev/*"
+          "https://github.com/*"
           "https://gitlab.com/*"
           "https://bitbucket.org/*"
           ];
@@ -2818,10 +2970,10 @@
       };
     "grammarly" = buildFirefoxXpiAddon {
       pname = "grammarly";
-      version = "8.908.0";
+      version = "8.909.0";
       addonId = "87677a2c52b84ad3a151a4a72f5bd3c4@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4182847/grammarly_1-8.908.0.xpi";
-      sha256 = "dc9633932e2c6a8624f0df5c1780954d5f4d54500230cca7368ca0bc0c67145b";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195175/grammarly_1-8.909.0.xpi";
+      sha256 = "2641c197d93f8ea7d9e88c6047eb4f059c5aff45850ba39ac3c96c71917b7bb4";
       meta = with lib;
       {
         homepage = "http://grammarly.com";
@@ -2950,10 +3102,10 @@
       };
     "greasemonkey" = buildFirefoxXpiAddon {
       pname = "greasemonkey";
-      version = "4.11";
+      version = "4.12.0";
       addonId = "{e4a8a97b-f2ed-450b-b12d-ee082ba24781}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3716451/greasemonkey-4.11.xpi";
-      sha256 = "5eb85a96f76a9b16a47cf207991d4237bf597c7b767574559204e2e0ff1173f0";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208821/greasemonkey-4.12.0.xpi";
+      sha256 = "7e03eac63d79e9b895712591556fef53455b42e959fef9eb6e94d7e759996a0a";
       meta = with lib;
       {
         homepage = "http://www.greasespot.net/";
@@ -3113,25 +3265,25 @@
       };
     "hoppscotch" = buildFirefoxXpiAddon {
       pname = "hoppscotch";
-      version = "0.25";
+      version = "0.30";
       addonId = "postwoman-firefox@postwoman.io";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3991522/hoppscotch-0.25.xpi";
-      sha256 = "bf8b07191f73a0785f726b6def710f14ad9d4c97750fa1188984b53367711b66";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4213853/hoppscotch-0.30.xpi";
+      sha256 = "7b52a0120bfc68e816701b49860f4477daf824c021fcea6d4f01556b897944db";
       meta = with lib;
       {
         homepage = "https://github.com/hoppscotch/hoppscotch-extension";
         description = "Provides better experience for using the Hoppscotch web app.\n\nHaven't used Hoppscotch ? It's an amazing quick API Request Builder.\nTry it at <a href=\"https://prod.outgoing.prod.webservices.mozgcp.net/v1/b9072bc5e1ee582514460d66641043506a2be371c097d77e1eb00a6b5b9dfa97/https%3A//hoppscotch.io/\" rel=\"nofollow\">https://hoppscotch.io/</a> !!!";
         license = licenses.mit;
-        mozPermissions = [ "storage" "tabs" "cookies" "<all_urls>" ];
+        mozPermissions = [ "storage" "tabs" "cookies" "scripting" ];
         platforms = platforms.all;
         };
       };
     "hover-zoom-plus" = buildFirefoxXpiAddon {
       pname = "hover-zoom-plus";
-      version = "1.0.211";
+      version = "1.0.212";
       addonId = "{92e6fe1c-6e1d-44e1-8bc6-d309e59406af}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188185/hover_zoom_plus-1.0.211.xpi";
-      sha256 = "2fc15296615d1b60a30d6c891c5ff0fcd598503e15fdac1c1d68e1c3b3d605c3";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4210216/hover_zoom_plus-1.0.212.xpi";
+      sha256 = "6e96b9deb49f1e2c59eb46bdba5fdbf9e81c84e539e717ebcba3b90adc6e8a20";
       meta = with lib;
       {
         homepage = "https://github.com/extesy/hoverzoom/";
@@ -4066,6 +4218,10 @@
           "*://*.anichart.net/*"
           "*://*.anilist.co/*"
           "*://*.freeimage.host/*"
+          "*://drive.google.com/*"
+          "*://*.findagrave.com/*"
+          "*://*.ldlc.com/*"
+          "*://*.mubi.com/*"
           ];
         platforms = platforms.all;
         };
@@ -4087,10 +4243,10 @@
       };
     "i-dont-care-about-cookies" = buildFirefoxXpiAddon {
       pname = "i-dont-care-about-cookies";
-      version = "3.4.9";
+      version = "3.5.0";
       addonId = "jid1-KKzOGWgsW3Ao4Q@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4172206/i_dont_care_about_cookies-3.4.9.xpi";
-      sha256 = "f88b659b2ffb27816d29330fb0f14ebad222a56a8f8c02db450cbaa4bc9af1c3";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202634/i_dont_care_about_cookies-3.5.0.xpi";
+      sha256 = "4de284454217fc4bee0744fb0aad8e0e10fa540dc03251013afc3ee4c20e49b0";
       meta = with lib;
       {
         homepage = "https://www.i-dont-care-about-cookies.eu/";
@@ -4106,6 +4262,21 @@
           "webRequestBlocking"
           "webNavigation"
           ];
+        platforms = platforms.all;
+        };
+      };
+    "iina-open-in-mpv" = buildFirefoxXpiAddon {
+      pname = "iina-open-in-mpv";
+      version = "2.0.1";
+      addonId = "{d66c8515-1e0d-408f-82ee-2682f2362726}";
+      url = "https://addons.mozilla.org/firefox/downloads/file/3901594/iina_open_in_mpv-2.0.1.xpi";
+      sha256 = "8d13f486f13249c1a74362b91055fe820b6ee81d21f58ddf2716189c8f1c31b7";
+      meta = with lib;
+      {
+        homepage = "https://github.com/Baldomo/open-in-mpv";
+        description = "Open videos and audio files in mpv.";
+        license = licenses.gpl3;
+        mozPermissions = [ "tabs" "activeTab" "contextMenus" "storage" ];
         platforms = platforms.all;
         };
       };
@@ -4130,12 +4301,41 @@
         platforms = platforms.all;
         };
       };
+    "immersive-translate" = buildFirefoxXpiAddon {
+      pname = "immersive-translate";
+      version = "0.12.11";
+      addonId = "{5efceaa7-f3a2-4e59-a54b-85319448e305}";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4212747/immersive_translate-0.12.11.xpi";
+      sha256 = "0b1d24b6dca84339f34486398002707ea325352cd985f6295f7be0a3af174ecd";
+      meta = with lib;
+      {
+        homepage = "https://immersivetranslate.com";
+        description = "Web bilingual translation, completely free to use, supports Deepl/Google/Bing/Tencent/Youdao, etc. it also works on iOS Safari.";
+        license = {
+          shortName = "immersive-translate";
+          fullName = "End-User License Agreement for Immersive Translate";
+          url = "https://addons.mozilla.org/en-US/firefox/addon/immersive-translate/eula/";
+          free = false;
+          };
+        mozPermissions = [
+          "<all_urls>"
+          "storage"
+          "activeTab"
+          "contextMenus"
+          "webRequest"
+          "webRequestBlocking"
+          "file:///*"
+          "*://*/*"
+          ];
+        platforms = platforms.all;
+        };
+      };
     "improved-tube" = buildFirefoxXpiAddon {
       pname = "improved-tube";
-      version = "4.404";
+      version = "4.506";
       addonId = "{3c6bf0cc-3ae2-42fb-9993-0d33104fdcaf}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191509/youtube_addon-4.404.xpi";
-      sha256 = "3396fbd5e4ba61fc6f9327d57df398359c40ac4f9963ddf7b11cc920e5bc3c70";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208945/youtube_addon-4.506.xpi";
+      sha256 = "30046864ac8311a49ace7df364969a8fe4aea0936be5e7afde00161000a01bd6";
       meta = with lib;
       {
         homepage = "https://github.com/code4charity/YouTube-Extension/";
@@ -4177,10 +4377,10 @@
       };
     "indie-wiki-buddy" = buildFirefoxXpiAddon {
       pname = "indie-wiki-buddy";
-      version = "3.0.0";
+      version = "3.3.0";
       addonId = "{cb31ec5d-c49a-4e5a-b240-16c767444f62}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190860/indie_wiki_buddy-3.0.0.xpi";
-      sha256 = "a281e0e41ab604ba0882a3d052f4757844510a1cf9de7ca45a1866504f754a10";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211982/indie_wiki_buddy-3.3.0.xpi";
+      sha256 = "bd241d015f4348cd5f0b4b7a3793942e0b9ef503fd4021c913296cc8af888fb3";
       meta = with lib;
       {
         homepage = "https://getindie.wiki/";
@@ -4189,8 +4389,9 @@
         mozPermissions = [
           "storage"
           "webRequest"
-          "webRequestBlocking"
+          "declarativeNetRequest"
           "notifications"
+          "scripting"
           "https://*.fandom.com/*"
           "https://*.fextralife.com/*"
           "https://breezewiki.com/*"
@@ -4454,10 +4655,10 @@
       };
     "ipvfoo" = buildFirefoxXpiAddon {
       pname = "ipvfoo";
-      version = "2.17";
+      version = "2.18";
       addonId = "ipvfoo@pmarks.net";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191427/ipvfoo_pmarks-2.17.xpi";
-      sha256 = "4523772f67d05731d35c8f8fd7b87fa8191436c7d0ae0b575375c8ca6fd8b3c1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207472/ipvfoo-2.18.xpi";
+      sha256 = "0621687101f24160b26fd12da3f1c299c706f98e724934d790ed7fe5e00cc265";
       meta = with lib;
       {
         homepage = "https://github.com/pmarks-net/ipvfoo";
@@ -4572,15 +4773,15 @@
       };
     "kagi-search" = buildFirefoxXpiAddon {
       pname = "kagi-search";
-      version = "0.4.1";
+      version = "0.4.3";
       addonId = "search@kagi.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4182021/kagi_search_for_firefox-0.4.1.xpi";
-      sha256 = "ec1b92cbc29e024f6d313ca26f7469fa154e261016e6618cd156a6f982f4d033";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4206027/kagi_search_for_firefox-0.4.3.xpi";
+      sha256 = "7e8366d3f6e9e41028c82bc48a7b479ec5ad1dd18b1fa124bde2f30ce7f5776a";
       meta = with lib;
       {
         homepage = "https://kagi.com";
         description = "A simple helper extension for setting Kagi as a default search engine, and automatically logging in to Kagi in private browsing windows.";
-        license = licenses.mpl20;
+        license = licenses.mit;
         mozPermissions = [
           "cookies"
           "declarativeNetRequestWithHostAccess"
@@ -4650,10 +4851,10 @@
       };
     "keepassxc-browser" = buildFirefoxXpiAddon {
       pname = "keepassxc-browser";
-      version = "1.8.9";
+      version = "1.8.10";
       addonId = "keepassxc-browser@keepassxc.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4182106/keepassxc_browser-1.8.9.xpi";
-      sha256 = "b57313c8f68bb55610b79a761e42aa7a3235bcc542f105a7e362625aa021a197";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4200248/keepassxc_browser-1.8.10.xpi";
+      sha256 = "843d1181e8d0b0e9737258575586332fafb25a856e8e18da3527944885c69089";
       meta = with lib;
       {
         homepage = "https://keepassxc.org/";
@@ -4749,10 +4950,10 @@
       };
     "languagetool" = buildFirefoxXpiAddon {
       pname = "languagetool";
-      version = "7.1.13";
+      version = "8.3.0";
       addonId = "languagetool-webextension@languagetool.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4128570/languagetool-7.1.13.xpi";
-      sha256 = "e9002ae915c74ff2fe2f986e86a50b0b1617bcd852443e3d5b8e733e476c5808";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4199245/languagetool-8.3.0.xpi";
+      sha256 = "e357424e3df9dde4ba10eb9f8f3719ac4830681570557f4d51db15a462cd7667";
       meta = with lib;
       {
         homepage = "https://languagetool.org";
@@ -4779,10 +4980,10 @@
       };
     "lastpass-password-manager" = buildFirefoxXpiAddon {
       pname = "lastpass-password-manager";
-      version = "4.123.0.3";
+      version = "4.125.0.4";
       addonId = "support@lastpass.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188586/lastpass_password_manager-4.123.0.3.xpi";
-      sha256 = "c7e39d12ed1ccb6ab462dfa155339cc7de41fb0dcfe6b80b088f4c445bd3f27e";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208799/lastpass_password_manager-4.125.0.4.xpi";
+      sha256 = "ff714c257ee7fb5e4eb351a42a41c7f82c7a07c45b91f440223a2e2b1962e873";
       meta = with lib;
       {
         homepage = "https://lastpass.com/";
@@ -4815,7 +5016,8 @@
           "https://lastpass.eu/recover.php*"
           "https://lastpass.com/vault/vault.html*"
           "https://www.lastpass.com/create-account/success*"
-          "https://lastpass.com/*ac=1*"
+          "https://lastpass.com/*"
+          "https://backoffice.lastpass.com/*"
           "https://lastpass.com/update_phone.php*"
           "https://lastpass.com/misc_challenge.php*"
           "https://lastpass.com/?securitychallenge=1*"
@@ -4825,6 +5027,7 @@
           "https://lastpass.com/?&ac=1*"
           "https://lastpass.com/enterprise_users.php*"
           "https://lastpass.com/misc_login.php*"
+          "https://lastpass.com/index.php*"
           "https://lastpass.eu/update_phone.php*"
           "https://lastpass.eu/misc_challenge.php*"
           "https://lastpass.eu/?securitychallenge=1*"
@@ -4836,6 +5039,7 @@
           "https://lastpass.eu/vault/*"
           "https://lastpass.eu/enterprise_users.php*"
           "https://lastpass.eu/misc_login.php*"
+          "https://lastpass.eu/index.php*"
           "https://backoffice.lastpass.com/acctsiframe.php*"
           "https://backoffice.lastpass.com/update_phone.php*"
           "https://backoffice.lastpass.com/misc_challenge.php*"
@@ -4848,16 +5052,17 @@
           "https://backoffice.lastpass.com/vault/*"
           "https://backoffice.lastpass.com/enterprise_users.php*"
           "https://backoffice.lastpass.com/misc_login.php*"
+          "https://backoffice.lastpass.com/index.php*"
           ];
         platforms = platforms.all;
         };
       };
     "leechblock-ng" = buildFirefoxXpiAddon {
       pname = "leechblock-ng";
-      version = "1.6";
+      version = "1.6.1";
       addonId = "leechblockng@proginosko.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4187386/leechblock_ng-1.6.xpi";
-      sha256 = "ffd702c492a51d208b5059e64034a8fc9382de5e234dcb7cb60fb4e852a465a1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207054/leechblock_ng-1.6.1.xpi";
+      sha256 = "02364608c95e4d6d2897b72f28b00d182cf2a1e1e74f18044a699cc92ca02b08";
       meta = with lib;
       {
         homepage = "https://www.proginosko.com/leechblock/";
@@ -5029,10 +5234,10 @@
       };
     "localcdn" = buildFirefoxXpiAddon {
       pname = "localcdn";
-      version = "2.6.58";
+      version = "2.6.60";
       addonId = "{b86e4813-687a-43e6-ab65-0bde4ab75758}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4187469/localcdn_fork_of_decentraleyes-2.6.58.xpi";
-      sha256 = "693c8d5286fbc5a5e7c06cd11da1ae2d060fde7c2f06a390ccdc621b5b9c67eb";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208268/localcdn_fork_of_decentraleyes-2.6.60.xpi";
+      sha256 = "9ffd3609de89b8e0a4c9a425178f5e08b1ed2729fb0dd106320b72bcfc1d3392";
       meta = with lib;
       {
         homepage = "https://www.localcdn.org";
@@ -5091,12 +5296,882 @@
         platforms = platforms.all;
         };
       };
+    "mal-sync" = buildFirefoxXpiAddon {
+      pname = "mal-sync";
+      version = "0.9.7";
+      addonId = "{c84d89d9-a826-4015-957b-affebd9eb603}";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4197469/mal_sync-0.9.7.xpi";
+      sha256 = "e24d8dd4d36af0bb892892e1d44a1d7aa151248afbfe1187a7c04a3b971c59aa";
+      meta = with lib;
+      {
+        homepage = "https://github.com/lolamtisch/MALSync";
+        description = "MAL-Sync enables automatic episode tracking between MyAnimeList/Anilist/Kitsu/Simkl and multiple anime streaming websites.";
+        license = licenses.gpl3;
+        mozPermissions = [
+          "storage"
+          "alarms"
+          "webRequest"
+          "webRequestBlocking"
+          "https://myanimelist.net/"
+          "https://myanimelist.cdn-dena.com/"
+          "https://cdn.myanimelist.net/"
+          "https://kissanimelist.firebaseio.com/"
+          "https://*.anilist.co/"
+          "https://graphql.anilist.co/"
+          "https://kitsu.io/"
+          "https://media.kitsu.io/"
+          "https://api.simkl.com/"
+          "https://www.netflix.com/"
+          "https://vrv.co/"
+          "https://discover.hulu.com/"
+          "https://www.primevideo.com/"
+          "https://www.crunchyroll.com/"
+          "https://api.malsync.moe/"
+          "https://api.myanimelist.net/"
+          "https://api.mangadex.org/"
+          "https://shikimori.one/"
+          "notifications"
+          "*://myanimelist.net/anime/*"
+          "*://myanimelist.net/manga/*"
+          "*://myanimelist.net/animelist/*"
+          "*://myanimelist.net/mangalist/*"
+          "*://myanimelist.net/anime.php?id=*"
+          "*://myanimelist.net/manga.php?id=*"
+          "*://myanimelist.net/character/*"
+          "*://myanimelist.net/people/*"
+          "*://myanimelist.net/search/*"
+          "*://malsync.moe/mal/oauth*"
+          "*://malsync.moe/anilist/oauth*"
+          "*://malsync.moe/shikimori/oauth*"
+          "*://anilist.co/*"
+          "*://kitsu.io/*"
+          "*://simkl.com/*"
+          "*://malsync.moe/pwa*"
+          "*://*.9anime.to/watch/*"
+          "*://*.9anime.to/watch2gether/*"
+          "*://*.9anime.ru/watch/*"
+          "*://*.9anime.ru/watch2gether/*"
+          "*://*.9anime.live/watch/*"
+          "*://*.9anime.live/watch2gether/*"
+          "*://*.9anime.one/watch/*"
+          "*://*.9anime.one/watch2gether/*"
+          "*://*.9anime.page/watch/*"
+          "*://*.9anime.page/watch2gether/*"
+          "*://*.9anime.video/watch/*"
+          "*://*.9anime.video/watch2gether/*"
+          "*://*.9anime.life/watch/*"
+          "*://*.9anime.life/watch2gether/*"
+          "*://*.9anime.love/watch/*"
+          "*://*.9anime.love/watch2gether/*"
+          "*://*.9anime.tv/watch/*"
+          "*://*.9anime.tv/watch2gether/*"
+          "*://*.9anime.app/watch/*"
+          "*://*.9anime.app/watch2gether/*"
+          "*://*.9anime.at/watch/*"
+          "*://*.9anime.at/watch2gether/*"
+          "*://*.9anime.bar/watch/*"
+          "*://*.9anime.bar/watch2gether/*"
+          "*://*.9anime.pw/watch/*"
+          "*://*.9anime.pw/watch2gether/*"
+          "*://*.9anime.cz/watch/*"
+          "*://*.9anime.cz/watch2gether/*"
+          "*://*.9anime.ws/watch/*"
+          "*://*.9anime.ws/watch2gether/*"
+          "*://*.9anime.id/watch/*"
+          "*://*.9anime.id/watch2gether/*"
+          "*://*.9anime.center/watch/*"
+          "*://*.9anime.center/watch2gether/*"
+          "*://*.9anime.club/watch/*"
+          "*://*.9anime.club/watch2gether/*"
+          "*://*.9anime.pl/watch/*"
+          "*://*.9anime.pl/watch2gether/*"
+          "*://*.9anime.gs/watch/*"
+          "*://*.9anime.gs/watch2gether/*"
+          "*://*.9anime.ph/watch/*"
+          "*://*.9anime.ph/watch2gether/*"
+          "*://*.aniwave.to/watch/*"
+          "*://*.aniwave.to/watch2gether/*"
+          "*://*.aniwave.bz/watch/*"
+          "*://*.aniwave.bz/watch2gether/*"
+          "*://*.aniwave.ws/watch/*"
+          "*://*.aniwave.ws/watch2gether/*"
+          "*://*.crunchyroll.com/*"
+          "*://mangadex.org/*"
+          "*://*.gogoanime.tv/*"
+          "*://*.gogoanime.io/*"
+          "*://*.gogoanime.in/*"
+          "*://*.gogoanime.se/*"
+          "*://*.gogoanime.sh/*"
+          "*://*.gogoanime.video/*"
+          "*://*.gogoanime.movie/*"
+          "*://*.gogoanime.so/*"
+          "*://*.gogoanime.ai/*"
+          "*://*.gogoanime.vc/*"
+          "*://*.gogoanime.pe/*"
+          "*://*.gogoanime.wiki/*"
+          "*://*.gogoanime.cm/*"
+          "*://*.gogoanime.film/*"
+          "*://*.gogoanime.fi/*"
+          "*://*.gogoanime.gg/*"
+          "*://*.gogoanime.sk/*"
+          "*://*.gogoanime.lu/*"
+          "*://*.gogoanime.tel/*"
+          "*://*.gogoanime.ee/*"
+          "*://*.gogoanime.dk/*"
+          "*://*.gogoanime.ar/*"
+          "*://*.gogoanime.bid/*"
+          "*://*.gogoanimes.co/*"
+          "*://*.animego.to/*"
+          "*://*.gogoanime.gr/*"
+          "*://*.gogoanime.llc/*"
+          "*://*.gogoanime.cl/*"
+          "*://*.gogoanime.hu/*"
+          "*://*.gogoanime.vet/*"
+          "*://*.gogoanimehd.to/*"
+          "*://*.gogoanime3.net/*"
+          "*://*.gogoanimehd.io/*"
+          "*://*.www.turkanime.tv/video/*"
+          "*://*.www.turkanime.tv/anime/*"
+          "*://*.www.turkanime.net/video/*"
+          "*://*.www.turkanime.net/anime/*"
+          "*://*.www.turkanime.co/video/*"
+          "*://*.www.turkanime.co/anime/*"
+          "*://app.emby.media/*"
+          "*://app.emby.tv/*"
+          "*://app.plex.tv/*"
+          "*://www.netflix.com/*"
+          "*://animepahe.com/play/*"
+          "*://animepahe.com/anime/*"
+          "*://animepahe.ru/play/*"
+          "*://animepahe.ru/anime/*"
+          "*://animepahe.org/play/*"
+          "*://animepahe.org/anime/*"
+          "*://*.animeflv.net/anime/*"
+          "*://*.animeflv.net/ver/*"
+          "*://jkanime.net/*"
+          "*://vrv.co/*"
+          "*://proxer.me/*"
+          "*://proxer.net/*"
+          "*://*.aniflix.tv/*"
+          "*://*.aniflix.cc/*"
+          "*://*.kaas.am/*"
+          "*://*.kaas.ro/*"
+          "*://*.kaas.to/*"
+          "*://*.kickassanime.ro/*"
+          "*://*.kickassanime.am/*"
+          "*://*.wakanim.tv/*"
+          "*://shinden.pl/episode/*"
+          "*://shinden.pl/series/*"
+          "*://shinden.pl/titles/*"
+          "*://shinden.pl/epek/*"
+          "*://voiranime.com/*"
+          "*://v2.voiranime.com/*"
+          "*://v3.voiranime.com/*"
+          "*://v4.voiranime.com/*"
+          "*://v5.voiranime.com/*"
+          "*://www.viz.com/*"
+          "*://manganato.com/*"
+          "*://readmanganato.com/*"
+          "*://chapmanganato.com/*"
+          "*://*.neko-sama.fr/*"
+          "*://animecat.net/*"
+          "*://www.animezone.pl/odcinki/*"
+          "*://www.animezone.pl/odcinek/*"
+          "*://www.animezone.pl/anime/*"
+          "*://anime-odcinki.pl/anime/*"
+          "*://serimanga.com/*"
+          "*://mangadenizi.com/*"
+          "*://*.mangadenizi.net/*"
+          "*://moeclip.com/*"
+          "*://mangalivre.net/*"
+          "*://tmofans.com/*"
+          "*://lectortmo.com/*"
+          "*://visortmo.com/*"
+          "*://gastronomiaporpaises.com/*"
+          "*://releasingcars.com/*"
+          "*://mundorecetascuriosas.com/*"
+          "*://lupitaalosfogones.com/*"
+          "*://cocinarporelmundo.com/*"
+          "*://disfrutacocina.com/*"
+          "*://recetascuriosas.com/*"
+          "*://lacocinadelupita.com/*"
+          "*://mynewsrecipes.com/*"
+          "*://recipestravelworld.com/*"
+          "*://recipestraveling.com/*"
+          "*://recetaspaises.com/*"
+          "*://worldrecipesu.com/*"
+          "*://techinroll.com/*"
+          "*://vsrecipes.com/*"
+          "*://mygamesinfo.com/*"
+          "*://gamesnk.com/*"
+          "*://otakuworldgames.com/*"
+          "*://animalcanine.com/*"
+          "*://cook2love.com/*"
+          "*://wtechnews.com/*"
+          "*://animationforyou.com/*"
+          "*://fanaticmanga.com/*"
+          "*://mistermanga.com/*"
+          "*://enginepassion.com/*"
+          "*://motornk.com/*"
+          "*://recipesnk.com/*"
+          "*://panicmanga.com/*"
+          "*://worldmangas.com/*"
+          "*://anitoc.com/*"
+          "*://cookerready.com/*"
+          "*://cooker2love.com/*"
+          "*://infopetworld.com/*"
+          "*://infogames2you.com/*"
+          "*://almtechnews.com/*"
+          "*://animation2you.com/*"
+          "*://recipesdo.com/*"
+          "*://vgmotor.com/*"
+          "*://myotakuinfo.com/*"
+          "*://otakworld.com/*"
+          "*://cookermania.com/*"
+          "*://motorbakery.com/*"
+          "*://recipesist.com/*"
+          "*://motorpi.com/*"
+          "*://dariusmotor.com/*"
+          "*://recipesaniki.com/*"
+          "*://cocinaconlupita.com/*"
+          "*://recetasdelupita.com/*"
+          "*://gamesxo.com/*"
+          "*://fitfooders.com/*"
+          "*://checkingcars.com/*"
+          "*://keepfooding.com/*"
+          "*://feelthecook.com/*"
+          "*://recetchef.com/*"
+          "*://motoroilblood.com/*"
+          "*://anisurion.com/*"
+          "*://recipescoaching.com/*"
+          "*://anitirion.com/*"
+          "*://cookernice.com/*"
+          "*://animalsside.com/*"
+          "*://paleomotor.com/*"
+          "*://otakunice.com/*"
+          "*://sucrecipes.com/*"
+          "*://recetasviaje.com/*"
+          "*://animalslegacy.com/*"
+          "*://worldcuisineis.com/*"
+          "*://eligeunnombre.com/*"
+          "*://cyclingresolution.com/*"
+          "*://comollamarle.com/*"
+          "*://fashionandcomplements.com/*"
+          "*://mangaplus.shueisha.co.jp/*"
+          "*://*.japscan.ws/*"
+          "*://*.animesvision.com.br/*"
+          "*://*.animesvision.biz/*"
+          "*://*.animes.vision/*"
+          "*://www.hulu.com/*"
+          "*://www.hidive.com/*"
+          "*://*.primevideo.com/*"
+          "*://mangakatana.com/manga/*"
+          "*://*.manga4life.com/*"
+          "*://bato.to/*"
+          "*://mangapark.net/*"
+          "*://animeshouse.net/episodio/*"
+          "*://animeshouse.net/filme/*"
+          "*://animexin.vip/*"
+          "*://animexin.xyz/*"
+          "*://animexinax.com/*"
+          "*://monoschinos.com/*"
+          "*://monoschinos2.com/*"
+          "*://animefire.net/*"
+          "*://otakufr.co/*"
+          "*://mangatx.com/*"
+          "*://manhuafast.com/*"
+          "*://tranimeizle.net/*"
+          "*://www.tranimeizle.net/*"
+          "*://tranimeizle.co/*"
+          "*://www.tranimeizle.co/*"
+          "*://*.animestreamingfr.fr/*"
+          "*://furyosociety.com/*"
+          "*://www.animeid.tv/*"
+          "*://myanimelist.net/anime/*/*/episode/*"
+          "*://*.animeunity.it/anime/*"
+          "*://*.animeunity.tv/anime/*"
+          "*://*.animeunity.cc/anime/*"
+          "*://*.animeunity.to/anime/*"
+          "*://*.mangahere.cc/manga/*"
+          "*://*.fanfox.net/manga/*"
+          "*://*.mangafox.la/manga/*"
+          "*://desu-online.pl/*"
+          "*://wuxiaworld.site/novel/*"
+          "*://lscomic.com/*"
+          "*://en.leviatanscans.com/*"
+          "*://reaperscans.com/comics/*"
+          "*://lynxscans.com/*"
+          "*://zeroscans.com/*"
+          "*://reader.deathtollscans.net/*"
+          "*://manhuaplus.com/manga*"
+          "*://readm.org/manga/*"
+          "*://www.readm.org/manga/*"
+          "*://tioanime.com/anime/*"
+          "*://tioanime.com/ver/*"
+          "*://yugenani.me/*"
+          "*://yugen.to/*"
+          "*://yugenanime.ro/*"
+          "*://yugenanime.tv/*"
+          "*://*.mangasee123.com/manga*"
+          "*://*.mangasee123.com/read-online*"
+          "*://*.okanime.com/animes/*"
+          "*://*.okanime.com/movies/*"
+          "*://*.okanime.tv/animes/*"
+          "*://*.okanime.tv/movies/*"
+          "*://bs.to/serie/*"
+          "*://asura.gg/*"
+          "*://*.asurascans.com/*"
+          "*://*.asuracomics.com/*"
+          "*://asuratoon.com/*"
+          "*://an1me.nl/*"
+          "*://mangajar.com/manga/*"
+          "*://*.otakustv.com/anime/*"
+          "*://demo.komga.org/*"
+          "*://animewho.com/*"
+          "*://animesuge.io/anime/*"
+          "*://animesuge.to/anime/*"
+          "*://toonily.net/manga/*"
+          "*://fumetsu.pl/anime/*"
+          "*://frixysubs.pl/*"
+          "*://guya.moe/*"
+          "*://cubari.moe/*"
+          "*://guya.cubari.moe/*"
+          "*://mangahub.io/*"
+          "*://comick.app/*"
+          "*://www.bentomanga.com/*"
+          "*://bentomanga.com/*"
+          "*://mangasushi.net/manga*"
+          "*://tritinia.com/manga*"
+          "*://readmanhua.net/manga*"
+          "*://flamecomics.com/*"
+          "*://immortalupdates.com/manga*"
+          "*://zoro.to/*"
+          "*://zoro.moe/*"
+          "*://zoro.sx/*"
+          "*://zoro.pm/*"
+          "*://sanji.to/*"
+          "*://aniwatch.to/*"
+          "*://www.funimation.com/shows/*"
+          "*://www.funimation.com/*/shows/*"
+          "*://www.funimation.com/v/*"
+          "*://kitsune.tv/*"
+          "*://beta.kitsune.tv/*"
+          "*://lhtranslation.net/manga*"
+          "*://mangas-origines.fr/oeuvre*"
+          "*://*.bluesolo.org/manga/*"
+          "*://disasterscans.com/*"
+          "*://dynasty-scans.com/*"
+          "*://aniworld.to/*"
+          "*://betteranime.net/anime/*"
+          "*://*.bilibilicomics.com/*"
+          "*://mangareader.to/*"
+          "*://animeonsen.xyz/*"
+          "*://www.animeonsen.xyz/*"
+          "*://*.animetoast.cc/*"
+          "*://luminousscans.com/*"
+          "*://luminousscans.gg/*"
+          "*://*.animeworld.tv/play/*"
+          "*://*.animeworld.so/play/*"
+          "*://mangabuddy.com/*"
+          "*://void-scans.com/*"
+          "*://vvww.toonanime.cc/*"
+          "*://*.adkami.com/*"
+          "*://kaguya.app/*"
+          "*://hdrezka.ag/animation/*"
+          "*://sovetromantica.com/anime/*"
+          "*://ani.wtf/anime/*"
+          "*://animationdigitalnetwork.fr/*"
+          "*://aniyan.net/*"
+          "*://docchi.pl/*"
+          "*://franime.fr/*"
+          "*://fmteam.fr/*"
+          "*://www.animelon.com/*"
+          "*://animelon.com/*"
+          "*://anime-sama.fr/*"
+          "*://mangafire.to/*"
+          "*://projectsuki.com/*"
+          "*://animeonegai.com/*"
+          "*://www.animeonegai.com/*"
+          "*://*.animeko.co/*"
+          "*://animego.org/anime/*"
+          "*://animeflix.live/*"
+          "*://*.luciferdonghua.in/*"
+          "*://*.luciferdonghua.co.in/*"
+          "*://neoxscans.com/*"
+          "*://*.neoxscans.net/*"
+          "*://anix.to/anime/*"
+          "*://www.hinatasoul.com/anime*"
+          "*://www.hinatasoul.com/videos/*"
+          "*://ogladajanime.pl/*"
+          "*://hachi.moe/*"
+          "*://witanime.sbs/*"
+          "*://witanime.pics/*"
+          "*://*.openload.co/*"
+          "*://*.openload.pw/*"
+          "*://*.streamango.com/*"
+          "*://*.mp4upload.com/*"
+          "*://*.mcloud.to/*"
+          "*://*.mcloud2.to/*"
+          "*://*.mzcloud.life/*"
+          "*://*.mcloud.bz/*"
+          "*://*.prettyfast.to/*"
+          "*://*.rapidvideo.com/*"
+          "*://*.rapidvid.to/*"
+          "*://*.static.crunchyroll.com/*"
+          "*://*.static.vrv.co/*"
+          "*://*.vidstreaming.io/*"
+          "*://*.vidstreaming.me/*"
+          "*://*.vidstreamingvw.xyz/*"
+          "*://*.vidstreaming1.xyz/*"
+          "*://*.vidstreaming.link/*"
+          "*://*.xstreamcdn.com/*"
+          "*://*.gcloud.live/*"
+          "*://*.oload.tv/*"
+          "*://*.mail.ru/*"
+          "*://*.myvi.ru/*"
+          "*://*.myvi.tv/*"
+          "*://*.sibnet.ru/*"
+          "*://*.tune.pk/*"
+          "*://*.tune.ke/*"
+          "*://*.vimple.ru/*"
+          "*://*.href.li/*"
+          "*://*.vk.com/*"
+          "*://*.cloudvideo.tv/*"
+          "*://player.zerostream.de/v/*"
+          "*://*.fembed.net/*"
+          "*://*.fembed.com/*"
+          "*://*.animeproxy.info/*"
+          "*://*.feurl.com/*"
+          "*://*.embedsito.com/v/*"
+          "*://*.fcdn.stream/v/*"
+          "*://*.fcdn.stream/e/*"
+          "*://*.vaplayer.xyz/v/*"
+          "*://*.vaplayer.xyz/e/*"
+          "*://*.femax20.com/v/*"
+          "*://*.femax20.com/e/*"
+          "*://*.fplayer.info/*"
+          "*://*.dutrag.com/*"
+          "*://*.diasfem.com/*"
+          "*://*.fembed-hd.com/*"
+          "*://*.fembed9hd.com/*"
+          "*://suzihaza.com/v/*"
+          "*://vanfem.com/v/*"
+          "*://*.youpload.co/*"
+          "*://*.yourupload.com/*"
+          "*://*.vidlox.me/*"
+          "*://*.kwik.cx/*"
+          "*://*.mega.nz/*"
+          "*://*.animeflv.net/*"
+          "*://*.hqq.tv/*"
+          "*://waaw.tv/*"
+          "*://*.jkanime.net/*"
+          "*://*.ok.ru/*"
+          "*://*.novelplanet.me/*"
+          "*://*.stream.proxer.me/*"
+          "*://*.stream.proxer.net/*"
+          "*://*.stream-service.proxer.me/*"
+          "*://verystream.com/*"
+          "*://*.animeultima.eu/e/*"
+          "*://*.animeultima.eu/faststream/*"
+          "*://*.animeultima.to/e/*"
+          "*://*.animeultima.to/faststream/*"
+          "*://*.vidoza.net/*"
+          "*://crazyload.co/*"
+          "*://gounlimited.to/*"
+          "*://www.ani-stream.com/*"
+          "*://flex.aniflex.org/public/dist/*"
+          "*://animedaisuki.moe/embed/*"
+          "*://*.wakanim.tv/*/*/*/embeddedplayer/*"
+          "*://superitu.com/embed/*"
+          "*://www.dailymotion.com/embed/*"
+          "*://vev.io/embed/*"
+          "*://vev.red/embed/*"
+          "*://www.funimation.com/player/*"
+          "*://jwpstream.com/jwps/yplayer.php*"
+          "*://www.vaplayer.xyz/v/*"
+          "*://vaplayer.me/*"
+          "*://mp4.sh/embed/*"
+          "*://embed.mystream.to/*"
+          "*://*.bitchute.com/embed/*"
+          "*://*.streamcherry.com/embed/*"
+          "*://*.clipwatching.com/*"
+          "*://*.flix555.com/*"
+          "*://*.vshare.io/v/*"
+          "*://ebd.cda.pl/*"
+          "*://*.replay.watch/*"
+          "*://*.playhydrax.com/*"
+          "*://hydrax.net/*"
+          "*://*.hydracdn.network/*"
+          "*://*.geoip.redirect-ads.com/*"
+          "*://*.streamium.xyz/*"
+          "*://kodik.info/*"
+          "*://aniboom.one/*"
+          "*://animo-pace-stream.io/*"
+          "*://*.pstream.net/e/*"
+          "*://veestream.net/e/*"
+          "*://fusevideo.net/e/*"
+          "*://fusevideo.io/e/*"
+          "*://*.animefever.tv/embed/*"
+          "*://*.haloani.ru/*"
+          "*://*.moeclip.com/v/*"
+          "*://*.moeclip.com/embed/*"
+          "*://*.mixdrop.co/e/*"
+          "*://*.mixdrop.to/e/*"
+          "*://gdriveplayer.me/embed*"
+          "*://sendvid.net/v/*"
+          "*://sendvid.com/embed/*"
+          "*://streamz.cc/*"
+          "*://*.vidbm.com/embed-*"
+          "*://*.vidbem.com/embed-*"
+          "*://*.cloudhost.to/*/mediaplayer/*/_embed.php?*"
+          "*://*.letsupload.co/*/mediaplayer/*/_embed.php?*"
+          "*://streamtape.com/*"
+          "*://streamtape.net/*"
+          "*://streamtape.xyz/*"
+          "*://streamtape.to/*"
+          "*://strcloud.in/*"
+          "*://strcloud.link/*"
+          "*://streamta.pe/*"
+          "*://strtape.tech/*"
+          "*://strtapeadblock.club/*"
+          "*://strtapeadblock.me/*"
+          "*://streamta.site/*"
+          "*://scloud.online/*"
+          "*://strtpe.link/*"
+          "*://stape.me/*"
+          "*://stape.fun/*"
+          "*://streamtapeadblock.art/*"
+          "*://reproductor.monoschinos.com/*"
+          "*://uptostream.com/iframe/*"
+          "*://easyload.io/e/*"
+          "*://*.googleusercontent.com/gadgets/*"
+          "*://animedesu.pl/player/desu.php?v=*"
+          "*://*.plyr.link/*"
+          "*://*.plyr.in/*"
+          "*://v.cdnmix.org/*"
+          "*://v.cachecow.eu/*"
+          "*://v.vvid.cc/*"
+          "*://cloud9.to/e*/*"
+          "*://*.okanime.com/cdn/*/embed/?*"
+          "*://*.okgaming.org/I/*"
+          "*://*.gogo-stream.com/streaming.php?*"
+          "*://*.gogo-stream.com/load.php?*"
+          "*://*.gogo-stream.com/loadserver.php?*"
+          "*://*.gogo-stream.com/embedplus*"
+          "*://*.gogo-play.net/streaming.php?*"
+          "*://*.gogo-play.net/load.php?*"
+          "*://*.gogo-play.net/loadserver.php?*"
+          "*://*.gogo-play.net/embedplus*"
+          "*://*.gogo-play.tv/streaming.php?*"
+          "*://*.gogo-play.tv/load.php?*"
+          "*://*.gogo-play.tv/loadserver.php?*"
+          "*://*.gogo-play.tv/embedplus*"
+          "*://*.streamani.net/streaming.php?*"
+          "*://*.streamani.net/load.php?*"
+          "*://*.streamani.net/loadserver.php?*"
+          "*://*.streamani.net/embedplus*"
+          "*://*.streamani.io/streaming.php?*"
+          "*://*.streamani.io/load.php?*"
+          "*://*.streamani.io/loadserver.php?*"
+          "*://*.streamani.io/embedplus*"
+          "*://*.goload.one/streaming.php?*"
+          "*://*.goload.one/load.php?*"
+          "*://*.goload.one/loadserver.php?*"
+          "*://*.goload.one/embedplus*"
+          "*://*.goload.pro/streaming.php?*"
+          "*://*.goload.pro/load.php?*"
+          "*://*.goload.pro/loadserver.php?*"
+          "*://*.goload.pro/embedplus*"
+          "*://*.goload.io/streaming.php?*"
+          "*://*.goload.io/load.php?*"
+          "*://*.goload.io/loadserver.php?*"
+          "*://*.goload.io/embedplus*"
+          "*://*.gogoplay1.com/streaming.php?*"
+          "*://*.gogoplay1.com/load.php?*"
+          "*://*.gogoplay1.com/loadserver.php?*"
+          "*://*.gogoplay1.com/embedplus*"
+          "*://*.gogoplay2.com/streaming.php?*"
+          "*://*.gogoplay2.com/load.php?*"
+          "*://*.gogoplay2.com/loadserver.php?*"
+          "*://*.gogoplay2.com/embedplus*"
+          "*://*.gogoplay3.com/streaming.php?*"
+          "*://*.gogoplay3.com/load.php?*"
+          "*://*.gogoplay3.com/loadserver.php?*"
+          "*://*.gogoplay3.com/embedplus*"
+          "*://*.gogoplay4.com/streaming.php?*"
+          "*://*.gogoplay4.com/load.php?*"
+          "*://*.gogoplay4.com/loadserver.php?*"
+          "*://*.gogoplay4.com/embedplus*"
+          "*://*.gogoplay5.com/streaming.php?*"
+          "*://*.gogoplay5.com/load.php?*"
+          "*://*.gogoplay5.com/loadserver.php?*"
+          "*://*.gogoplay5.com/embedplus*"
+          "*://*.gogoplay.io/streaming.php?*"
+          "*://*.gogoplay.io/load.php?*"
+          "*://*.gogoplay.io/loadserver.php?*"
+          "*://*.gogoplay.io/embedplus*"
+          "*://*.gogohd.net/embedplus*"
+          "*://*.gogohd.net/streaming.php?*"
+          "*://*.gogohd.net/load.php?*"
+          "*://*.gogohd.net/loadserver.php?*"
+          "*://*.gogohd.pro/embedplus*"
+          "*://*.gogohd.pro/streaming.php?*"
+          "*://*.gogohd.pro/load.php?*"
+          "*://*.gogohd.pro/loadserver.php?*"
+          "*://*.gembedhd.com/embedplus*"
+          "*://*.gembedhd.com/streaming.php?*"
+          "*://*.gembedhd.com/load.php?*"
+          "*://*.gembedhd.com/loadserver.php?*"
+          "*://*.playgo1.cc/embedplus*"
+          "*://*.playgo1.cc/streaming.php?*"
+          "*://*.playgo1.cc/load.php?*"
+          "*://*.playgo1.cc/loadserver.php?*"
+          "*://*.anihdplay.com/embedplus*"
+          "*://*.anihdplay.com/streaming.php?*"
+          "*://*.anihdplay.com/load.php?*"
+          "*://*.anihdplay.com/loadserver.php?*"
+          "*://*.playtaku.net/embedplus*"
+          "*://*.playtaku.net/streaming.php?*"
+          "*://*.playtaku.net/load.php?*"
+          "*://*.playtaku.net/loadserver.php?*"
+          "*://*.playtaku.online/embedplus*"
+          "*://*.playtaku.online/streaming.php?*"
+          "*://*.playtaku.online/load.php?*"
+          "*://*.playtaku.online/loadserver.php?*"
+          "*://*.gotaku1.com/embedplus*"
+          "*://*.gotaku1.com/streaming.php?*"
+          "*://*.gotaku1.com/load.php?*"
+          "*://*.gotaku1.com/loadserver.php?*"
+          "*://*.goone.pro/embedplus*"
+          "*://*.goone.pro/streaming.php?*"
+          "*://*.goone.pro/load.php?*"
+          "*://*.goone.pro/loadserver.php?*"
+          "*://vivo.sx/embed/*"
+          "*://ani.googledrive.stream/vidstreaming/*"
+          "*://play.api-web.site/*"
+          "*://vidstream.pro/embed/*"
+          "*://vidstream.pro/e/*"
+          "*://vidstreamz.online/embed/*"
+          "*://vidstreamz.online/e/*"
+          "*://vizcloud.ru/embed/*"
+          "*://vizcloud.ru/e/*"
+          "*://vizcloud2.ru/embed/*"
+          "*://vizcloud2.ru/e/*"
+          "*://vizcloud2.online/embed/*"
+          "*://vizcloud2.online/e/*"
+          "*://vizcloud.online/embed/*"
+          "*://vizcloud.online/e/*"
+          "*://vizstream.ru/embed/*"
+          "*://vizstream.ru/e/*"
+          "*://vizcloud.xyz/embed/*"
+          "*://vizcloud.xyz/e/*"
+          "*://vizcloud.live/embed/*"
+          "*://vizcloud.live/e/*"
+          "*://vizcloud.digital/embed/*"
+          "*://vizcloud.digital/e/*"
+          "*://vizcloud.cloud/embed/*"
+          "*://vizcloud.cloud/e/*"
+          "*://vizcloud.store/embed/*"
+          "*://vizcloud.store/e/*"
+          "*://vizcloud.site/embed/*"
+          "*://vizcloud.site/e/*"
+          "*://vizcloud.co/embed/*"
+          "*://vizcloud.co/e/*"
+          "*://vidplay.site/e/*"
+          "*://vidplay.lol/e/*"
+          "*://streamsb.net/*"
+          "*://streamsb.com/*"
+          "*://sbembed.com/*"
+          "*://sbembed1.com/*"
+          "*://sbvideo.net/*"
+          "*://sbplay.org/*"
+          "*://sbplay.one/*"
+          "*://sbplay1.com/*"
+          "*://sbplay2.com/*"
+          "*://embedsb.com/*"
+          "*://watchsb.com/*"
+          "*://steamsb.net/*"
+          "*://sbplay2.xyz/*"
+          "*://sbfull.com/e/*"
+          "*://ssbstream.net/*"
+          "*://streamsss.net/*"
+          "*://sbanh.com/e/*"
+          "*://sblongvu.com/e/*"
+          "*://sbchill.com/e/*"
+          "*://sbone.pro/e/*"
+          "*://sbani.pro/e/*"
+          "*://dood.to/*"
+          "*://dood.watch/*"
+          "*://doodstream.com/*"
+          "*://dood.la/*"
+          "*://*.dood.video/*"
+          "*://dood.ws/e/*"
+          "*://dood.sh/e/*"
+          "*://dood.so/e/*"
+          "*://dood.pm/e/*"
+          "*://dood.wf/e/*"
+          "*://dood.re/e/*"
+          "*://dooood.com/e/*"
+          "*://youtube.googleapis.com/embed/*drive.google.com*"
+          "*://hdvid.tv/*"
+          "*://vidfast.co/*"
+          "*://supervideo.tv/*"
+          "*://jetload.net/*"
+          "*://saruch.co/*"
+          "*://vidmoly.me/*"
+          "*://vidmoly.to/*"
+          "*://upstream.to/*"
+          "*://abcvideo.cc/*"
+          "*://aparat.cam/*"
+          "*://www.aparat.com/video/video/embed/*"
+          "*://vudeo.net/*"
+          "*://voe.sx/e/*"
+          "*://voe-unblock.com/e/*"
+          "*://voe-unblock.net/e/*"
+          "*://voeunblock.com/e/*"
+          "*://voeunblock1.com/e/*"
+          "*://voeunblock2.com/e/*"
+          "*://voeunblock3.com/e/*"
+          "*://voeunbl0ck.com/e/*"
+          "*://voeunblck.com/e/*"
+          "*://voeunblk.com/e/*"
+          "*://voe-un-block.com/e/*"
+          "*://voeun-block.net/e/*"
+          "*://un-block-voe.net/e/*"
+          "*://v-o-e-unblock.com/e/*"
+          "*://audaciousdefaulthouse.com/e/*"
+          "*://launchreliantcleaverriver.com/e/*"
+          "*://reputationsheriffkennethsand.com/e/*"
+          "*://fittingcentermondaysunday.com/e/*"
+          "*://voe.bar/e/*"
+          "*://housecardsummerbutton.com/e/*"
+          "*://fraudclatterflyingcar.com/e/*"
+          "*://bigclatterhomesguideservice.com/e/*"
+          "*://uptodatefinishconferenceroom.com/e/*"
+          "*://realfinanceblogcenter.com/e/*"
+          "*://tinycat-voe-fashion.com/e/*"
+          "*://20demidistance9elongations.com/e/*"
+          "*://telyn610zoanthropy.com/e/*"
+          "*://toxitabellaeatrebates306.com/e/*"
+          "*://greaseball6eventual20.com/e/*"
+          "*://745mingiestblissfully.com/e/*"
+          "*://19turanosephantasia.com/e/*"
+          "*://30sensualizeexpression.com/e/*"
+          "*://321naturelikefurfuroid.com/e/*"
+          "*://449unceremoniousnasoseptal.com/e/*"
+          "*://guidon40hyporadius9.com/e/*"
+          "*://cyamidpulverulence530.com/e/*"
+          "*://boonlessbestselling244.com/e/*"
+          "*://antecoxalbobbing1010.com/e/*"
+          "*://matriculant401merited.com/e/*"
+          "*://scatch176duplicities.com/e/*"
+          "*://35volitantplimsoles5.com/e/*"
+          "*://tummulerviolableness.com/e/*"
+          "*://tubelessceliolymph.com/e/*"
+          "*://availedsmallest.com/e/*"
+          "*://counterclockwisejacky.com/e/*"
+          "*://monorhinouscassaba.com/e/*"
+          "*://urochsunloath.com/e/*"
+          "*://simpulumlamerop.com/e/*"
+          "*://sizyreelingly.com/e/*"
+          "*://rationalityaloelike.com/e/*"
+          "*://wolfdyslectic.com/e/*"
+          "*://metagnathtuggers.com/e/*"
+          "*://gamoneinterrupted.com/e/*"
+          "*://chromotypic.com/e/*"
+          "*://crownmakermacaronicism.com/e/*"
+          "*://generatesnitrosate.com/e/*"
+          "*://yodelswartlike.com/e/*"
+          "*://figeterpiazine.com/e/*"
+          "*://cigarlessarefy.com/e/*"
+          "*://valeronevijao.com/e/*"
+          "*://strawberriesporail.com/e/*"
+          "*://timberwoodanotia.com/e/*"
+          "*://phenomenalityuniform.com/e/*"
+          "*://prefulfilloverdoor.com/e/*"
+          "*://nonesnanking.com/e/*"
+          "*://kathleenmemberhistory.com/e/*"
+          "*://denisegrowthwide.com/e/*"
+          "*://vidoo.tv/*"
+          "*://nxload.com/*"
+          "*://videobin.co/*"
+          "*://uqload.com/*"
+          "*://evoload.io/*"
+          "*://yugenani.me/e/*"
+          "*://yugen.to/e/*"
+          "*://yugenanime.ro/e/*"
+          "*://yugenanime.tv/e/*"
+          "*://kaa-play.com/*"
+          "*://kaa-play.me/*"
+          "*://kaaplayer.com/*"
+          "*://kaavid.com/*"
+          "*://vidnethub.net/*"
+          "*://vidco.pro/*"
+          "*://betaplayer.life/*"
+          "*://*.animeshouse.net/gcloud/*"
+          "*://*.animeshouse.net/playerBlue/*"
+          "*://*.animeshouse.net/mp4/*"
+          "*://*.animeshouse.net/ah-clp-new/*"
+          "*://nezuko-ah.nl/*"
+          "*://animato.me/embed/*"
+          "*://kimanime.ru/AnimeIframe/*"
+          "*://vidcloud.spb.ru/*"
+          "*://vidcloud.one/*"
+          "*://*.streamhd.cc/*"
+          "*://*.rapid-cloud.ru/*"
+          "*://*.rapid-cloud.co/*"
+          "*://videovard.sx/*"
+          "*://videovard.to/*"
+          "*://beststremo.xyz/*"
+          "*://beststremo.com/*"
+          "*://streamlare.com/e/*"
+          "*://betteranime.net/player*"
+          "*://streamzz.to/*"
+          "*://protonvideo.to/iframe/*"
+          "*://ninjastream.to/watch/*"
+          "*://harajuku.pl/*"
+          "*://vupload.com/*"
+          "*://*.turkanime.net/player/*"
+          "*://*.turkanime.co/player/*"
+          "*://*.turkanime.co/embed/*"
+          "*://play.cozyplayer.com/*"
+          "*://odnoklassniki.ru/*"
+          "*://cloneplayer.xyz/*"
+          "*://myalucard.xyz/*"
+          "*://uploads.mobi/*"
+          "*://iframe.mediadelivery.net/embed/*"
+          "*://maverickki.com/*"
+          "*://*.yfvf.com/*"
+          "*://waaw.to/*"
+          "*://suzihaza.com/*"
+          "*://*.solidfiles.com/*"
+          "*://*.kaast1.com/*"
+          "*://kanra.dev/*"
+          "*://www.animeworld.tv/api/episode/serverPlayerAnimeWorld?id=*"
+          "*://www.animeworld.so/api/episode/serverPlayerAnimeWorld?id=*"
+          "*://filemoon.sx/e/*"
+          "*://mb.toonanime.xyz/dist/*"
+          "*://aniyan.net/jwplayer/*"
+          "*://*.googlevideo.com/videoplayback?*"
+          "*://*.streamhide.to/e/*"
+          "*://api.animeflix.live/*"
+          "*://megacloud.tv/*"
+          "*://vixcloud.cc/*"
+          "*://vixcloud.co/*"
+          "*://yonaplay.org/*"
+          "*://*.4shared.com/*"
+          "*://*.videa.hu/*"
+          "*://*.soraplay.xyz/*"
+          ];
+        platforms = platforms.all;
+        };
+      };
     "markdownload" = buildFirefoxXpiAddon {
       pname = "markdownload";
-      version = "3.2.1";
+      version = "3.3.0";
       addonId = "{1c5e4c6f-5530-49a3-b216-31ce7d744db0}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4007848/markdownload-3.2.1.xpi";
-      sha256 = "9cb65bf5c48a38d43ca3b2c47b5f424c2d27eaca66f1d7d2473eddd9ea73f63f";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204610/markdownload-3.3.0.xpi";
+      sha256 = "5b798144ede5534ffc46b9c8874970f064b224a635680c2d352b5364722d8214";
       meta = with lib;
       {
         homepage = "https://github.com/deathau/markdown-clipper";
@@ -5157,10 +6232,10 @@
       };
     "metamask" = buildFirefoxXpiAddon {
       pname = "metamask";
-      version = "11.4.1";
+      version = "11.6.2";
       addonId = "webextension@metamask.io";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190228/ether_metamask-11.4.1.xpi";
-      sha256 = "681db1e707b3806ad8c8c17ac4f9b38f2a28a9817165820536f8869c921f8818";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207789/ether_metamask-11.6.2.xpi";
+      sha256 = "a728af64dc99847cbc231bc36209a553f3d921f6ad72df1fcb08eaeb9d99c915";
       meta = with lib;
       {
         description = "Ethereum Browser Extension";
@@ -5236,10 +6311,10 @@
       };
     "momentumdash" = buildFirefoxXpiAddon {
       pname = "momentumdash";
-      version = "2.12.5";
+      version = "2.12.9";
       addonId = "momentum@momentumdash.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191897/momentumdash-2.12.5.xpi";
-      sha256 = "03f3a1da1693bbb8cbec32549d1dd2e02d26c24cae3511a5249a2f64830d5ca9";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195245/momentumdash-2.12.9.xpi";
+      sha256 = "21a7514c6233e8cc290a41287d0e416483d2f1ae96e0b2495b84121ead57000d";
       meta = with lib;
       {
         homepage = "https://momentumdash.com";
@@ -5532,10 +6607,10 @@
       };
     "noscript" = buildFirefoxXpiAddon {
       pname = "noscript";
-      version = "11.4.28";
+      version = "11.4.29";
       addonId = "{73a6fe31-595d-460b-a920-fcc0f8843232}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4178438/noscript-11.4.28.xpi";
-      sha256 = "54d076b3226d454216117547f6441d2f95af3057d20f726e55d94b0f22573c14";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4206186/noscript-11.4.29.xpi";
+      sha256 = "05b98840b05ef2acbac333543e4b7c3d40fee2ce5fb4e29260b05e2ff6fe24cd";
       meta = with lib;
       {
         homepage = "https://noscript.net";
@@ -5623,10 +6698,10 @@
       };
     "octotree" = buildFirefoxXpiAddon {
       pname = "octotree";
-      version = "7.10.0";
+      version = "7.11.1";
       addonId = "jid1-Om7eJGwA1U8Akg@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4184612/octotree-7.10.0.xpi";
-      sha256 = "92aebff1f0f8604c84375691dd2e2f255940ce55d965a30cf4eb35d1434cf826";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4212315/octotree-7.11.1.xpi";
+      sha256 = "6c6ec48929879cce38d7d26b3814dcdfee650d7d1406d204a9a7281c9f81dc82";
       meta = with lib;
       {
         homepage = "https://github.com/buunguyen/octotree/";
@@ -5659,10 +6734,10 @@
       };
     "okta-browser-plugin" = buildFirefoxXpiAddon {
       pname = "okta-browser-plugin";
-      version = "6.20.0";
+      version = "6.24.0";
       addonId = "plugin@okta.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4104084/okta_browser_plugin-6.20.0.xpi";
-      sha256 = "9593682885145ab2958457004ab9bd5b40b321d07a9c18e2cefd5ef558de2348";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4189165/okta_browser_plugin-6.24.0.xpi";
+      sha256 = "0ac01a558d07f8fb53b035f7ee74ce0f807119296060ff5b9c684d86b124559a";
       meta = with lib;
       {
         homepage = "https://www.okta.com";
@@ -5738,10 +6813,10 @@
       };
     "omnivore" = buildFirefoxXpiAddon {
       pname = "omnivore";
-      version = "2.6.2";
+      version = "2.8.9";
       addonId = "save-extension@omnivore.app";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4175636/omnivore-2.6.2.xpi";
-      sha256 = "f39fabcb28e5dc495c305a6f13f36ca1cab95eff0fc929d9d525a534f46fbdb0";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4198103/omnivore-2.8.9.xpi";
+      sha256 = "9a37cabf6fa9823a8563c016d77046e000f6ac40e4cf348e3463941dbff80db7";
       meta = with lib;
       {
         homepage = "https://omnivore.app/";
@@ -5925,10 +7000,10 @@
       };
     "passff" = buildFirefoxXpiAddon {
       pname = "passff";
-      version = "1.15";
+      version = "1.16";
       addonId = "passff@invicem.pro";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4150951/passff-1.15.xpi";
-      sha256 = "766dc6fef3190a1def43fd4b317f9f2af83ccc6201a89109fec9f17c6035fe38";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202971/passff-1.16.xpi";
+      sha256 = "ac410a2fbdaa3a43ae3f0ec01056bc0b037b4441a9e38d2cc330f186c8fce112";
       meta = with lib;
       {
         homepage = "https://github.com/passff/passff";
@@ -5949,10 +7024,10 @@
       };
     "pay-by-privacy" = buildFirefoxXpiAddon {
       pname = "pay-by-privacy";
-      version = "2.1.4";
+      version = "2.2.0";
       addonId = "privacy@privacy.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4186986/pay_by_privacy-2.1.4.xpi";
-      sha256 = "6d75d1b685b1d88340b0240eca73dcf18dc49ca1370aecd05c3f8344ada4f764";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202413/pay_by_privacy-2.2.0.xpi";
+      sha256 = "edda6ac8426f703042a38be934d8800c2acd8e28a8f7efb33d9e6ba44c3bb946";
       meta = with lib;
       {
         homepage = "https://privacy.com";
@@ -6094,20 +7169,19 @@
       };
     "privacy-badger" = buildFirefoxXpiAddon {
       pname = "privacy-badger";
-      version = "2023.10.31";
+      version = "2023.12.1";
       addonId = "jid1-MnnxcxisBPnSXQ@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188670/privacy_badger17-2023.10.31.xpi";
-      sha256 = "37e96cbd257b73d7350605ed20494a82b578f25a2cefc3de2dab019e5ff6ced1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4203344/privacy_badger17-2023.12.1.xpi";
+      sha256 = "aacac794c211fc6ea7dc51529883fd3e477aff37441d29ae7f576ab0f8c737b7";
       meta = with lib;
       {
         homepage = "https://privacybadger.org/";
         description = "Automatically learns to block invisible trackers.";
         license = licenses.gpl3;
         mozPermissions = [
+          "<all_urls>"
           "alarms"
           "tabs"
-          "http://*/*"
-          "https://*/*"
           "webNavigation"
           "webRequest"
           "webRequestBlocking"
@@ -6502,7 +7576,6 @@
           "http://www.google.co.zw/*"
           "https://www.google.cat/*"
           "http://www.google.cat/*"
-          "<all_urls>"
           ];
         platforms = platforms.all;
         };
@@ -6619,10 +7692,10 @@
       };
     "private-relay" = buildFirefoxXpiAddon {
       pname = "private-relay";
-      version = "2.7.4";
+      version = "2.8.1";
       addonId = "private-relay@firefox.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4172769/private_relay-2.7.4.xpi";
-      sha256 = "504c55f5b8bcdcb4c36a4fa99c876c1799c70f9eac787bced874b88f05c9a23f";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4205650/private_relay-2.8.1.xpi";
+      sha256 = "4a85ddc1cd19d2a156c4efe76225d424c0c32e700ab77601f8c1e50d7975cd9d";
       meta = with lib;
       {
         homepage = "https://relay.firefox.com/";
@@ -6631,8 +7704,8 @@
         mozPermissions = [
           "<all_urls>"
           "storage"
-          "contextMenus"
           "menus"
+          "contextMenus"
           "https://relay.firefox.com/"
           "https://relay.firefox.com/**"
           "https://relay.firefox.com/accounts/profile/**"
@@ -6707,10 +7780,10 @@
       };
     "proton-pass" = buildFirefoxXpiAddon {
       pname = "proton-pass";
-      version = "1.8.4";
+      version = "1.9.3";
       addonId = "78272b6fa58f4a1abaac99321d503a20@proton.me";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188487/proton_pass-1.8.4.xpi";
-      sha256 = "268615d5204f5e64bccf1d60671a6763955267903b2eae999a385aaa50a80bc3";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211785/proton_pass-1.9.3.xpi";
+      sha256 = "881bf9ef9fa2f0a427cc453f953f3d2e17cb4af3424048be04ad8e7cc900e5e7";
       meta = with lib;
       {
         homepage = "https://proton.me";
@@ -6733,24 +7806,37 @@
       };
     "proton-vpn" = buildFirefoxXpiAddon {
       pname = "proton-vpn";
-      version = "3.0";
-      addonId = "{c228008e-9d02-4c6d-9b54-288507710fa1}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/2844710/proton_vpn-3.0.xpi";
-      sha256 = "eb1692f1f7d9c669f4eff615b8db22b020b9ccd8cd995b86240c2a6bc1b8ae37";
+      version = "1.0.8";
+      addonId = "vpn@proton.ch";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4177160/proton_vpn_firefox_extension-1.0.8.xpi";
+      sha256 = "0f9a5f05e40f865690870790bd0f7daf8fdc3e5fc01105d2ed7556b51f2d3b7b";
       meta = with lib;
       {
-        description = "Theme based on a Firefox backdrop.";
-        license = licenses.cc-by-nc-sa-30;
-        mozPermissions = [];
+        homepage = "https://protonvpn.com/";
+        description = "Secure your internet and protect your online privacy in one click.";
+        license = licenses.gpl3;
+        mozPermissions = [
+          "idle"
+          "notifications"
+          "privacy"
+          "scripting"
+          "storage"
+          "tabs"
+          "webRequest"
+          "activeTab"
+          "webRequestBlocking"
+          "https://account.protonvpn.com/*"
+          "https://account.proton.me/*"
+          ];
         platforms = platforms.all;
         };
       };
     "protondb-for-steam" = buildFirefoxXpiAddon {
       pname = "protondb-for-steam";
-      version = "2.0.0";
+      version = "2.1.0";
       addonId = "{30280527-c46c-4e03-bb16-2e3ed94fa57c}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190776/protondb_for_steam-2.0.0.xpi";
-      sha256 = "932ee87ba2d3663e927b3158a18ca18c9e5372ec76f3210679689a8391e25877";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195217/protondb_for_steam-2.1.0.xpi";
+      sha256 = "3ed7824503a3184450326b09a71d086c2bdfce04d6384ca3b02f0cf800db5852";
       meta = with lib;
       {
         homepage = "https://github.com/tryton-vanmeer/ProtonDB-for-Steam#protondb-for-steam";
@@ -6760,6 +7846,8 @@
           "https://www.protondb.com/*"
           "https://store.steampowered.com/app/*"
           "https://store.steampowered.com/wishlist/*"
+          "https://steamcommunity.com/id/*/games"
+          "https://steamcommunity.com/id/*/games?tab=*"
           ];
         platforms = platforms.all;
         };
@@ -6837,10 +7925,10 @@
       };
     "raindropio" = buildFirefoxXpiAddon {
       pname = "raindropio";
-      version = "6.6.17";
+      version = "6.6.19";
       addonId = "jid0-adyhmvsP91nUO8pRv0Mn2VKeB84@jetpack";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4189809/raindropio-6.6.17.xpi";
-      sha256 = "31c0dc6920e67cd06b9d6a85fac1d5f3f57367cbdf7bdae4e1f847308f87be90";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4198542/raindropio-6.6.19.xpi";
+      sha256 = "064ccce0e9e9ddfe9e540d29c6cd132d575a57a443982d344ccc01296067a0fc";
       meta = with lib;
       {
         homepage = "https://raindrop.io";
@@ -6872,10 +7960,10 @@
       };
     "react-devtools" = buildFirefoxXpiAddon {
       pname = "react-devtools";
-      version = "4.28.5";
+      version = "5.0.0";
       addonId = "@react-devtools";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4186072/react_devtools-4.28.5.xpi";
-      sha256 = "84740ba6c69c606ca385ee7b9f674b7e2bfaa0c3fbbd5989570285b8d7a5d817";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204958/react_devtools-5.0.0.xpi";
+      sha256 = "4290cd8eb5f51f80198ab749495a0a1239ba17a1b997b8b486e10448916a0187";
       meta = with lib;
       {
         homepage = "https://github.com/facebook/react";
@@ -6990,10 +8078,10 @@
       };
     "reduxdevtools" = buildFirefoxXpiAddon {
       pname = "reduxdevtools";
-      version = "3.1.3";
+      version = "3.1.6";
       addonId = "extension@redux.devtools";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4168659/reduxdevtools-3.1.3.xpi";
-      sha256 = "c69faa457c84e32ae58ab4873a8ee9f6a0615615cb5fe242c2ffe55feb407c1d";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209147/reduxdevtools-3.1.6.xpi";
+      sha256 = "2149809b62c5524b241e89204ef271c665b9da46ceeaa0fd93132ed338aaaa26";
       meta = with lib;
       {
         homepage = "https://github.com/reduxjs/redux-devtools";
@@ -7015,10 +8103,10 @@
       };
     "refined-github" = buildFirefoxXpiAddon {
       pname = "refined-github";
-      version = "23.11.3";
+      version = "23.12.17";
       addonId = "{a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4189811/refined_github-23.11.3.xpi";
-      sha256 = "e5fbe86a979ea53b524eef6837f9257cf29d4d9337472f35974e54bc99ce4b2e";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209984/refined_github-23.12.17.xpi";
+      sha256 = "2ed7a9928f411c5b764e214f0549273a0b860562e53c84fb7fa909c437badf3c";
       meta = with lib;
       {
         homepage = "https://github.com/sindresorhus/refined-github";
@@ -7038,10 +8126,10 @@
       };
     "return-youtube-dislikes" = buildFirefoxXpiAddon {
       pname = "return-youtube-dislikes";
-      version = "3.0.0.12";
+      version = "3.0.0.14";
       addonId = "{762f9885-5a13-4abd-9c77-433dcd38b8fd}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4182960/return_youtube_dislikes-3.0.0.12.xpi";
-      sha256 = "90a3e492f38f6990109af2496f4e08cd28ca5dcb88f386a01c03b680ff4032f1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208483/return_youtube_dislikes-3.0.0.14.xpi";
+      sha256 = "a31ab23549846b7eab92a094e92df8349047b48bbd807f069d128083c3b27f61";
       meta = with lib;
       {
         description = "Returns ability to see dislike statistics on youtube";
@@ -7072,24 +8160,21 @@
       };
     "rsshub-radar" = buildFirefoxXpiAddon {
       pname = "rsshub-radar";
-      version = "1.6.0";
+      version = "2.0.6";
       addonId = "i@diygod.me";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3577068/rsshub_radar-1.6.0.xpi";
-      sha256 = "512078e0d7bdb82cda5aa3e4c269aa4a7316de7c9faac3e4c52f6ba487ceb43d";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4213574/rsshub_radar-2.0.6.xpi";
+      sha256 = "384bf6180cf253ba6b77fc26627d5982e894d4c749d1618b47c95acb644c0e60";
       meta = with lib;
       {
-        homepage = "https://docs.rsshub.app";
-        description = "RSSHub Radar is a spin-off of RSSHub that helps you quickly discover and subscribe to RSS and RSSHub for your current site.";
-        license = licenses.mit;
+        homepage = "https://github.com/DIYgod/RSSHub-Radar";
+        description = "Easily find and subscribe to RSS and RSSHub.";
         mozPermissions = [
-          "activeTab"
-          "tabs"
           "storage"
+          "tabs"
+          "offscreen"
           "notifications"
           "alarms"
-          "idle"
-          "https://*/*"
-          "http://*/*"
+          "<all_urls>"
           ];
         platforms = platforms.all;
         };
@@ -7169,12 +8254,32 @@
         platforms = platforms.all;
         };
       };
+    "scroll_anywhere" = buildFirefoxXpiAddon {
+      pname = "scroll_anywhere";
+      version = "9.2";
+      addonId = "juraj.masiar@gmail.com_ScrollAnywhere";
+      url = "https://addons.mozilla.org/firefox/downloads/file/3938344/scroll_anywhere-9.2.xpi";
+      sha256 = "614a7a13baad91a4015347ede83b66ae3e182679932cfc4ccd8fa5604ab38e91";
+      meta = with lib;
+      {
+        homepage = "https://fastaddons.com/";
+        description = "Scroll page without touching scroll-bar! \nPress Middle (Right / Left) mouse button anywhere on the page to scroll just like with scrollbar.\n\nFeatures also:\n- \"grab and drag\" scrolling\n- customizable scrollbars!\n- the Momentum auto-scroll";
+        license = {
+          shortName = "scroll-anywhere";
+          fullName = "Scroll Anywhere License";
+          url = "https://github.com/fastaddons/ScrollAnywhere/blob/master/LICENSE";
+          free = false;
+          };
+        mozPermissions = [ "alarms" "storage" "activeTab" "<all_urls>" ];
+        platforms = platforms.all;
+        };
+      };
     "search-by-image" = buildFirefoxXpiAddon {
       pname = "search-by-image";
-      version = "6.1.0";
+      version = "6.1.1";
       addonId = "{2e5ff8c8-32fe-46d0-9fc8-6b8986621f3c}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4189577/search_by_image-6.1.0.xpi";
-      sha256 = "1de51c7522b8bf3aca5c2bc4fbd94f5fb092d4418ea8fe4583c8dff2b71b4209";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209928/search_by_image-6.1.1.xpi";
+      sha256 = "254d78084e332190a2b6ccb1959a42257bdc287addc0685419fcde7df1a52e76";
       meta = with lib;
       {
         homepage = "https://github.com/dessant/search-by-image#readme";
@@ -7254,10 +8359,10 @@
       };
     "sidebartabs" = buildFirefoxXpiAddon {
       pname = "sidebartabs";
-      version = "11.1.4";
+      version = "11.1.8";
       addonId = "sidebarTabs@asamuzak.jp";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4174467/sidebartabs-11.1.4.xpi";
-      sha256 = "0083aff26e53ad5f400a368a40402a72e37f5be3af7c99c54679763f43eb1e60";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211311/sidebartabs-11.1.8.xpi";
+      sha256 = "61a394948b8df403e8a31c9f0c6922695ce04dbe5c8f3aaf4e19976e0c34a756";
       meta = with lib;
       {
         homepage = "https://github.com/asamuzaK/sidebarTabs";
@@ -7351,6 +8456,27 @@
         platforms = platforms.all;
         };
       };
+    "simple-translate" = buildFirefoxXpiAddon {
+      pname = "simple-translate";
+      version = "2.8.2";
+      addonId = "simple-translate@sienori";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4165189/simple_translate-2.8.2.xpi";
+      sha256 = "8e8c3af0ffadfd3ff9928355e7be2292befe6c4f0e483f7c37c2d9a34a54f345";
+      meta = with lib;
+      {
+        homepage = "https://simple-translate.sienori.com";
+        description = "Quickly translate selected or typed text on web pages. Supports Google Translate and DeepL API.";
+        license = licenses.mpl20;
+        mozPermissions = [
+          "<all_urls>"
+          "storage"
+          "contextMenus"
+          "http://*/*"
+          "https://*/*"
+          ];
+        platforms = platforms.all;
+        };
+      };
     "simplelogin" = buildFirefoxXpiAddon {
       pname = "simplelogin";
       version = "2.10.2";
@@ -7375,10 +8501,10 @@
       };
     "single-file" = buildFirefoxXpiAddon {
       pname = "single-file";
-      version = "1.22.19";
+      version = "1.22.39";
       addonId = "{531906d3-e22f-4a6c-a102-8057b88a1a63}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4191752/single_file-1.22.19.xpi";
-      sha256 = "cc672c3a1f66ec7df4c24b29d8a287a5355b2077ce20c92102c6cb9eb8ad3fa0";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4211794/single_file-1.22.39.xpi";
+      sha256 = "c5605f2ae5fbe14f7720ebb2f93b559acffb9256b982d034a3dfe3d979b3296c";
       meta = with lib;
       {
         homepage = "https://github.com/gildas-lormeau/SingleFile";
@@ -7533,10 +8659,10 @@
       };
     "sponsorblock" = buildFirefoxXpiAddon {
       pname = "sponsorblock";
-      version = "5.4.26";
+      version = "5.4.29";
       addonId = "sponsorBlocker@ajay.app";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4189581/sponsorblock-5.4.26.xpi";
-      sha256 = "457c8a2fdf90aee4fb33891056c114bba717fbbf6c5166d30c6dcbc7e40c9567";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202411/sponsorblock-5.4.29.xpi";
+      sha256 = "ed7a9cf1cc9037294c7b9fdd8033b1d5fd900d59b3dc9b210e54ee7aee807128";
       meta = with lib;
       {
         homepage = "https://sponsor.ajay.app";
@@ -7554,10 +8680,10 @@
       };
     "startpage-private-search" = buildFirefoxXpiAddon {
       pname = "startpage-private-search";
-      version = "1.3.0";
+      version = "2.0.1";
       addonId = "{20fc2e06-e3e4-4b2b-812b-ab431220cada}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3421533/startpage_private_search-1.3.0.xpi";
-      sha256 = "e7b5500da81cd360336780bbc7c8e92c6044ede40b4bfbcbdb401ecf38e9b439";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204954/startpage_private_search-2.0.1.xpi";
+      sha256 = "53d5e5868f1175b43675534b0628ad27ab79c7448c52b71963518fd8320c50b7";
       meta = with lib;
       {
         description = "This extension protects users from being tracked while allowing them to search the web in complete private mode.";
@@ -7580,6 +8706,7 @@
       sha256 = "131509a89473a4e5917b5c859aba8f9ea77c4c9fc8cdc183333c2b0f1b2c64ee";
       meta = with lib;
       {
+        homepage = "https://github.com/igorlogius/startup-tabs/";
         description = "Open a set of bookmarks as tabs on browser startup by simply selecting a bookmark folder which contains them.";
         license = licenses.bsd2;
         mozPermissions = [ "tabs" "bookmarks" "storage" ];
@@ -7588,10 +8715,10 @@
       };
     "statshunters" = buildFirefoxXpiAddon {
       pname = "statshunters";
-      version = "1.2.2";
+      version = "2.0.1";
       addonId = "browserextension@statshunters.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4183848/statshunters-1.2.2.xpi";
-      sha256 = "a01b18ff2ad76d7adbbf29bbd48be42059aaa4aa0b50943d58f7bc08c58c87a1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4210057/statshunters-2.0.1.xpi";
+      sha256 = "5cda553adf2a974660840953721193896f81e3d777e7577626fda5a3ed3f03c8";
       meta = with lib;
       {
         homepage = "https://www.statshunters.com";
@@ -7637,10 +8764,10 @@
       };
     "steam-database" = buildFirefoxXpiAddon {
       pname = "steam-database";
-      version = "3.7.5";
+      version = "3.7.9";
       addonId = "firefox-extension@steamdb.info";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190119/steam_database-3.7.5.xpi";
-      sha256 = "f382947ef9e83c018f48399adb79a2c00e913823b992cf28d0d59e8bf4c4b608";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202136/steam_database-3.7.9.xpi";
+      sha256 = "87f93bee3c42c469da72d7fce76db7cecbe843875ea8f098ecafad06940a973b";
       meta = with lib;
       {
         homepage = "https://steamdb.info/";
@@ -7709,10 +8836,10 @@
       };
     "stylus" = buildFirefoxXpiAddon {
       pname = "stylus";
-      version = "1.5.35";
+      version = "1.5.41";
       addonId = "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4160414/styl_us-1.5.35.xpi";
-      sha256 = "d415ee11fa4a4313096a268e54fd80fa93143345be16f417eb1300a6ebe26ba1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204840/styl_us-1.5.41.xpi";
+      sha256 = "90ff3ca3ac070eebe2624025e6b43a46a2a88c51d2835446984b8ceadcc0f031";
       meta = with lib;
       {
         homepage = "https://add0n.com/stylus.html";
@@ -7972,10 +9099,10 @@
       };
     "tampermonkey" = buildFirefoxXpiAddon {
       pname = "tampermonkey";
-      version = "4.19.0";
+      version = "5.0.0";
       addonId = "firefox@tampermonkey.net";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4115771/tampermonkey-4.19.0.xpi";
-      sha256 = "226a1f6b3c9a43d83ee601ca7a9a72feccb75fc8e90d2febcc4232564741db38";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4202809/tampermonkey-5.0.0.xpi";
+      sha256 = "b7c12080d3d2327487c787c2bae60e45f75464f481485fb3ce059ccf98b4b4d8";
       meta = with lib;
       {
         homepage = "https://tampermonkey.net";
@@ -7987,6 +9114,7 @@
           free = false;
           };
         mozPermissions = [
+          "alarms"
           "notifications"
           "tabs"
           "idle"
@@ -8055,10 +9183,10 @@
       };
     "tetrio-plus" = buildFirefoxXpiAddon {
       pname = "tetrio-plus";
-      version = "0.25.5";
+      version = "0.25.9";
       addonId = "tetrio-plus@example.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4193590/tetrio_plus-0.25.5.xpi";
-      sha256 = "5a47eb641d991e855f2c14fd9a96aee2c117f6fe57106bcb7277305bbccaf7b3";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4201664/tetrio_plus-0.25.9.xpi";
+      sha256 = "87ffd121869a302e040b750f6ee5540c7791d3cc7124c5bdb6a19c9d37f07412";
       meta = with lib;
       {
         description = "Custom skins, background music, sound effects, (animated) backgrounds, input display, and touch control support for <a href=\"https://prod.outgoing.prod.webservices.mozgcp.net/v1/d94d4f4d9a39d7847f4259e0053e02794a2d7361e70cf03a773b53993e17363d/http%3A//TETR.IO\" rel=\"nofollow\">TETR.IO</a>.";
@@ -8183,10 +9311,10 @@
       };
     "toolkit-for-ynab" = buildFirefoxXpiAddon {
       pname = "toolkit-for-ynab";
-      version = "3.10.0";
+      version = "3.10.1";
       addonId = "{4F1FB113-D7D8-40AE-A5BA-9300EAEA0F51}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4190708/toolkit_for_ynab-3.10.0.xpi";
-      sha256 = "009326589d03a0843bfd3fed507bd8669602b2c8a9bc7a73c0c7e8f21da0b883";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4195665/toolkit_for_ynab-3.10.1.xpi";
+      sha256 = "6fc008b5baaeed539814d822fe22c80cb6fa70a870c79ab7402f08f60042b4ca";
       meta = with lib;
       {
         homepage = "https://github.com/toolkit-for-ynab/toolkit-for-ynab";
@@ -8227,10 +9355,10 @@
       };
     "tournesol" = buildFirefoxXpiAddon {
       pname = "tournesol";
-      version = "3.3.4";
+      version = "3.4.0";
       addonId = "{e8e831e8-8a2b-4fd8-b9f0-cd11155b476d}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4180342/tournesol_extension-3.3.4.xpi";
-      sha256 = "c8ebf222aacd572c3bb6ab8ed5396f0b9b781de82767d2a5daf93c8e2bbf3504";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4197154/tournesol_extension-3.4.0.xpi";
+      sha256 = "0e1744cd1a6f6b34c4d56a964ef8d5df2a18a8820d50922e79de337d8d9fc7d6";
       meta = with lib;
       {
         homepage = "https://tournesol.app/";
@@ -8289,10 +9417,10 @@
       };
     "tree-style-tab" = buildFirefoxXpiAddon {
       pname = "tree-style-tab";
-      version = "3.9.17";
+      version = "3.9.19";
       addonId = "treestyletab@piro.sakura.ne.jp";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4164980/tree_style_tab-3.9.17.xpi";
-      sha256 = "4dcf70f56436465749c4c787a0bba90fe2a39bf4c0cf91fa7f7cd2a2f8a806f5";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4197314/tree_style_tab-3.9.19.xpi";
+      sha256 = "bb67f47a554f8f937f4176bee6144945eb0f240630b93f73d2cff49f0985b55a";
       meta = with lib;
       {
         homepage = "http://piro.sakura.ne.jp/xul/_treestyletab.html.en";
@@ -8321,10 +9449,10 @@
       };
     "tridactyl" = buildFirefoxXpiAddon {
       pname = "tridactyl";
-      version = "1.23.0";
+      version = "1.24.0";
       addonId = "tridactyl.vim@cmcaine.co.uk";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4036604/tridactyl_vim-1.23.0.xpi";
-      sha256 = "08b7af97bef05300ab3ac3ad721322ff00505631233482568fc4489c16d51b71";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4208422/tridactyl_vim-1.24.0.xpi";
+      sha256 = "9e70bccf7ced3a87e4cf6a5dc6210a884fa9a46a79ee19177367a28c02aaa04b";
       meta = with lib;
       {
         homepage = "https://tridactyl.xyz";
@@ -8411,10 +9539,10 @@
       };
     "ublacklist" = buildFirefoxXpiAddon {
       pname = "ublacklist";
-      version = "8.3.5";
+      version = "8.4.0";
       addonId = "@ublacklist";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4171974/ublacklist-8.3.5.xpi";
-      sha256 = "3b34a8910e0eae5add5487afd455e2184e2cd09c833fe323a3b796a1c656e205";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4203794/ublacklist-8.4.0.xpi";
+      sha256 = "100c3c8cd98d9c78b397256e5088895892d8678ad0dd537c724df18af9f6c3d4";
       meta = with lib;
       {
         homepage = "https://iorate.github.io/ublacklist/";
@@ -8625,10 +9753,10 @@
       };
     "ublock-origin" = buildFirefoxXpiAddon {
       pname = "ublock-origin";
-      version = "1.53.0";
+      version = "1.54.0";
       addonId = "uBlock0@raymondhill.net";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4188488/ublock_origin-1.53.0.xpi";
-      sha256 = "5403474101f753b5d38c09135e40d82a115afcd01310d78133a4af363462194b";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4198829/ublock_origin-1.54.0.xpi";
+      sha256 = "9797160908191710ff0858536ba6dc29ecad9923c30b2ad6d3e5e371d759e44d";
       meta = with lib;
       {
         homepage = "https://github.com/gorhill/uBlock#ublock-origin";
@@ -8664,10 +9792,10 @@
       };
     "ublock-origin-lite" = buildFirefoxXpiAddon {
       pname = "ublock-origin-lite";
-      version = "2023.11.11.1035";
+      version = "2023.12.16.1327";
       addonId = "uBOLite@raymondhill.net";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4193794/ublock_origin_lite-2023.11.11.1035.xpi";
-      sha256 = "9303629782b4bb6b5f561301f0ecfdb2b3ce6004f8b4d1a5c7fb69c6f9ec6a60";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209894/ublock_origin_lite-2023.12.16.1327.xpi";
+      sha256 = "58e12ab6d507ee66505f5b879b373743fa841abb7ee9cea189eb3bba5f976c16";
       meta = with lib;
       {
         homepage = "https://github.com/uBlockOrigin/uBOL-home";
@@ -8705,10 +9833,10 @@
       };
     "ukrainian-dictionary" = buildFirefoxXpiAddon {
       pname = "ukrainian-dictionary";
-      version = "6.1.0";
+      version = "6.3.1";
       addonId = "uk-ua@dictionaries.addons.mozilla.org";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4088837/ukrainian_dictionary-6.1.0.xpi";
-      sha256 = "90a57caef9f656812c03d6fd365c251cbcab722405d51313f931f12976e18a1b";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4209163/ukrainian_dictionary-6.3.1.xpi";
+      sha256 = "114c6cc04cf68ccd059cc0dd0a69bd246230a965e55b2770833744ad46013c7b";
       meta = with lib;
       {
         homepage = "https://github.com/brown-uk/dict_uk";
@@ -8747,10 +9875,10 @@
       };
     "undoclosetabbutton" = buildFirefoxXpiAddon {
       pname = "undoclosetabbutton";
-      version = "7.6.0";
+      version = "8.0.0";
       addonId = "{4853d046-c5a3-436b-bc36-220fd935ee1d}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4107441/undoclosetabbutton-7.6.0.xpi";
-      sha256 = "8aa5915a78150ed873917e607bb80d8c429ebfa308d18aa78395a59f0ef8634e";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4212173/undoclosetabbutton-8.0.0.xpi";
+      sha256 = "c83a058c417f98d75e62ab310e2995971bf79c99cd83cf1dcbd8a44797aa60c4";
       meta = with lib;
       {
         homepage = "https://github.com/M-Reimer/undoclosetab";
@@ -9116,10 +10244,10 @@
       };
     "vimium-c" = buildFirefoxXpiAddon {
       pname = "vimium-c";
-      version = "1.99.995";
+      version = "1.99.997";
       addonId = "vimium-c@gdh1995.cn";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4142362/vimium_c-1.99.995.xpi";
-      sha256 = "d813c98b4e7fbbecd82014d0ff0f163e21f68aa3dee182c61c1536a8854f0760";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4210117/vimium_c-1.99.997.xpi";
+      sha256 = "20e9217ba3d9a7bd0ec3faa88ed7f872acc3f039d1bdeb997398341631617184";
       meta = with lib;
       {
         homepage = "https://github.com/gdh1995/vimium-c";
@@ -9183,10 +10311,10 @@
       };
     "w2g" = buildFirefoxXpiAddon {
       pname = "w2g";
-      version = "8.6";
+      version = "9.5";
       addonId = "{6ea0a676-b3ef-48aa-b23d-24c8876945fb}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4012364/w2g-8.6.xpi";
-      sha256 = "166b67e6e742ee1982b9cf5a740821869f7808314b09dde82ae76d0d9b395112";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4204148/w2g-9.5.xpi";
+      sha256 = "a71b56b1858e4f8163c38bf27da9470bd3aa15ce02e117355acbb171a51249b0";
       meta = with lib;
       {
         homepage = "https://w2g.tv";
@@ -9199,10 +10327,9 @@
           };
         mozPermissions = [
           "activeTab"
-          "<all_urls>"
           "webNavigation"
-          "webRequest"
-          "webRequestBlocking"
+          "scripting"
+          "storage"
           "https://stage.watch2gether.com/rooms/*"
           "https://w2g.tv/*"
           "https://rooms.w2g.tv/*"
@@ -9315,10 +10442,10 @@
       };
     "web-scrobbler" = buildFirefoxXpiAddon {
       pname = "web-scrobbler";
-      version = "3.2.0";
+      version = "3.3.0";
       addonId = "{799c0914-748b-41df-a25c-22d008f9e83f}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4165270/web_scrobbler-3.2.0.xpi";
-      sha256 = "0994b3bfd1af756347019234e39761b1996e456b01cba5d93d4b24705f6dcf18";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207113/web_scrobbler-3.3.0.xpi";
+      sha256 = "4bfaacb7ad9e04cf2ab07ce232e2eba04c3eca0b864d0217ccf5cb9809da8e09";
       meta = with lib;
       {
         homepage = "https://web-scrobbler.com";
@@ -9328,6 +10455,7 @@
           "storage"
           "contextMenus"
           "notifications"
+          "scripting"
           "<all_urls>"
           ];
         platforms = platforms.all;
@@ -9545,10 +10673,10 @@
       };
     "widegithub" = buildFirefoxXpiAddon {
       pname = "widegithub";
-      version = "2.1.0";
+      version = "2.2.0";
       addonId = "{72742915-c83b-4485-9023-b55dc5a1e730}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/3855481/widegithub-2.1.0.xpi";
-      sha256 = "4af781d3e7c9771aaae25a1d44e6f0c14e48286931bf23581dd94954bd98e2dc";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4210749/widegithub-2.2.0.xpi";
+      sha256 = "eda26f434c35557da0df2736894cff6d30b73f5e6568b07cfa2c689dea5df530";
       meta = with lib;
       {
         homepage = "https://github.com/fabiocchetti/wide-github/";
@@ -9714,10 +10842,10 @@
       };
     "youtube-recommended-videos" = buildFirefoxXpiAddon {
       pname = "youtube-recommended-videos";
-      version = "1.6.2";
+      version = "1.6.3";
       addonId = "myallychou@gmail.com";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4050795/youtube_recommended_videos-1.6.2.xpi";
-      sha256 = "c4cba094d6acb196fd5aa8df10683a59eba1300091b98a90a2bfa25f574476c1";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4210197/youtube_recommended_videos-1.6.3.xpi";
+      sha256 = "c2a323ad12f72d887a51b019c748facbdc87b2f71238139fcbea0e2b10a04d04";
       meta = with lib;
       {
         homepage = "https://unhook.app";
@@ -9739,10 +10867,10 @@
       };
     "youtube-screenshot-button" = buildFirefoxXpiAddon {
       pname = "youtube-screenshot-button";
-      version = "4.1.0";
+      version = "4.2.0";
       addonId = "{d8b32864-153d-47fb-93ea-c273c4d1ef17}";
-      url = "https://addons.mozilla.org/firefox/downloads/file/4187570/youtube_screenshot_button-4.1.0.xpi";
-      sha256 = "effc73a07251daf8c93e34961d19514b5a61a1b4fa6a8c3a8c2b77c7020fc524";
+      url = "https://addons.mozilla.org/firefox/downloads/file/4207366/youtube_screenshot_button-4.2.0.xpi";
+      sha256 = "670ef9fbc2374001e3d91380c13bdc5739f2d61d061e53b7371128bb65ffe808";
       meta = with lib;
       {
         homepage = "https://github.com/gurumukhi/youtube-screenshot";

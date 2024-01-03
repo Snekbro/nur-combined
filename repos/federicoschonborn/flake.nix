@@ -4,41 +4,48 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-      inputs.systems.url = "github:nix-systems/default";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }: flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in
-    {
+  outputs = { nixpkgs, flake-parts, ... }@inputs: flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "x86_64-darwin"
+    ];
+
+    perSystem = { self', lib, pkgs, ... }: {
       legacyPackages = import ./. { inherit pkgs; };
-      packages = nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) self.legacyPackages.${system};
+      packages = nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) self'.legacyPackages;
+
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
           just
-          nix-output-monitor
         ];
       };
-      apps.update = flake-utils.lib.mkApp {
-        name = "update";
-        drv = pkgs.writeShellApplication {
+
+      apps.update = {
+        type = "app";
+        program = lib.getExe (pkgs.writeShellApplication {
           name = "update";
           text = ''
             nix-shell "${nixpkgs.outPath}/maintainers/scripts/update.nix" \
               --arg include-overlays "[(import ./overlay.nix)]" \
               --arg predicate '(
                 let prefix = builtins.toPath ./packages; prefixLen = builtins.stringLength prefix;
-                in (_: p: (builtins.substring 0 prefixLen p.meta.position) == prefix)
+                in (_: p: p.meta?position && (builtins.substring 0 prefixLen p.meta.position) == prefix)
               )'
           '';
-        };
+        });
       };
+
       formatter = pkgs.nixpkgs-fmt;
-    });
+    };
+  };
 
   nixConfig = {
     extra-substituters = [

@@ -9,16 +9,14 @@ rec {
   _31key = pkgs.callPackage ./pkgs/31key { };
   mimi = pkgs.callPackage ./pkgs/mimi { };
   quake3-data = pkgs.callPackage ./pkgs/quake3-data { };
-  deadbeef-waveform-seekbar-plugin =
-    pkgs.callPackage ./pkgs/deadbeef-waveform-seekbar-plugin { };
   augr = pkgs.callPackage ./pkgs/augr { };
   ciao = pkgs.callPackage ./pkgs/ciao { };
   iosevka-term = pkgs.callPackage ./pkgs/iosevka/term.nix { };
-  ssb-patchbay = pkgs.callPackage ./pkgs/ssb-patchbay { };
   frame = pkgs.callPackage ./pkgs/frame { };
   why3 = pkgs.callPackage ./pkgs/why3 { };
   pianoteq-stage = pkgs.callPackage ./pkgs/pianoteq-stage { };
   dcpt720dwlpr = (pkgs.callPackage ./pkgs/dcpt720dw { }).driver;
   dcpt720dw-cupswrapper = (pkgs.callPackage ./pkgs/dcpt720dw { }).cupswrapper;
   sdrpp-git = pkgs.callPackage ./pkgs/sdrpp-git { };
+  pharo = pkgs.callPackage ./pkgs/pharo { };
 }

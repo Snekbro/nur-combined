@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install nix
-        uses: cachix/install-nix-action@v22
+        uses: cachix/install-nix-action@v24
         with:
           nix_path: nixpkgs=channel:nixpkgs-unstable
           extra_nix_config: |
@@ -34,7 +34,7 @@ jobs:
         run: nix-instantiate --eval -E '(import <nixpkgs> {}).lib.version'
 
       - name: Setup cachix
-        uses: cachix/cachix-action@v12
+        uses: cachix/cachix-action@v13
         with:
           name: bandithedoge
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
@@ -42,29 +42,14 @@ jobs:
           extraPullNames: berberman
 
       - name: Update sources
-        run: |
-          nix flake update
-          echo -e '[keys]\ngithub = "${{ secrets.GITHUB_TOKEN }}"' > keyfile.toml
-          nix run "github:berberman/nvfetcher" -- -k keyfile.toml -l CHANGELOG -t
-          rm keyfile.toml
-
-      - name: Update vim plugins
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd pkgs/vimPlugins/
-          nix run "nixpkgs#niv" -- update
-          chmod +x update_list.py && ./update_list.py
-
-      - name: Update Node packages
-        run: |
-          cd pkgs/nodePackages/node2nix
-          nix run "nixpkgs#node2nix" -- -i node-packages.json
-
-      - name: Update Firefox addons
-        run: |
-          cd pkgs/firefoxAddons
-          nix run "sourcehut:~rycee/mozilla-addons-to-nix" -- addons.json generated.nix
+          nix flake update
+          echo -e '[keys]\ngithub = "${{ secrets.GITHUB_TOKEN }}"' > keyfile.toml
+          chmod +x fetch
+          nix develop -c ./fetch
+          rm keyfile.toml
 
       - name: Format code
         run: nix fmt

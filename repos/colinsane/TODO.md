@@ -1,13 +1,12 @@
 ## BUGS
-- why i need to manually restart `wireguard-wg-ovpns` on servo periodically
-  - else DNS fails
+- nixpkgs date is incorrect (1970.01.01...)
 - ringer (i.e. dino incoming call) doesn't prevent moby from sleeping
-- Fractal opens links with non-preferred web browser
+- `nix` operations from lappy hang when `desko` is unreachable
+  - could at least direct the cache to `http://desko-hn:5001`
 
 ## REFACTORING:
 
-remove `x86GuiApps`
-- instead mark packages as optional/eager/"only install if supported by target".
+- fold hosts/common/home/ssh.nix -> hosts/common/users/colin.nix
 
 ### sops/secrets
 - attach secrets to the thing they're used by (sane.programs)
@@ -28,7 +27,6 @@ remove `x86GuiApps`
 
 #### upstreaming to non-nixpkgs repos
 - gtk: build schemas even on cross compilation: <https://github.com/NixOS/nixpkgs/pull/247844>
-- sxmo: add new app entries
 
 
 ## IMPROVEMENTS:
@@ -50,6 +48,9 @@ remove `x86GuiApps`
   - e.g. daily email checks; daily backup checks
   - integrate `nix check` into Gitea actions?
 
+### faster/better deployments
+- remove audacity's dependency on webkitgtk (via wxwidgets)
+
 ### user experience
 - install apps:
   - display QR codes for WiFi endpoints: <https://linuxphoneapps.org/apps/noappid.wisperwind.wifi2qr/>
@@ -67,6 +68,8 @@ remove `x86GuiApps`
   - UnCiv (Civ V clone; nixpkgs `unciv`; doesn't cross-compile):  <https://github.com/yairm210/UnCiv>
   - Simon Tatham's Puzzle Collection (not in nixpkgs) <https://git.tartarus.org/?p=simon/puzzles.git>
   - Shootin Stars  (Godot; not in nixpkgs) <https://gitlab.com/greenbeast/shootin-stars>
+  - numberlink (generic name for Flow Free). not packaged in Nix
+  - Neverball (https://neverball.org/screenshots.php). nix: as `neverball`
 
 #### moby
 - fix cpuidle (gets better power consumption): <https://xnux.eu/log/077.html>
@@ -83,12 +86,7 @@ remove `x86GuiApps`
   - manually do smoothing, as some layer between mepo and geoclue/gpsd?
 - moby: show battery state on ssh login
 - moby: improve gPodder launch time
-- sxmo: port to swaybar like i use on desktop
-  - users in #sxmo claim it's way better perf
-- sxmo: fix youtube scripts (package youtube-cli)
 - moby: theme GTK apps (i.e. non-adwaita styles)
-  - combine multiple icon themes to get one which has the full icon set?
-  - get adwaita-icon-theme to ship everything even when cross-compiled?
   - especially, make the menubar collapsible
   - try Gradience tool specifically for theming adwaita? <https://linuxphoneapps.org/apps/com.github.gradienceteam.gradience/>
 - phog: remove the gnome-shell runtime dependency to save hella closure size
@@ -116,13 +114,10 @@ remove `x86GuiApps`
 - add `pkgs.impure-cached.<foo>` package set to build things with ccache enabled
   - every package here can be auto-generated, and marked with some env var so that it doesn't pollute the pure package set
   - would be super handy for package prototyping!
-- get moby to build without binfmt emulation (i.e. make all emulation explicit)
-  - then i can distribute builds across servo + desko, and also allow servo to pull packages from desko w/o worrying about purity
-
+- fix desko so it doesn't dispatch so many build jobs to servo by default
 
 ## NEW FEATURES:
 - migrate MAME cabinet to nix
   - boot it from PXE from servo?
-- deploy to new server, and use it as a remote builder
 - enable IPv6
 - package lemonade lemmy app: <https://linuxphoneapps.org/apps/ml.mdwalters.lemonade/>

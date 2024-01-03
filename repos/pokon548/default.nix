@@ -19,15 +19,20 @@
 
   chengla-electron = pkgs.callPackage ./pkgs/chengla-electron { };
 
+  ntfy-naive = pkgs.callPackage ./pkgs/ntfy-naive { };
+
   fcitx5-pinyin-custompinyindict = pkgs.callPackage ./pkgs/fcitx5-pinyin-custompinyindict { };
   rustdesk-bin = pkgs.callPackage ./pkgs/rustdesk-bin { };
   geogebra = pkgs.callPackage ./pkgs/geogebra { };
   zhixi = pkgs.callPackage ./pkgs/zhixi { };
 
+  ttf-blobmoji = pkgs.callPackage ./pkgs/ttf-blobmoji { };
+
   sticky = pkgs.callPackage ./pkgs/sticky { };
   flowtime = pkgs.callPackage ./pkgs/flowtime { };
 
   vaults = pkgs.callPackage ./pkgs/vaults { };
+  favagtk = pkgs.callPackage ./pkgs/favagtk { };
 
   smartdns-rules-adrules = pkgs.callPackage ./pkgs/smartdns-rules-adrules { };
   smartdns-rules-stevenblocks = pkgs.callPackage ./pkgs/smartdns-rules-stevenblocks { };

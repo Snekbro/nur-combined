@@ -2,13 +2,12 @@
 { lib, pkgs, ... }:
 let
   modules-enable = with modules; [
-    avahi
-    clash
     common
     extlinux
     nix
-    smartdns
+    sing-box
     sops
+    syncthing
     users
   ];
 in
@@ -19,12 +18,6 @@ in
     legendary-gl
     tmux
   ];
-
-  nix.settings = {
-    trusted-public-keys = [
-      "local-1:rkw0zf/GEln2K7PKAkMH2JtJfaACnMXEl1OGteT1AHE="
-    ];
-  };
 
   documentation.man.enable = false;
 }

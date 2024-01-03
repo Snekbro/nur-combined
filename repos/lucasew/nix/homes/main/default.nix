@@ -13,12 +13,16 @@ in {
     ./borderless-browser.nix
     ./theme
     ./discord.nix
-
+    ./qutebrowser.nix
+    ./mopidy.nix
   ];
+  services.mopidy.enable = true;
 
   programs.helix.enable = true;
   # services.espanso.enable = true;
   programs.man.enable = true;
+
+  programs.qutebrowser.enable = true;
 
 
   home = {
@@ -34,9 +38,10 @@ in {
     custom.tixati
     custom.pidgin
     # (custom.neovim.override { inherit colors; })
-    (custom.emacs.override { inherit colors; })
+    # (custom.emacs.override { inherit colors; })
     # custom.firefox # now I am using chromium
     # custom.vscode.programming
+    cached-nix-shell
     devenv
     dotenv
     jless # json viewer
@@ -52,7 +57,7 @@ in {
     libreoffice
     mendeley
     ncdu
-    nix-option
+    # nix-option
     nix-prefetch-scripts
     nix-output-monitor
     obsidian

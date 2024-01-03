@@ -88,16 +88,17 @@ let
     };
 
     config = lib.mkMerge [
-    # if we're the default user, inherit whatever settings were routed to the default user
+      # if we're the default user, inherit whatever settings were routed to the default user
       (mkIf config.default {
         inherit (sane-user-cfg) fs persist environment;
         services = lib.mapAttrs (_: lib.mkMerge) sane-user-cfg.services;
       })
       {
         fs."/".dir.acl = {
-          user = name;
-          group = nixConfig.users.users."${name}".group;
-          mode = nixConfig.users.users."${name}".homeMode;
+          user = lib.mkDefault name;
+          group = lib.mkDefault nixConfig.users.users."${name}".group;
+          # homeMode defaults to 700; notice: no leading 0
+          mode = "0" + nixConfig.users.users."${name}".homeMode;
         };
         fs.".profile".symlink.text =
           let
@@ -109,12 +110,24 @@ let
             lib.concatStringsSep "\n" env;
       }
       {
-        fs = lib.mkMerge (mapAttrsToList (name: value:
+        fs = lib.mkMerge (mapAttrsToList (serviceName: value:
           let
             # see: <repo:nixos/nixpkgs:nixos/lib/utils.nix>
             # see: <repo:nix-community/home-manager:modules/systemd.nix>
-            cleanName = utils.systemdUtils.lib.mkPathSafeName name;
-            generatedUnit = utils.systemdUtils.lib.serviceToUnit name value;
+            cleanName = utils.systemdUtils.lib.mkPathSafeName serviceName;
+            generatedUnit = utils.systemdUtils.lib.serviceToUnit serviceName (value // {
+              environment = (value.environment or {}) // {
+                # replicate the default NixOS user PATH (omitting dirs which don't exist)
+                # N.B.: user PATH SHOULD be before the service's path.
+                # this allows to user to override preferences for things like e.g. bemenu (for theming)
+                PATH = lib.removeSuffix ":" (
+                  "/run/wrappers/bin:"
+                  + "/etc/profiles/per-user/${name}/bin:"
+                  + "/run/current-system/sw/bin:"
+                  + (value.environment.PATH or "")
+                );
+              };
+            });
             #^ generatedUnit contains keys:
             # - text
             # - aliases  (IGNORED)
@@ -128,13 +141,13 @@ let
               targetName = "${cleanName}.service";  # systemd derives unit name from symlink target
             };
             serviceEntry = {
-              ".config/systemd/user/${name}.service".symlink = symlinkData;
+              ".config/systemd/user/${serviceName}.service".symlink = symlinkData;
             };
             wants = builtins.map (wantedBy: {
-              ".config/systemd/user/${wantedBy}.wants/${name}.service".symlink = symlinkData;
+              ".config/systemd/user/${wantedBy}.wants/${serviceName}.service".symlink = symlinkData;
             }) generatedUnit.wantedBy;
             requires = builtins.map (requiredBy: {
-              ".config/systemd/user/${requiredBy}.requires/${name}.service".symlink = symlinkData;
+              ".config/systemd/user/${requiredBy}.requires/${serviceName}.service".symlink = symlinkData;
             }) generatedUnit.requiredBy;
           in lib.mkMerge ([ serviceEntry ] ++ wants ++ requires)
         ) config.services);

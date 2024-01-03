@@ -21,7 +21,7 @@ jobs:
           image: tonistiigi/binfmt:latest
           platforms: all
       - name: Install nix
-        uses: cachix/install-nix-action@v23
+        uses: cachix/install-nix-action@v24
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
@@ -29,7 +29,15 @@ jobs:
             extra-platforms = i686-linux aarch64-linux arm-linux
       - name: Build nix packages
         run: |
+          cat > secrets.toml <<EOF
+          [keys]
+          github = "${{ secrets.GITHUB_TOKEN }}"
+          EOF
+
           nix run .#update
+
+          rm -f secrets.toml
+
       - name: Commit back to repository
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

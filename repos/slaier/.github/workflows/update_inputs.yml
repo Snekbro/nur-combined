@@ -13,9 +13,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install nix
-        uses: cachix/install-nix-action@v23
+        uses: cachix/install-nix-action@v24
         with:
-          nix_path: nixpkgs=channel:nixos-23.05
+          nix_path: nixpkgs=channel:nixos-23.11
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -33,7 +33,7 @@ jobs:
           git commit --amend --no-edit
           git push origin HEAD:wip-update-inputs --force-with-lease
       - name: Trigger Workflow
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             github.rest.actions.createWorkflowDispatch({

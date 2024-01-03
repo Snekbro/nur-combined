@@ -54,8 +54,10 @@ in
   services.nginx.recommendedOptimisation = true;
 
   # web blog/personal site
+  # alternative way to link stuff into the share:
+  # sane.fs."/var/lib/uninsane/share/Ubunchu".mount.bind = "/var/lib/uninsane/media/Books/Visual/HiroshiSeo/Ubunchu";
+  # sane.fs."/var/lib/uninsane/media/Books/Visual/HiroshiSeo/Ubunchu".dir = {};
   services.nginx.virtualHosts."uninsane.org" = publog {
-    root = "${pkgs.uninsane-dot-org}/share/uninsane-dot-org";
     # a lot of places hardcode https://uninsane.org,
     # and then when we mix http + non-https, we get CORS violations
     # and things don't look right. so force SSL.
@@ -65,9 +67,28 @@ in
     # for OCSP stapling
     sslTrustedCertificate = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
 
-    # uninsane.org/share/foo => /var/lib/uninsane/root/share/foo.
-    # yes, nginx does not strip the prefix when evaluating against the root.
-    locations."/share".root = "/var/lib/uninsane/root";
+    locations."/" = {
+      root = "${pkgs.uninsane-dot-org}/share/uninsane-dot-org";
+      tryFiles = "$uri $uri/ @fallback";
+    };
+
+    # unversioned files
+    locations."@fallback" = {
+      root = "/var/www/sites/uninsane.org";
+    };
+
+    # uninsane.org/share/foo => /var/www/sites/uninsane.org/share/foo.
+    # special-cased to enable directory listings
+    locations."/share" = {
+      root = "/var/www/sites/uninsane.org";
+      extraConfig = ''
+        # autoindex => render directory listings
+        autoindex on;
+        # don't follow any symlinks when serving files
+        # otherwise it allows a directory escape
+        disable_symlinks on;
+      '';
+    };
 
     # allow matrix users to discover that @user:uninsane.org is reachable via matrix.uninsane.org
     locations."= /.well-known/matrix/server".extraConfig =
@@ -108,6 +129,19 @@ in
     #   proxyPass = "http://127.0.0.1:4000";
     #   extraConfig = pleromaExtraConfig;
     # };
+
+    # redirect common feed URIs to the canonical feed
+    locations."= /atom".extraConfig = "return 301 /atom.xml;";
+    locations."= /feed".extraConfig = "return 301 /atom.xml;";
+    locations."= /feed.xml".extraConfig = "return 301 /atom.xml;";
+    locations."= /rss".extraConfig = "return 301 /atom.xml;";
+    locations."= /rss.xml".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/atom".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/atom.xml".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/feed".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/feed.xml".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/rss".extraConfig = "return 301 /atom.xml;";
+    locations."= /blog/rss.xml".extraConfig = "return 301 /atom.xml;";
   };
 
 
@@ -135,7 +169,6 @@ in
   security.acme.defaults.email = "admin.acme@uninsane.org";
 
   sane.persist.sys.byStore.plaintext = [
-    # TODO: mode?
     { user = "acme"; group = "acme"; path = "/var/lib/acme"; }
     { user = "colin"; group = "users"; path = "/var/www/sites"; }
   ];

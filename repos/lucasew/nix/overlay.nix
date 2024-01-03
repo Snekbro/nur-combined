@@ -31,8 +31,36 @@ in
       pynvim_pp = prev.pynvim_pp.overrideAttrs (old: {
         src = flake.inputs.src-python-pynvim_pp;
       });
+      pyctcdecode = final.callPackage ./pkgs/python/pyctcdecode {};
+      kenlm = final.callPackage ./pkgs/python/kenlm {};
+      facenet-pytorch = final.callPackage ./pkgs/python/facenet-pytorch {};
+      face_recognition = prev.face_recognition.overrideAttrs (old: {
+        dontUsePytestCheck = true;
+        dontUseSetuptoolsCheck = true;
+        # dontCheck = true;
+        # doCheck = false;
+      });
+      dlib = prev.dlib.overrideAttrs (old: {
+        dontUsePytestCheck = true;
+        openblas = prev.pkgs.blas;
+        postPatch = ''
+          ${old.postPatch or ""}
+          rm -rf tools/python/test/*
+          printf "def test_dummy():\n\tassert True\n" > tools/python/test/test_dummy.py
+        '';
+      });
     })
   ];
+
+  python3PackagesBin = prev.python3Packages.overrideScope (old: _: {
+    torch = old.torch-bin;
+    torchaudio = old.torchaudio-bin;
+    torchvision = old.torchvision-bin;
+  });
+
+  python3PackagesCuda = prev.python3Packages.overrideScope (_: _: {
+    cudaSupport = true;
+  });
 
   lib = prev.lib.extend (final: prev: {
     jpg2png = cp ./lib/jpg2png.nix;
@@ -60,6 +88,8 @@ in
   '';
 
   ctl = cp ./pkgs/ctl;
+  cmdlinegl = cp ./pkgs/cmdlinegl;
+  
   personal-utils = cp ./pkgs/personal-utils.nix;
   fhsctl = cp ./pkgs/fhsctl.nix;
   comby = cp ./pkgs/comby.nix;
@@ -68,7 +98,7 @@ in
   home-manager = cp "${flake.inputs.home-manager}/home-manager";
 
   prev = prev;
-  requireFileSources = [ flake.inputs.nix-requirefile.data.main ];
+  requireFileSources = [ flake.inputs.nix-requirefile-data ];
 
   appimage-wrap = final.nbr.appimage-wrap;
 
@@ -83,13 +113,13 @@ in
 
   instantngp = cp ./pkgs/instantngp.nix;
 
-  nix-option = callPackage "${flake.inputs.nix-option}" {
-    nixos-option = (callPackage "${flake.inputs.nixpkgs}/nixos/modules/installer/tools/nixos-option" { }).overrideAttrs (attrs: attrs // {
-      meta = attrs.meta // {
-        platforms = lib.platforms.all;
-      };
-    });
-  };
+  # nix-option = callPackage "${flake.inputs.nix-option}" {
+  #   nixos-option = (callPackage "${flake.inputs.nixpkgs}/nixos/modules/installer/tools/nixos-option" { }).overrideAttrs (attrs: attrs // {
+  #     meta = attrs.meta // {
+  #       platforms = lib.platforms.all;
+  #     };
+  #   });
+  # };
   nur = import flake.inputs.nur {
     pkgs = prev;
   };
@@ -202,7 +232,30 @@ in
     };
   });
 
+  mopidyPackages = prev.mopidyPackages.overrideScope (self: super: {
+    mopidy-ytmusic = super.mopidy-ytmusic.overrideAttrs (old: {
+      nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ super.pythonPackages.pythonRelaxDepsHook ];
+      pythonRelaxDeps = [ "ytmusicapi" "pytube" ];
+    });
+  });
+
+  cached-nix-shell = callPackage flake.inputs.src-cached-nix-shell { pkgs = prev; };
+
+  ollama-cuda = prev.ollama.override {
+    llama-cpp = prev.llama-cpp.override {
+      stdenv = prev.gcc11Stdenv;
+      cudaSupport = true;
+      openblasSupport = false;
+    };
+  };
+  ollama-rocm = prev.ollama.override {
+    llama-cpp = prev.llama-cpp.override {
+      rocmSupport = true;
+      openblasSupport = false;
+    };
+  };
+
   nix = prev.nixVersions.nix_2_15;
-  electron = prev.electron_27-bin;
-  electron_25 = prev.electron_25-bin;
+  # electron = prev.electron_27-bin;
+  # electron_25 = prev.electron_25-bin;
 }

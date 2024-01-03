@@ -29,6 +29,7 @@
         config = {
           allowUnfree = true;
           permittedInsecurePackages = [
+            "electron-11.5.0"
             "electron-19.1.9"
             "openssl-1.1.1w"
             "python-2.7.18.7"
@@ -42,30 +43,12 @@
         inherit (pkgs) system;
         inherit (pkgs.callPackage ./helpers/flatten-pkgs.nix {}) flattenPkgs;
 
-        isBuildable = p: !(p.meta.broken or false) && p.meta.license.free or p.meta.license.redistributable or true;
+        isBuildable = p: !(p.meta.broken or false) && p.meta.license.free or true;
         outputsOf = p: map (o: p.${o}) p.outputs;
-      in rec {
-        packages = import ./pkgs null {
-          inherit inputs pkgs;
-        };
-        packageNames = lib.mapAttrsToList (k: v: k) (flattenPkgs packages);
 
-        ciPackages =
-          flattenPkgs
-          (import ./pkgs "ci" {
-            inherit inputs pkgs;
-          });
-        ciPackageNames = lib.mapAttrsToList (k: v: k) ciPackages;
-        ciOutputs = lib.mapAttrsToList (_: outputsOf) (lib.filterAttrs (_: isBuildable) ciPackages);
-
-        formatter = pkgs.alejandra;
-
-        apps =
+        commands =
           lib.mapAttrs
-          (n: v:
-            flake-utils.lib.mkApp {
-              drv = pkgs.writeShellScriptBin "script" v;
-            })
+          (n: v: pkgs.writeShellScriptBin n v)
           rec {
             ci = ''
               set -euo pipefail
@@ -84,7 +67,9 @@
 
             nvfetcher = ''
               set -euo pipefail
-              [ -f "$HOME/Secrets/nvfetcher.toml" ] && KEY_FLAG="-k $HOME/Secrets/nvfetcher.toml" || KEY_FLAG=""
+              KEY_FLAG=""
+              [ -f "$HOME/Secrets/nvfetcher.toml" ] && KEY_FLAG="$KEY_FLAG -k $HOME/Secrets/nvfetcher.toml"
+              [ -f "secrets.toml" ] && KEY_FLAG="$KEY_FLAG -k secrets.toml"
               export PATH=${pkgs.nix-prefetch-scripts}/bin:$PATH
               ${inputs.nvfetcher.packages."${system}".default}/bin/nvfetcher $KEY_FLAG -c nvfetcher.toml -o _sources "$@"
               ${readme}
@@ -108,6 +93,11 @@
               cat result > README.md
             '';
 
+            trace = ''
+              rm -rf trace.txt*
+              strace -ff --trace=%file -o trace.txt "$@"
+            '';
+
             update = let
               py = pkgs.python3.withPackages (p: with p; [requests]);
             in ''
@@ -115,12 +105,33 @@
               nix flake update
               ${nvfetcher}
               ${py}/bin/python3 pkgs/asterisk-digium-codecs/update.py
-              ${py}/bin/python3 pkgs/nvidia-grid/update.py
+              # ${py}/bin/python3 pkgs/nvidia-grid/update.py
               ${py}/bin/python3 pkgs/openj9-ibm-semeru/update.py
               ${py}/bin/python3 pkgs/openjdk-adoptium/update.py
               ${readme}
             '';
           };
+      in rec {
+        packages = import ./pkgs null {
+          inherit inputs pkgs;
+        };
+        packageNames = lib.mapAttrsToList (k: v: k) (flattenPkgs packages);
+
+        ciPackages =
+          flattenPkgs
+          (import ./pkgs "ci" {
+            inherit inputs pkgs;
+          });
+        ciPackageNames = lib.mapAttrsToList (k: v: k) ciPackages;
+        ciOutputs = lib.mapAttrsToList (_: outputsOf) (lib.filterAttrs (_: isBuildable) ciPackages);
+
+        formatter = pkgs.alejandra;
+
+        apps = lib.mapAttrs (n: v: flake-utils.lib.mkApp {drv = v;}) commands;
+
+        devShells.default = pkgs.mkShell {
+          buildInputs = lib.mapAttrsToList (n: v: v) commands;
+        };
       };
 
       overlay = self.overlays.default;

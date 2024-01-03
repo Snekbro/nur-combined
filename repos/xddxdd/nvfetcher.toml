@@ -26,6 +26,12 @@ fetch.github = "traud/asterisk-gsm-efr"
 src.git = "https://github.com/zhaofengli/attic.git"
 fetch.github = "zhaofengli/attic"
 
+[baidunetdisk]
+src.aur = "baidunetdisk-electron"
+src.from_pattern = "(.+)-(.+)"
+src.to_pattern = "\\1"
+fetch.url = "http://wppkg.baidupcs.com/issue/netdisk/Linuxguanjia/$ver/baidunetdisk_$ver_amd64.deb"
+
 [baidupcs-go]
 src.github = "qjfoidnh/BaiduPCS-Go"
 fetch.github = "qjfoidnh/BaiduPCS-Go"
@@ -41,7 +47,7 @@ src.to_pattern = "\\1"
 fetch.url = "https://github.com/msojocs/bilibili-linux/releases/download/v$ver/io.github.msojocs.bilibili_$ver_amd64.deb"
 
 [bird-lg-go]
-src.git = "https://github.com/xddxdd/bird-lg-go.git"
+src.github = "xddxdd/bird-lg-go"
 fetch.github = "xddxdd/bird-lg-go"
 
 [boringssl-oqs]
@@ -51,6 +57,10 @@ fetch.github = "open-quantum-safe/boringssl"
 [calibre-cops]
 src.github = "seblucas/cops"
 fetch.url = "https://github.com/seblucas/cops/releases/download/$ver/cops-$ver.zip"
+
+[cef-binary]
+src.git = "https://github.com/martyr-deepin/cef-binary.git"
+fetch.github = "martyr-deepin/cef-binary"
 
 [chromium-oqs-bin]
 # src.github = "open-quantum-safe/oqs-demos"
@@ -199,6 +209,11 @@ fetch.github = "lotem/librime-proto"
 src.github_tag = "xanmod/linux"
 fetch.github = "xanmod/linux"
 
+[linux-xanmod-6_6]
+src.github_tag = "xanmod/linux"
+src.include_regex = "^6\\.6\\.(.*)"
+fetch.github = "xanmod/linux"
+
 [linux-xanmod-6_1]
 src.github_tag = "xanmod/linux"
 src.include_regex = "^6\\.1\\.(.*)"
@@ -305,6 +320,10 @@ fetch.github = "pterodactyl/wings"
 src.github = "c0re100/qBittorrent-Enhanced-Edition"
 fetch.github = "c0re100/qBittorrent-Enhanced-Edition"
 
+[libqcef]
+src.git = "https://github.com/martyr-deepin/qcef.git"
+fetch.github = "martyr-deepin/qcef"
+
 [qemu-user-static-amd64]
 src.webpage = "https://packages.debian.org/sid/amd64/qemu-user-static/download"
 src.regex = "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_([^\"]+)_amd64.deb"
@@ -368,6 +387,10 @@ fetch.url = "https://github.com/felixonmars/fcitx5-pinyin-zhwiki/releases/downlo
 src.git = "https://github.com/xddxdd/route-chain.git"
 fetch.github = "xddxdd/route-chain"
 
+[sam-toki-mouse-cursors]
+src.github = "SamToki/IconDesign---Sam-Toki-Mouse-Cursors"
+fetch.github = "SamToki/IconDesign---Sam-Toki-Mouse-Cursors"
+
 [sgx-software-enable]
 src.git = "https://github.com/intel/sgx-software-enable.git"
 fetch.github = "intel/sgx-software-enable"
@@ -403,6 +426,10 @@ src.regex = "\"Version\":\"([^\"]+)\""
 src.from_pattern = "(.+):(.+)-(.+)"
 src.to_pattern = "\\2"
 fetch.url = "https://home-store-packages.uniontech.com/appstore/pool/appstore/c/com.tencent.weixin/com.tencent.weixin_$ver_amd64.deb"
+
+[win2xcur]
+src.github = "quantum5/win2xcur"
+fetch.github = "quantum5/win2xcur"
 
 [wine-wechat-x86]
 src.github = "tom-snow/wechat-windows-versions-x86"

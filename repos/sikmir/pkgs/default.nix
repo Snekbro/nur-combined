@@ -53,8 +53,6 @@ lib.makeScope newScope (
     libredict = callPackage ./data/dicts/libredict { };
     tatoeba = callPackage ./data/dicts/tatoeba { };
 
-    gpsmap64 = callPackage ./data/firmwares/gpsmap64 { };
-
     dem = callPackage ./data/maps/dem { };
     freizeitkarte-osm = callPackage ./data/maps/freizeitkarte-osm { };
     gpxsee-maps = callPackage ./data/maps/gpxsee-maps { };
@@ -85,6 +83,7 @@ lib.makeScope newScope (
 
     ### DEVELOPMENT / LIBRARIES
 
+    libgnunetchat = callPackage ./development/libraries/libgnunetchat { };
     libshell = callPackage ./development/libraries/libshell { };
     microjson = callPackage ./development/libraries/microjson { };
 
@@ -111,6 +110,8 @@ lib.makeScope newScope (
     portolan = callPackage ./development/python-modules/portolan { };
     pymbtiles = callPackage ./development/python-modules/pymbtiles { };
     pytest-mp = callPackage ./development/python-modules/pytest-mp { };
+    pytest-shell-utilities = callPackage ./development/python-modules/pytest-shell-utilities { };
+    pytest-skip-markers = callPackage ./development/python-modules/pytest-skip-markers { };
     s2sphere = callPackage ./development/python-modules/s2sphere { };
 
     ### EMBEDDED
@@ -184,6 +185,7 @@ lib.makeScope newScope (
     stagit-gemini-milotier = callPackage ./gemini/stagit-gemini/milotier.nix { };
     stagit-gemini-sloum = callPackage ./gemini/stagit-gemini/sloum.nix { };
     tom = callPackage ./gemini/tom { };
+    tootik = callPackage ./gemini/tootik { };
 
     ### GEOSPATIAL
 
@@ -257,6 +259,7 @@ lib.makeScope newScope (
     gnsstk = callPackage ./gnss/gnsstk { };
     gnsstk-apps = callPackage ./gnss/gnsstk-apps { };
     gps-sdr-sim = callPackage ./gnss/gps-sdr-sim { };
+    gpsdate = callPackage ./gnss/gpsdate { };
     rtklib = callPackage ./gnss/rtklib { };
     visualgps = libsForQt5.callPackage ./gnss/visualgps { };
 
@@ -339,6 +342,7 @@ lib.makeScope newScope (
     complgen = callPackage ./misc/complgen { };
     csv2html = callPackage ./misc/csv2html { };
     csvtools = callPackage ./misc/csvtools { };
+    diagon = callPackage ./misc/diagon { };
     dns-filter = callPackage ./misc/dns-filter { };
     docker-reg-tool = callPackage ./misc/docker-reg-tool { };
     docx2csv = callPackage ./misc/docx2csv { };
@@ -357,6 +361,8 @@ lib.makeScope newScope (
     libmdbx = callPackage ./misc/libmdbx { };
     libnbcompat = callPackage ./misc/libnbcompat { };
     md2html = callPackage ./misc/md2html { };
+    messenger-cli = callPackage ./misc/messenger-cli { };
+    messenger-gtk = callPackage ./misc/messenger-gtk { };
     miband4 = callPackage ./misc/miband4 { };
     mitzasql = callPackage ./misc/mitzasql { };
     modbus-tools = callPackage ./misc/modbus-tools {
@@ -395,7 +401,7 @@ lib.makeScope newScope (
     turbo = callPackage ./misc/turbo { };
     tvision = callPackage ./misc/tvision { };
     wik = callPackage ./misc/wik { };
-    worm = callPackage ./misc/worm { };
+    #worm = callPackage ./misc/worm { };
     wptools = callPackage ./misc/wptools { };
     xfractint = callPackage ./misc/xfractint { };
     xtr = callPackage ./misc/xtr {

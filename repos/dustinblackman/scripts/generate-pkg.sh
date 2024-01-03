@@ -27,8 +27,14 @@ pkgs.stdenv.mkDerivation {
   };
   phases = [ \"installPhase\" ];
   installPhase = ''
-    mkdir -p \$out/bin
-    tar -zxf \$src -C \$out/bin/ ${REPO}
+    mkdir -p tmp \$out/bin \$out/share/doc/${REPO}/copyright
+    tar -zxf \$src -C tmp
+
+    mv tmp/${REPO} \$out/bin/
+    mv tmp/THIRDPARTY.html \$out/share/doc/${REPO}/copyright/
+    mv tmp/LICENSE \$out/share/doc/${REPO}/copyright/
+
+    patchelf --set-interpreter "\$\(cat \$NIX_CC/nix-support/dynamic-linker\)" \$out/bin/${REPO}
   '';
 }
 " >../pkgs/"$REPO".nix

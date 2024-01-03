@@ -14,12 +14,10 @@
     signaldctl.enableFor.user.colin = true;
   };
 
-  sane.roles.ac = true;
   sane.roles.build-machine.enable = true;
-  sane.roles.build-machine.emulation = false;
   sane.zsh.showDeadlines = false;  # ~/knowledge doesn't always exist
   sane.programs.consoleUtils.suggestedPrograms = [
-    "desktopConsoleUtils"
+    "pcConsoleUtils"
     "sane-scripts.stop-all-servo"
   ];
   sane.services.dyn-dns.enable = true;
@@ -30,6 +28,8 @@
   sane.services.wg-home.ip = config.sane.hosts.by-name."servo".wg-home.ip;
   sane.nixcache.substituters.servo = false;
   sane.nixcache.substituters.desko = false;
+  sane.nixcache.remote-builders.desko = false;
+  sane.nixcache.remote-builders.servo = false;
   # sane.services.duplicity.enable = true;  # TODO: re-enable after HW upgrade
 
   # automatically log in at the virtual consoles.

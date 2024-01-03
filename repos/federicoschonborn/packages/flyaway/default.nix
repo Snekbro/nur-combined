@@ -11,7 +11,7 @@
 , systemd
 , wayland
 , wayland-protocols
-, wlroots
+, wlroots_0_16
 , xorg
 , unstableGitUpdater
 }:
@@ -41,7 +41,7 @@ stdenv.mkDerivation {
     systemd
     wayland
     wayland-protocols
-    wlroots
+    wlroots_0_16
     xorg.libxcb
     xorg.xcbutilwm
   ];
@@ -55,6 +55,5 @@ stdenv.mkDerivation {
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ federicoschonborn ];
-    broken = lib.versionOlder wlroots.version "0.16";
   };
 }

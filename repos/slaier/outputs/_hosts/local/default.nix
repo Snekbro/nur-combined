@@ -2,10 +2,8 @@
 { config, pkgs, lib, ... }:
 let
   modules-enable = with modules; [
-    audio
-    avahi
+    aria2
     bluetooth
-    clash
     common
     croc
     direnv
@@ -19,13 +17,13 @@ let
     liferea
     neovim
     nix
-    nix-serve
     openfortivpn
     podman
-    smartdns
+    sing-box
     sops
     spotify
     sway
+    syncthing
     users
     vscode
     waybar
@@ -49,7 +47,7 @@ in
     firewall.enable = false;
     proxy = {
       default = "http://127.0.0.1:7890";
-      noProxy = "127.0.0.1,localhost,.local";
+      noProxy = "127.0.0.1,localhost,.lan";
     };
   };
 
@@ -76,8 +74,8 @@ in
     keepassxc
     killall
     librespeed-cli
+    lsof
     meld
-    motrix
     mpv
     nali
     neovim
@@ -100,28 +98,14 @@ in
     xdg-utils
     yt-dlp
     zip
-    (config.nur.repos.xddxdd.qbittorrent-enhanced-edition.override {
-      qbittorrent = qbittorrent.override {
-        libtorrent-rasterbar = libtorrent-rasterbar.overrideAttrs (prev: {
-          src = fetchFromGitHub {
-            owner = "arvidn";
-            repo = "libtorrent";
-            rev = "v2.0.9";
-            sha256 = "sha256-kUpeofullQ70uK/YZUD0ikHCquFTGwev7MxBYj0oHeU=";
-            fetchSubmodules = true;
-          };
-        });
-      };
-    })
   ] ++ (map makeNoProxyWrapper [
     ydict
     ungoogled-chromium
   ]);
 
+  services.safeeyes.enable = true;
+
   environment.etc."sway/config.d/misc.conf".text = ''
-    exec --no-startup-id XDG_SESSION_TYPE=x11 qbittorrent
     exec --no-startup-id gammastep -l 31:121
-    exec motrix
-    exec safeeyes
   '';
 }

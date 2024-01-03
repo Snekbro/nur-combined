@@ -22,7 +22,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Install nix
-      uses: cachix/install-nix-action@v23
+      uses: cachix/install-nix-action@v24
       with:
         nix_path: "${{ matrix.nixPath }}"
         extra_nix_config: |
@@ -31,7 +31,7 @@ jobs:
     - name: Show nixpkgs version
       run: nix-instantiate --eval -E '(import <nixpkgs> {}).lib.version'
     - name: Setup cachix
-      uses: cachix/cachix-action@v12
+      uses: cachix/cachix-action@v13
       with:
         name: ${{ matrix.cachixName }}
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
@@ -45,6 +45,6 @@ jobs:
           -I nixpkgs=$(nix-instantiate --find-file nixpkgs) \
           -I $PWD > /dev/null
     - name: Build nix packages
-      run: nix shell -f . nix-build-uncached -c nix-build-uncached non-broken.nix
+      run: nix shell nixpkgs#nix-build-uncached -c nix-build-uncached non-broken.nix
     - name: Trigger NUR update
       run: curl -XPOST "https://nur-update.nix-community.org/update?repo=${{ matrix.nurRepo }}"

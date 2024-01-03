@@ -1,7 +1,12 @@
+# outstanding cross-compilation PRs/issues:
+# - all: <https://github.com/NixOS/nixpkgs/labels/6.topic%3A%20cross-compilation>
+# - qtsvg mixed deps: <https://github.com/NixOS/nixpkgs/issues/269756>
+#   - big Qt fix: <https://github.com/NixOS/nixpkgs/pull/267311>
+#
 # outstanding issues:
+# - 2023/12/20: argyllcms requires a fully-emulated build
 # - 2023/10/10: build python3 is pulled in by many things
 #   - nix why-depends --all /nix/store/8g3kd2jxifq10726p6317kh8srkdalf5-nixos-system-moby-23.11.20231011.dirty /nix/store/pzf6dnxg8gf04xazzjdwarm7s03cbrgz-python3-3.10.12/bin/python3.10
-#   - blueman
 #   - gstreamer-vaapi -> gstreamer-dev -> glib-dev
 #   - phog -> gnome-shell
 #   - portfolio -> {glib,cairo,pygobject}-dev
@@ -9,41 +14,20 @@
 #   - many others. python3.10-cffi seems to be the offender which infects 70% of consumers though
 # - 2023/10/11: build ruby is pulled in by `neovim`:
 #   - nix why-depends --all /nix/store/rhli8vhscv93ikb43639c2ysy3a6dmzp-nixos-system-moby-23.11.20231011.30c7fd8 /nix/store/5xbwwbyjmc1xvjzhghk6r89rn4ylidv8-ruby-3.1.4
+# - 2023/12/19: rustPlatform.cargoSetupHook outside of `buildRustPackage` or python packages is a mess
+#   - it doesn't populate `.cargo/config` with valid cross-compilation config
+#   - something to do with the way it's spliced: `nativeBuildInputs = [ rustPlatform.cargoSetupHook.__spliced.hostHost ]` (or hostTarget) WORKS
+#   - see <https://github.com/NixOS/nixpkgs/pull/260068> -- it's probably wrong.
+#   - WIP fix in `pr-cross-cargo`/`pr-cross-cargo2` nixpkgs branch.
+#     - sanity check by building `pkgsCross.aarch64-multiplatform.rav1e`, and the `fd` program mentioned in PR 260068
+#     - `pkgsCross.musl64.fd`
+#     - `pkgsStatic.fd`
+#   - this is way too tricky to enable cross compilation without breaking the musl stuff.
+#     - i lost a whole day trying to get it to work: don't do it!
 #
 # partially fixed:
 # - 2023/10/11: build coreutils pulled in by rpm 4.18.1, but NOT by 4.19.0
 #   - nix why-depends --all /nix/store/gjwd2x507x7gjycl5q0nydd39d3nkwc5-dtrx-8.5.3-aarch64-unknown-linux-gnu /nix/store/y9gr7abwxvzcpg5g73vhnx1fpssr5frr-coreutils-9.3
-#
-# upstreaming status:
-#
-# - blueman builds on servo branch
-# - libgudev builds on servo branch
-#
-# - argyllcms needs investigation on servo
-# - directfb needs investigation on servo
-# - evolution-data-server needs investigation on servo
-# - gnome-clocks needs investigation on servo
-# - ibus needs investigation on servo
-# - luajit needs investigation on servo
-# - rpm needs investigation on servo
-# - waybar needs investigation on servo
-# - webkitgtk build fails at the nix layer (OOM?)
-#
-# non-binfmt build status:
-# - webkitgtk fails 90% through build:
-#   - ```
-#     [6376/6819] Generating ../../WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c
-#     FAILED: WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c /build/webkitgtk-2.40.5/build/WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c 
-#     cd /build/webkitgtk-2.40.5/build/Source/WebKit && /nix/store/6xbpap00kkdgrayizbc61mzf19ygsp9j-wayland-aarch64-unknown-linux-gnu-1.22.0-bin/bin/wayland-scanner private-code //nix/store/26nypvflsc8ggbdkns0wjvh4mjrj>
-#     /nix/store/6xbpap00kkdgrayizbc61mzf19ygsp9j-wayland-aarch64-unknown-linux-gnu-1.22.0-bin/bin/wayland-scanner: line 5: syntax error: unterminated quoted string
-#     ```
-# - x11_ssh_askpass fails with tricky wants-to-run-its-own-compiled-code issue (imake)
-# - tuba fails trying to invoke the aarch64 gettext during build
-# - rpm (wanted by dtrx, but technically optional) fails during configure; can't find python
-# - portfolio fails during meson configure; finds host python, can't execute it
-# - neovim-ruby fails; tries to run host ruby
-# - luajit fails; tries to run the host gcc
-# - cozy fails during install; can't run post_install_desktop_database.py
 #
 # outstanding issues for software i don't have deployed:
 # - gdk-pixbuf doesn't generate `gdk-pixbuf-thumbnailer` on cross
@@ -91,14 +75,25 @@ let
       pkg
     );
 
-  wrapGAppsHook4Fix = p: rmNativeInputs [ final.wrapGAppsHook4 ] (addNativeInputs [ final.wrapGAppsNoGuiHook final.gtk4 ] p);
-
-  dontCheck = p: p.overrideAttrs (_: {
-    doCheck = false;
+  needsBinfmt = pkg: (pkg.overrideAttrs or (updater: pkg // (updater pkg))) (upstream: {
+    # weird signature to support passing *either* a package, or an ordinary attrset
+    # "kvm" isn't precisely the right feature here.
+    # but the effect is that if you build a `needsBinfmt` package with `-j0`,
+    # then nix will try to find a builder that's been marked with `kvm` feature,
+    # and i don't mark my non-binfmt builders with `kvm`, hence it's guaranteed to
+    # be built on a binfmt-enabled builder (or not built, if no binfmt builders).
+    requiredSystemFeatures = (upstream.requiredSystemFeatures or []) ++ [ "kvm" ];
   });
-  useEmulatedStdenv = p: p.override {
-    inherit (emulated) stdenv;
-  };
+  cantBinfmt = pkg: (pkg.overrideAttrs or (updater: pkg // (updater pkg))) (upstream: {
+    requiredSystemFeatures = (upstream.requiredSystemFeatures or []) ++ [ "no-binfmt" ];
+  });
+
+  # such packages could build with `needsBinfmt` *or* `buildInQemu`.
+  # - the former is [an order of magnitude] faster, but the latter gets me closer to a pure installation.
+  needsBinfmtOrQemu = buildInQemu {};
+
+  # wrapGAppsHook4Fix = p: rmNativeInputs [ final.wrapGAppsHook4 ] (addNativeInputs [ final.wrapGAppsNoGuiHook final.gtk4 ] p);
+
   emulated = mkEmulated final prev;
 
   linuxMinimal = final.linux.override {
@@ -257,7 +252,7 @@ let
 
   # given a package defined for build != host, transform it to build on the host.
   # i.e. build using the host's stdenv.
-  buildOnHost =
+  buildOnHost = { overrides ? { inherit (emulated) stdenv; } }: pkg:
     let
       # patch packages which don't expect to be moved to a different platform
       preFixPkg = p:
@@ -267,6 +262,8 @@ let
             shell = final.runtimeShell;
           })
           # final.makeBinaryWrapper
+        # else if p.name or null == "make-binary-wrapper-hook" then
+        #   p.override { DNE = "not-yet-implemented"; }
         else if p.pname or null == "pkg-config-wrapper" then
           p.override {
             # default pkg-config.__spliced.hostTarget still wants to run on the build machine.
@@ -274,6 +271,11 @@ let
             stdenvNoCC = emulated.stdenvNoCC;
             buildPackages = final.hostPackages;  # TODO: just `final`?
           }
+        else if p.name or null == "npm-install-hook" then
+          p.overrideAttrs (base: {
+            propagatedNativeBuildInputs = base.propagatedBuildInputs;
+            propagatedBuildInputs = [];
+          })
         # else if p.pname == final.python3.pname then
         #   p // {
         #     pythonForBuild = p;
@@ -285,11 +287,10 @@ let
           p
         ;
       unsplicePkg = p: p.__spliced.hostTarget or p;
+      # unsplicePkg = p: p.__spliced.hostHost or p;
       unsplicePkgs = ps: map (p: unsplicePkg (preFixPkg p)) ps;
     in
-      pkg: (pkg.override {
-        inherit (emulated) stdenv;
-      }).overrideAttrs (upstream: {
+      (pkg.override overrides).overrideAttrs (upstream: {
         # for this purpose, the naming in `depsAB` is "inputs build for A, used to create packages in B" (i think).
         # when cross compiling x86_64 -> aarch64, most packages are
         # - build: x86_64
@@ -308,9 +309,11 @@ let
         nativeInstallCheckInputs = unsplicePkgs (upstream.nativeInstallCheckInputs or []);
       });
 
-  buildInQemu = pkg: emulateBuilderQemu (buildOnHost pkg);
+  # TODO: may be able to use qemu-system instead of booting a full linux?
+  # - <https://github.com/NixOS/nixpkgs/issues/119885#issuecomment-858491472>
+  buildInQemu = overrides: pkg: emulateBuilderQemu (buildOnHost overrides pkg);
   # buildInProot = pkg: emulateBuilderProot (buildOnHost pkg);
-in {
+in with final; {
   inherit emulated;
 
   # pkgsi686Linux = prev.pkgsi686Linux.extend (i686Self: i686Super: {
@@ -331,24 +334,20 @@ in {
   #   # }));
   # });
 
-  # packages which don't cross compile
-  inherit (emulated)
-  ;
-
 
   # adwaita-qt6 = prev.adwaita-qt6.override {
   #   # adwaita-qt6 still uses the qt5 version of these libs by default?
-  #   inherit (final.qt6) qtbase qtwayland;
+  #   inherit (qt6) qtbase qtwayland;
   # };
   # qt6 doesn't cross compile. the only thing that wants it is phosh/gnome, in order to
   # configure qt6 apps to look stylistically like gtk apps.
   # adwaita-qt6 isn't an input into any other packages we build -- it's just placed on the systemPackages.
   # so... just set it to null and that's Good Enough (TM).
   # adwaita-qt6 = derivation { name = "null-derivation"; builder = "/dev/null"; }; # null;
-  # adwaita-qt6 = final.stdenv.mkDerivation { name = "null-derivation"; };
-  # adwaita-qt6 = final.emptyDirectory;
+  # adwaita-qt6 = stdenv.mkDerivation { name = "null-derivation"; };
+  # adwaita-qt6 = emptyDirectory;
   # same story as qdwaita-qt6
-  # qgnomeplatform-qt6 = final.emptyDirectory;
+  # qgnomeplatform-qt6 = emptyDirectory;
 
   apacheHttpd_2_4 = prev.apacheHttpd_2_4.overrideAttrs (upstream: {
     configureFlags = upstream.configureFlags or [] ++ [
@@ -368,7 +367,7 @@ in {
     #     '/usr/bin/perl'
     # '';
     postFixup = upstream.postFixup or "" + ''
-      sed -i 's:/replace/with/path/to/perl/interpreter:${final.buildPackages.perl}/bin/perl:' $dev/bin/apxs
+      sed -i 's:/replace/with/path/to/perl/interpreter:${buildPackages.perl}/bin/perl:' $dev/bin/apxs
     '';
   });
 
@@ -376,9 +375,9 @@ in {
   #   # fixes `configure: error: Size of "void *" is less than size of "long"`
   #   inherit (emulated) stdenv;
   # }).overrideAttrs (upstream: {
-  #   # nativeBuildInputs = upstream.nativeBuildInputs ++ [ final.bintools ];
+  #   # nativeBuildInputs = upstream.nativeBuildInputs ++ [ bintools ];
   #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #     final.buildPackages.stdenv.cc  # fixes: "/nix/store/czvaa9y9ch56z53c0b0f5bsjlgh14ra6-apr-aarch64-unknown-linux-gnu-1.7.0-dev/share/build/libtool: line 1890: aarch64-unknown-linux-gnu-ar: command not found"
+  #     buildPackages.stdenv.cc  # fixes: "/nix/store/czvaa9y9ch56z53c0b0f5bsjlgh14ra6-apr-aarch64-unknown-linux-gnu-1.7.0-dev/share/build/libtool: line 1890: aarch64-unknown-linux-gnu-ar: command not found"
   #   ];
   #   # now can't find -lz for zlib.
   #   # this is because nixpkgs zlib.dev has only include/ + a .pc file linking to zlib, which has the lib/ folder
@@ -403,30 +402,17 @@ in {
   #     });
   #   };
 
+  # error: "imdi/imdi_make: line 1: ^?ELF^B^A^A^B�^A�@�^W^A@8: not found"
+  # 2023/12/20: upstreaming is unblocked; implemented in nixpatches/list.nix
+  # argyllcms = needsBinfmtOrQemu prev.argyllcms;
+
   # binutils = prev.binutils.override {
   #   # fix that resulting binary files would specify build #!sh as their interpreter.
   #   # dtrx is the primary beneficiary of this.
   #   # this doesn't actually cause mass rebuilding.
   #   # note that this isn't enough to remove all build references:
   #   # - expand-response-params still references build stuff.
-  #   shell = final.runtimeShell;
-  # };
-
-  # 2023/08/03: upstreaming is unblocked,implemented on servo, but has x86 in the runtime closure
-  # blueman = prev.blueman.overrideAttrs (orig: {
-  #   # configure: error: ifconfig or ip not found, install net-tools or iproute2
-  #   nativeBuildInputs = orig.nativeBuildInputs ++ [ final.iproute2 ];
-  # });
-  # bonsai = emulateBuildMachine (prev.bonsai.override {
-  #   hare = emulateBuildMachine (final.hare.override {
-  #     qbe = emulateBuildMachine final.qbe;
-  #     harePackages.harec = emulateBuildMachine (final.harePackages.harec.override {
-  #       qbe = emulateBuildMachine final.qbe;
-  #     });
-  #   });
-  # });
-  # bonsai = prev.bonsai.override {
-  #   inherit (emulated) stdenv hare;
+  #   shell = runtimeShell;
   # };
 
   # brltty = prev.brltty.override {
@@ -434,36 +420,49 @@ in {
   #   inherit (emulated) stdenv;
   # };
 
-  # 2023/10/23: upstreaming blocked by gvfs, webkitgtk 4.1 (OOMs)
+  # 2023/10/23: upstreaming blocked by gvfs, webkitgtk 4.1
   # fixes: "error: Package <foo> not found in specified Vala API directories or GObject-Introspection GIR directories"
-  calls = addNativeInputs [ final.gobject-introspection] prev.calls;
+  # needs binfmt for docs: "scangobj.py:execute_command:1293:WARNING:Running scanner failed: [Errno 8] Exec format error: './calls-scan', command: ./calls-scan"
+  calls = prev.calls.overrideAttrs (upstream: {
+    # TODO: try building with mesonEmulatorHook when i upstream this
+    # nativeBuildInputs = upstream.nativeBuildInputs ++ lib.optionals (!prev.stdenv.buildPlatform.canExecute prev.stdenv.hostPlatform) [
+    #   mesonEmulatorHook
+    # ];
+    outputs = lib.remove "devdoc" upstream.outputs;
+    mesonFlags = lib.remove "-Dgtk_doc=true" upstream.mesonFlags;
+  });
 
-  # cantarell-fonts = prev.cantarell-fonts.override {
-  #   # close this after upstreaming: <https://github.com/NixOS/nixpkgs/issues/50855>
-  #   # fixes error where python3.10-skia-pathops dependency isn't available for the build platform
-  #   inherit (emulated) stdenv;
-  # };
-  # fixes "FileNotFoundError: [Errno 2] No such file or directory: 'gtk4-update-icon-cache'"
-  # 2023/07/27: upstreaming is blocked on p11-kit cross compilation
-  # celluloid = wrapGAppsHook4Fix prev.celluloid;
   # cdrtools = prev.cdrtools.override {
   #   # "configure: error: installation or configuration problem: C compiler cc not found."
   #   inherit (emulated) stdenv;
   # };
   # cdrtools = prev.cdrtools.overrideAttrs (upstream: {
   #   # can't get it to actually use our CC, even when specifying these explicitly
-  #   # CC = "${final.stdenv.cc}/bin/${final.stdenv.cc.targetPrefix}cc";
+  #   # CC = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
   #   makeFlags = upstream.makeFlags ++ [
-  #     "CC=${final.stdenv.cc}/bin/${final.stdenv.cc.targetPrefix}cc"
+  #     "CC=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc"
   #   ];
   # });
+
+  # cinny = buildInQemu { overrides = {
+  #   buildNpmPackage = buildNpmPackage.override {
+  #     inherit (emulated) stdenv;
+  #     buildPackages = final.pkgsHostHost;
+  #   };
+  # }; } (prev.cinny.overrideAttrs (upstream: {
+  #   postPatch = ''
+  #     mkdir $TMP
+  #   '';
+  #   NIX_DEBUG = "6";
+  # }));
+  # cinny-desktop = needsBinfmt prev.cinny-desktop;
 
   # 2023/07/31: upstreaming is unblocked, implemented on servo
   # clapper = prev.clapper.overrideAttrs (upstream: {
   #   # use the host gjs (meson's find_program expects it to be executable)
   #   postPatch = (upstream.postPatch or "") + ''
   #     substituteInPlace bin/meson.build \
-  #       --replace "find_program('gjs').path()" "'${final.gjs}/bin/gjs'"
+  #       --replace "find_program('gjs').path()" "'${gjs}/bin/gjs'"
   #   '';
   # });
 
@@ -471,7 +470,7 @@ in {
   #   # docbook2x dependency doesn't cross compile
   #   docsSupport = prev.stdenv.buildPlatform.canExecute prev.stdenv.hostPlatform;
   # }).overrideAttrs (upstream: {
-  #   nativeBuildInputs = upstream.nativeBuildInputs ++ [ final.git ];
+  #   nativeBuildInputs = upstream.nativeBuildInputs ++ [ git ];
   # });
   # conky = (prev.conky.override {
   #   # docbook2x dependency doesn't cross compile
@@ -479,54 +478,124 @@ in {
   # }).overrideAttrs (upstream: {
   #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
   #     # "Unable to find program 'git'"
-  #     final.git
+  #     git
   #     # "bash: line 1: toluapp: command not found"
-  #     final.toluapp
+  #     toluapp
   #   ];
   # });
-
-  # cozy = prev.cozy.override {
-  #   cozy = prev.cozy.upstream.cozy.override {
-  #     # fixes runtime error: "Settings schema 'org.gtk.Settings.FileChooser' is not installed"
-  #     # otherwise gtk3+ schemas aren't added to XDG_DATA_DIRS
-  #     inherit (emulated) wrapGAppsHook;
-  #   };
-  # };
-
-  # dante = prev.dante.override {
-  #   # fixes: "configure: error: error: getaddrinfo() error value count too low"
-  #   inherit (emulated) stdenv;
-  # };
 
   # dconf = (prev.dconf.override {
   #   # we need dconf to build with vala, because dconf-editor requires that.
   #   # this only happens if dconf *isn't* cross-compiled
   #   inherit (emulated) stdenv;
   # }).overrideAttrs (upstream: {
-  #   nativeBuildInputs = lib.remove final.glib upstream.nativeBuildInputs;
+  #   nativeBuildInputs = lib.remove glib upstream.nativeBuildInputs;
   # });
+  # 2023/12/20: out for PR: <https://github.com/NixOS/nixpkgs/pull/275732>
   dconf = prev.dconf.overrideAttrs (upstream: {
     # we need dconf to build with vala, because dconf-editor requires that.
     # upstream nixpkgs explicitly disables that on cross compilation, but in fact, it works.
     # so just undo upstream's mods.
-    buildInputs = upstream.buildInputs ++ [ final.vala ];
+    buildInputs = upstream.buildInputs ++ [ vala ];
     mesonFlags = lib.remove "-Dvapi=false" upstream.mesonFlags;
   });
 
+  # used for cargo2nix rust projects (e.g. fractal, flare)
+  # defaultCrateOverrides = let
+  #   crateNeedsBinfmt = cname: {
+  #     "${cname}" = attrs: let
+  #       baseAttrs = (prev.defaultCrateOverrides."${cname}" or (a: a)) attrs;
+  #     in needsBinfmt baseAttrs;
+  #   };
+  #   crateCantBinfmt = cname: {
+  #     "${cname}" = attrs: let
+  #       baseAttrs = (prev.defaultCrateOverrides."${cname}" or (a: a)) attrs;
+  #     in cantBinfmt baseAttrs;
+  #   };
+  # in prev.defaultCrateOverrides
+  #   # // (crateCantBinfmt "gdk-pixbuf-sys")
+  #   # // (crateCantBinfmt "gdk4-sys")
+  #   # // (crateCantBinfmt "glib-sys")
+  #   # // (crateCantBinfmt "gstreamer-audio-sys")
+  #   # // (crateCantBinfmt "gstreamer-base-sys")
+  #   # // (crateCantBinfmt "gstreamer-pbutils-sys")
+  #   # // (crateCantBinfmt "gstreamer-play-sys")
+  #   # // (crateCantBinfmt "gstreamer-video-sys")
+  #   # // (crateCantBinfmt "libadwaita-sys")
 
+  #   # // (crateNeedsBinfmt "gdk-pixbuf-sys")
+  #   # // (crateNeedsBinfmt "gdk-pixbuf")
+  #   # // (crateNeedsBinfmt "gdk4-sys")
+  #   # // (crateNeedsBinfmt "gdk4")
+  #   # // (crateNeedsBinfmt "glib-sys")
+  #   # // (crateNeedsBinfmt "glib")
+  #   # // (crateNeedsBinfmt "gsk4")
+  #   # // (crateNeedsBinfmt "gst-plugin-gtk4")
+  #   # // (crateNeedsBinfmt "gstreamer")
+  #   # // (crateNeedsBinfmt "gstreamer-audio")
+  #   # // (crateNeedsBinfmt "gstreamer-audio-sys")
+  #   # // (crateNeedsBinfmt "gstreamer-base")
+  #   # // (crateNeedsBinfmt "gstreamer-base-sys")
+  #   # // (crateNeedsBinfmt "gstreamer-pbutils")
+  #   # // (crateNeedsBinfmt "gstreamer-pbutils-sys")
+  #   # // (crateNeedsBinfmt "gstreamer-play")
+  #   # // (crateNeedsBinfmt "gstreamer-play-sys")
+  #   # // (crateNeedsBinfmt "gstreamer-sys")
+  #   # // (crateNeedsBinfmt "gstreamer-video")
+  #   # // (crateNeedsBinfmt "gstreamer-video-sys")
+  #   # // (crateNeedsBinfmt "gtk4")
+  #   # // (crateNeedsBinfmt "libadwaita")
+  #   # // (crateNeedsBinfmt "libadwaita-sys")
+  #   # // (crateNeedsBinfmt "libshumate")
+  #   # // (crateNeedsBinfmt "sourceview5")
+  # ;
+
+  delfin = prev.delfin.overrideAttrs (upstream:
+  let
+    cargoEnvWrapper = buildPackages.writeShellScript "cargo-env-wrapper" ''
+      CARGO_BIN="$1"
+      shift
+      CARGO_OP="$1"
+      shift
+
+      ${rust.envVars.setEnv} "$CARGO_BIN" "$CARGO_OP" --target "${rust.envVars.rustHostPlatformSpec}" "$@"
+    '';
+  in {
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [
+      # fixes: loaders/meson.build:72:7: ERROR: Program 'msgfmt' not found or not executable
+      buildPackages.gettext
+    ];
+    postPatch = ''
+      substituteInPlace delfin/meson.build \
+        --replace "cargo, 'build'," "'${cargoEnvWrapper}', cargo, 'build'," \
+        --replace "'delfin' / rust_target" "'delfin' / '${rust.envVars.rustHostPlatformSpec}' / rust_target"
+    '';
+  });
+
+  # 2023/12/08: upstreaming blocked on qtsvg (pipewire)
   dialect = prev.dialect.overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace data/resources/meson.build --replace \
+        "find_program('blueprint-compiler')" \
+        "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', find_program('blueprint-compiler')"
+    '';
+    # error: "<dialect> is not allowed to refer to the following paths: <build python>"
     # dialect's meson build script sets host binaries to use build PYTHON
     # disallowedReferences = [];
     postFixup = (upstream.postFixup or "") + ''
       patchShebangs --update --host $out/share/dialect/search_provider
     '';
+    # upstream sets strictDeps=false which makes gAppsWrapperHook wrap with the build dependencies
+    strictDeps = true;
   });
 
+  # 2023/12/08: upstreaming is blocked on rpm
   dtrx = prev.dtrx.override {
     # `binutils` is the nix wrapper, which reads nix-related env vars
     # before passing on to e.g. `ld`.
     # dtrx probably only needs `ar` at runtime, not even `ld`.
-    binutils = final.binutils-unwrapped;
+    binutils = binutils-unwrapped;
   };
 
   # emacs = prev.emacs.override {
@@ -539,63 +608,101 @@ in {
   #   # <https://www.gnu.org/software/autoconf/manual/autoconf-2.63/html_node/Runtime.html>
   # };
 
-  firefox-extensions = prev.firefox-extensions.overrideScope' (self: super: {
-    unwrapped = super.unwrapped // {
-      browserpass-extension = super.unwrapped.browserpass-extension.override {
-        # this overlay is optional for binfmt machines, but non-binfmt can't cross-compile the modules (for use at runtime)
-        mkYarnModules = args: buildInQemu {
-          override = { stdenv }: (
-            (final.yarn2nix-moretea.override {
-              pkgs = final.pkgs.__splicedPackages // { inherit stdenv; };
-            }).mkYarnModules args
-          ).overrideAttrs (upstream: {
-            # i guess the VM creates the output directory for the derivation? not sure.
-            # and `mv` across the VM boundary breaks, too?
-            # original errors:
-            # - "mv: cannot create directory <$out>: File exists"
-            # - "mv: failed to preserve ownership for"
-            buildPhase = lib.replaceStrings
-              [
-                "mkdir $out"
-                "mv "
-              ]
-              [
-                "mkdir $out || true ; chmod +w deps/browserpass-extension-modules/package.json"
-                "cp -Rv "
-              ]
-              upstream.buildPhase
-            ;
-          });
-        };
-      };
-    };
+  # firefox-extensions = prev.firefox-extensions.overrideScope' (self: super: {
+  #   unwrapped = super.unwrapped // {
+  #     browserpass-extension = super.unwrapped.browserpass-extension.override {
+  #       mkYarnModules = args: needsBinfmtOrQemu {
+  #         override = { stdenv }: (
+  #           (yarn2nix-moretea.override {
+  #             pkgs = pkgs.__splicedPackages // { inherit stdenv; };
+  #           }).mkYarnModules args
+  #         ).overrideAttrs (upstream: {
+  #           # i guess the VM creates the output directory for the derivation? not sure.
+  #           # and `mv` across the VM boundary breaks, too?
+  #           # original errors:
+  #           # - "mv: cannot create directory <$out>: File exists"
+  #           # - "mv: failed to preserve ownership for"
+  #           buildPhase = lib.replaceStrings
+  #             [
+  #               "mkdir $out"
+  #               "mv "
+  #             ]
+  #             [
+  #               "mkdir $out || true ; chmod +w deps/browserpass-extension-modules/package.json"
+  #               "cp -Rv "
+  #             ]
+  #             upstream.buildPhase
+  #           ;
+  #         });
+  #       };
+  #     };
+  #   };
+  # });
+
+  # flare-signal = prev.flare-signal.override {
+  #   # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
+  #   inherit (emulated) cargo meson rustc rustPlatform stdenv;
+  # };
+  flare-signal = prev.flare-signal.overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace data/resources/meson.build --replace \
+        "find_program('blueprint-compiler')" \
+        "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', find_program('blueprint-compiler')"
+    '';
+     env = let
+       inherit buildPackages stdenv rust;
+       ccForBuild = "${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}cc";
+       cxxForBuild = "${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}c++";
+       ccForHost = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
+       cxxForHost = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}c++";
+       rustBuildPlatform = rust.toRustTarget stdenv.buildPlatform;
+       rustTargetPlatform = rust.toRustTarget stdenv.hostPlatform;
+       rustTargetPlatformSpec = rust.toRustTargetSpec stdenv.hostPlatform;
+     in {
+       # taken from <pkgs/build-support/rust/hooks/default.nix>
+       # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
+       # XXX: these aren't necessarily valid environment variables: the referenced nix file is more clever to get them to work.
+       "CC_${rustBuildPlatform}" = "${ccForBuild}";
+       "CXX_${rustBuildPlatform}" = "${cxxForBuild}";
+       "CC_${rustTargetPlatform}" = "${ccForHost}";
+       "CXX_${rustTargetPlatform}" = "${cxxForHost}";
+     };
   });
 
-  flare-signal = prev.flare-signal.override {
-    # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
-    inherit (emulated) cargo meson rustc rustPlatform stdenv;
-  };
+  flare-signal-nixified = cantBinfmt ((prev.flare-signal-nixified.override {
+    crateOverrideFn = cantBinfmt;
+  }).overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace data/resources/meson.build --replace \
+        "find_program('blueprint-compiler')" \
+        "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', find_program('blueprint-compiler')"
+    '';
+  }));
 
-  flare-signal-nixified = prev.flare-signal-nixified.override {
-    # N.B. blueprint-compiler is in nativeBuildInputs.
-    # the trick here is to force the aarch64 versions to be used during build (via emulation).
-    # blueprint-compiler override shared with tangram.
-    blueprint-compiler = buildInQemu (final.blueprint-compiler.overrideAttrs (_: {
-      # default is to propagate gobject-introspection *as a buildInput*, when it's supposed to be native.
-      propagatedBuildInputs = [];
-      # "Namespace Gtk not available"
-      doCheck = false;
-    }));
-  };
-
-  # 2023/07/31: upstreaming is blocked on ostree dep
+  # 2023/12/08: upstreaming is unblocked
   flatpak = prev.flatpak.overrideAttrs (upstream: {
     # fixes "No package 'libxml-2.0' found"
-    buildInputs = upstream.buildInputs ++ [ final.libxml2 ];
+    buildInputs = upstream.buildInputs ++ [ libxml2 ];
     configureFlags = upstream.configureFlags ++ [
       "--enable-selinux-module=no"  # fixes "checking for /usr/share/selinux/devel/Makefile... configure: error: cannot check for file existence when cross compiling"
       "--disable-gtk-doc"  # fixes "You must have gtk-doc >= 1.20 installed to build documentation for Flatpak"
     ];
+
+    postPatch = let
+      # copied from nixpkgs flatpak and modified to use buildPackages python
+      vsc-py = buildPackages.python3.withPackages (pp: [
+        pp.pyparsing
+      ]);
+    in ''
+      patchShebangs buildutil
+      patchShebangs tests
+      PATH=${lib.makeBinPath [vsc-py]}:$PATH patchShebangs --build subprojects/variant-schema-compiler/variant-schema-compiler
+    '' + ''
+      sed -i s:'\$BWRAP --version:${stdenv.hostPlatform.emulator buildPackages} \$BWRAP --version:' configure.ac
+      sed -i s:'\$DBUS_PROXY --version:${stdenv.hostPlatform.emulator buildPackages} \$DBUS_PROXY --version:' configure.ac
+    '';
   });
 
   # future: use `buildRustPackage`?
@@ -609,16 +716,16 @@ in {
   #   # seems to hang when compiling fractal
   #   inherit (emulated) cargo meson rustc rustPlatform stdenv;
   # };
-  fractal-latest = prev.fractal-latest.override {
-    # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
-    # seems to hang when compiling fractal
-    fractal-next = final.fractal-next.override {
-      inherit (emulated) cargo meson rustc rustPlatform stdenv;
-    };
-  };
-  # fractal-next = prev.fractal-next.overrideAttrs (upstream: {
+  # fractal-latest = prev.fractal-latest.override {
+  #   # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
+  #   # seems to hang when compiling fractal
+  #   fractal-next = fractal-next.override {
+  #     inherit (emulated) cargo meson rustc rustPlatform stdenv;
+  #   };
+  # };
+  # fractal = prev.fractal.overrideAttrs (upstream: {
   #   env = let
-  #     inherit (final) buildPackages stdenv rust;
+  #     inherit buildPackages stdenv rust;
   #     ccForBuild = "${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}cc";
   #     cxxForBuild = "${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}c++";
   #     ccForHost = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
@@ -629,6 +736,7 @@ in {
   #   in {
   #     # taken from <pkgs/build-support/rust/hooks/default.nix>
   #     # fixes "cargo:warning=aarch64-unknown-linux-gnu-gcc: error: unrecognized command-line option ‘-m64’"
+  #     # XXX: these aren't necessarily valid environment variables: the referenced nix file is more clever to get them to work.
   #     "CC_${rustBuildPlatform}" = "${ccForBuild}";
   #     "CXX_${rustBuildPlatform}" = "${cxxForBuild}";
   #     "CC_${rustTargetPlatform}" = "${ccForHost}";
@@ -637,12 +745,12 @@ in {
   #   mesonFlags = (upstream.mesonFlags or []) ++
   #     (let
   #       # ERROR: 'rust' compiler binary not defined in cross or native file
-  #       crossFile = final.writeText "cross-file.conf" ''
+  #       crossFile = writeText "cross-file.conf" ''
   #       [binaries]
-  #       rust = [ 'rustc', '--target', '${final.rust.toRustTargetSpec final.stdenv.hostPlatform}' ]
+  #       rust = [ 'rustc', '--target', '${rust.toRustTargetSpec stdenv.hostPlatform}' ]
   #     '';
   #     in
-  #       lib.optionals (final.stdenv.hostPlatform != final.stdenv.buildPlatform) [ "--cross-file=${crossFile}" ]
+  #       lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [ "--cross-file=${crossFile}" ]
   #     );
   #   # 2023/09/15: fails with:
   #   # - error: linking with `/nix/store/75slks1wr3b3sxr5advswjzg9lvbv9jc-gcc-wrapper-12.3.0/bin/cc` failed: exit status: 1
@@ -654,6 +762,14 @@ in {
   #   # - no obvious PRs that merged after 0.11 release relevant to cross compilation
   #   # patching gst-plugin-gtk4 to not build cdylib fixes the issue in the `fractal-nixified` variant of this package
   # });
+
+  # needs binfmt: "error[E0463]: can't find crate for `gtk4`" (and others)
+  # either one can build fractal and all its deps with binfmt,
+  # or build *none* of them with binfmt.
+  # but mixing non-binfmt deps with a binfmt top-level fractal fails
+  fractal-nixified = cantBinfmt (prev.fractal-nixified.override {
+    crateOverrideFn = cantBinfmt;
+  });
 
   # 2023/07/31: upstreaming is unblocked -- if i can rework to not use emulation
   # fwupd-efi = prev.fwupd-efi.override {
@@ -671,37 +787,62 @@ in {
   #   # does not fix: "efi/meson.build:162:0: ERROR: Program or command 'gcc' not found or not executable"
 
   #   # nativeBuildInputs = upstream.nativeBuildInputs ++ lib.optionals (!prev.stdenv.buildPlatform.canExecute prev.stdenv.hostPlatform) [
-  #   #   final.mesonEmulatorHook
+  #   #   mesonEmulatorHook
   #   # ];
   # });
   # solves (meson) "Run-time dependency libgcab-1.0 found: NO (tried pkgconfig and cmake)", and others.
   # 2023/07/31: upstreaming is blocked on argyllcms, fwupd-efi, libavif
-  fwupd = (addBuildInputs
-    [ final.gcab ]
-    (mvToBuildInputs [ final.gnutls ] prev.fwupd)
-  ).overrideAttrs (upstream: {
-    # XXX: gcab is apparently needed as both build and native input
-    # can't build docs w/o adding `gi-docgen` to ldpath, but that adds a new glibc to the ldpath
-    # which causes host binaries to be linked against the build libc & fail
-    mesonFlags = (lib.remove "-Ddocs=enabled" upstream.mesonFlags) ++ [ "-Ddocs=disabled" ];
-    outputs = lib.remove "devdoc" upstream.outputs;
-  });
+  # fwupd = (addBuildInputs
+  #   [ gcab ]
+  #   (mvToBuildInputs [ gnutls ] prev.fwupd)
+  # ).overrideAttrs (upstream: {
+  #   # XXX: gcab is apparently needed as both build and native input
+  #   # can't build docs w/o adding `gi-docgen` to ldpath, but that adds a new glibc to the ldpath
+  #   # which causes host binaries to be linked against the build libc & fail
+  #   mesonFlags = (lib.remove "-Ddocs=enabled" upstream.mesonFlags) ++ [ "-Ddocs=disabled" ];
+  #   outputs = lib.remove "devdoc" upstream.outputs;
+  # });
 
   # 2023/07/31: upstreaming is blocked on qttranslations (via pipewire)
   # N.B.: should be able to remove gnupg/ssh from {native}buildInputs when upstreaming
   gcr_4 = prev.gcr_4.overrideAttrs (upstream: {
     # fixes (meson): "ERROR: Program 'gpg2 gpg' not found or not executable"
     mesonFlags = (upstream.mesonFlags or []) ++ [
-      "-Dgpg_path=${final.gnupg}/bin/gpg"
+      "-Dgpg_path=${gnupg}/bin/gpg"
     ];
   });
   # 2023/10/23: upstreaming: <https://github.com/NixOS/nixpkgs/pull/263158>
   # gcr = prev.gcr.overrideAttrs (upstream: {
   #   # removes build platform's gnupg from runtime closure
   #   mesonFlags = (upstream.mesonFlags or []) ++ [
-  #     "-Dgpg_path=${final.gnupg}/bin/gpg"
+  #     "-Dgpg_path=${gnupg}/bin/gpg"
   #   ];
   # });
+
+  # 2023/12/19: upstreaming is unblocked
+  glycin-loaders = prev.glycin-loaders.overrideAttrs (upstream:
+  let
+    cargoEnvWrapper = buildPackages.writeShellScript "cargo-env-wrapper" ''
+      CARGO_BIN="$1"
+      shift
+      CARGO_OP="$1"
+      shift
+
+      ${rust.envVars.setEnv} "$CARGO_BIN" "$CARGO_OP" --target "${rust.envVars.rustHostPlatformSpec}" "$@"
+    '';
+  in {
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [
+      # fixes: loaders/meson.build:72:7: ERROR: Program 'msgfmt' not found or not executable
+      buildPackages.gettext
+    ];
+    postPatch = ''
+      substituteInPlace loaders/meson.build \
+        --replace "cargo_bin, 'build'," "'${cargoEnvWrapper}', cargo_bin, 'build'," \
+        --replace "'loaders' / rust_target" "'loaders' / '${rust.envVars.rustHostPlatformSpec}' / rust_target"
+    '';
+  });
+
+
   # gnustep = prev.gnustep.overrideScope' (self: super: {
   #   # gnustep is going to need a *lot* of work/domain-specific knowledge to truly cross-compile,
   #   # base = emulated.gnustep.base;
@@ -715,100 +856,100 @@ in {
   #     buildInputs = (upstream.buildInputs or []) ++ [ prev.pkg-config ];
   #   });
   # });
-  # 2023/07/27: upstreaming is blocked on p11-kit, libavif cross compilation
-  gthumb = mvInputs { nativeBuildInputs = [ final.glib ]; } prev.gthumb;
+  # 2023/12/20: upstreaming is blocked on webp-pixbuf-loader
+  gthumb = mvInputs { nativeBuildInputs = [ glib ]; } prev.gthumb;
 
-  gnome-2048 = addNativeInputs [
-    # fix: "error: Package `libgnome-games-support-1' not found in specified Vala API directories or GObject-Introspection GIR directories"
-    final.libgnome-games-support
-    # final.gobject-introspection  # this *should* work, if libgnome-games-support were to ship GIR bindings?
-  ] prev.gnome-2048;
+  # 2023/12/20: upstreaming is blocked on qtsvg (via pipewire), jbig2dec
+  gnome-frog = prev.gnome-frog.overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace data/meson.build --replace \
+        "find_program('blueprint-compiler')" \
+        "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', find_program('blueprint-compiler')"
+    '';
+  });
 
   gnome = prev.gnome.overrideScope' (self: super: {
-    # dconf-editor = super.dconf-editor.override {
-    #   # fails to fix original error
-    #   inherit (emulated) stdenv;
-    # };
     # fixes "error: Package `dconf' not found in specified Vala API directories or GObject-Introspection GIR directories"
     # - but ONLY if `dconf` was built with the vala feature.
     # - dconf is NOT built with vala when cross-compiled
     #   - that's an explicit choice/limitation in nixpkgs upstream
     # - TODO: vapi stuff is contained in <dconf.dev:/share/vala/vapi/dconf.vapi>
     #   it's cross-platform; should be possible to ship dconf only in buildInputs & point dconf-editor to the right place
-    # dconf-editor = addNativeInputs [ final.dconf ] super.dconf-editor;
-    evince = super.evince.overrideAttrs (orig: {
-      # 2023/07/31: upstreaming is blocked on libavif
-      # fixes (meson) "Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)"
-      # inspired by gupnp
-      outputs = [ "out" "dev" ]
-        ++ lib.optionals (prev.stdenv.buildPlatform == prev.stdenv.hostPlatform) [ "devdoc" ];
-      mesonFlags = orig.mesonFlags ++ [
-        "-Dgtk_doc=${lib.boolToString (prev.stdenv.buildPlatform == prev.stdenv.hostPlatform)}"
-      ];
-    });
+    # 2023/12/20: out for PR: <https://github.com/NixOS/nixpkgs/pull/275732>
+    # dconf-editor = addNativeInputs [ dconf ] super.dconf-editor;
     evolution-data-server = super.evolution-data-server.overrideAttrs (upstream: {
-      # 2023/08/01: upstreaming is blocked on libavif
-      # fixes aborts in "Performing Test _correct_iconv"
+      # 2023/12/08: upstreaming is unblocked, but depends on webkitgtk 4.1
       cmakeFlags = upstream.cmakeFlags ++ [
-        "-DCMAKE_CROSSCOMPILING_EMULATOR=${final.stdenv.hostPlatform.emulator final.buildPackages}"
+        "-DCMAKE_CROSSCOMPILING_EMULATOR=${stdenv.hostPlatform.emulator buildPackages}"
+        "-DENABLE_TESTS=no"
+        "-DGETTEXT_MSGFMT_EXECUTABLE=${lib.getBin buildPackages.gettext}/bin/msgfmt"
+        "-DGETTEXT_MSGMERGE_EXECUTABLE=${lib.getBin buildPackages.gettext}/bin/msgmerge"
+        "-DGETTEXT_XGETTEXT_EXECUTABLE=${lib.getBin buildPackages.gettext}/bin/xgettext"
+        "-DGLIB_COMPILE_RESOURCES=${lib.getDev buildPackages.glib}/bin/glib-compile-resources"
+        "-DGLIB_COMPILE_SCHEMAS=${lib.getDev buildPackages.glib}/bin/glib-compile-schemas"
       ];
+      postPatch = (upstream.postPatch or "") + ''
+        substituteInPlace src/addressbook/libebook-contacts/CMakeLists.txt --replace \
+          'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table' \
+          'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table' 
+        substituteInPlace src/camel/CMakeLists.txt --replace \
+          'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables' \
+          'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables'
+      '';
       # N.B.: the deps are funky even without cross compiling.
       # upstream probably wants to replace pcre with pcre2, and maybe provide perl
       # nativeBuildInputs = upstream.nativeBuildInputs ++ [
-      #   final.perl  # fixes "The 'perl' not found, not installing csv2vcard"
-      #   # final.glib
-      #   # final.libiconv
-      #   # final.iconv
+      #   perl  # fixes "The 'perl' not found, not installing csv2vcard"
+      #   # glib
+      #   # libiconv
+      #   # iconv
       # ];
       # buildInputs = upstream.buildInputs ++ [
-      #   final.pcre2  # fixes: "Package 'libpcre2-8', required by 'glib-2.0', not found"
-      #   final.mount  # fails to fix: "Package 'mount', required by 'gio-2.0', not found"
+      #   pcre2  # fixes: "Package 'libpcre2-8', required by 'glib-2.0', not found"
+      #   mount  # fails to fix: "Package 'mount', required by 'gio-2.0', not found"
       # ];
     });
 
     # 2023/08/01: upstreaming is blocked on nautilus, gnome-user-share (apache-httpd, webp-pixbuf-loader)
     # fixes: "src/meson.build:106:0: ERROR: Program 'glib-compile-resources' not found or not executable"
-    file-roller = mvToNativeInputs [ final.glib ] super.file-roller;
+    file-roller = mvToNativeInputs [ glib ] super.file-roller;
 
+    # 2023/12/08: upstreaming is blocked by evolution-data-server
     geary = super.geary.overrideAttrs (upstream: {
       buildInputs = upstream.buildInputs ++ [
-        # final.glib
-        final.appstream-glib
-        final.libxml2
+        # glib
+        appstream-glib
+        libxml2
       ];
     });
 
-    # 2023/08/01: upstreaming is unblocked
-    # fixes: "meson.build:75:6: ERROR: Program 'gtk-update-icon-cache' not found or not executable"
-    gnome-clocks = wrapGAppsHook4Fix super.gnome-clocks;
-
     # 2023/07/31: upstreaming is blocked on argyllcms, libavif
     # fixes: "src/meson.build:3:0: ERROR: Program 'glib-compile-resources' not found or not executable"
-    # gnome-color-manager = mvToNativeInputs [ final.glib ] super.gnome-color-manager;
+    # gnome-color-manager = mvToNativeInputs [ glib ] super.gnome-color-manager;
     # 2023/08/01: upstreaming is blocked by apache-httpd, argyllcms, ibus, libavif, webp-pixbuf-loader
     # fixes "subprojects/gvc/meson.build:30:0: ERROR: Program 'glib-mkenums mkenums' not found or not executable"
-    # gnome-control-center = mvToNativeInputs [ final.glib ] super.gnome-control-center;
+    # gnome-control-center = mvToNativeInputs [ glib ] super.gnome-control-center;
     gnome-keyring = super.gnome-keyring.overrideAttrs (orig: {
       # 2023/07/31: upstreaming is unblocked, but requires a different fix
       # fixes "configure.ac:374: error: possibly undefined macro: AM_PATH_LIBGCRYPT"
-      nativeBuildInputs = orig.nativeBuildInputs ++ [ final.libgcrypt final.openssh final.glib ];
+      nativeBuildInputs = orig.nativeBuildInputs ++ [ libgcrypt openssh glib ];
     });
     gnome-maps = super.gnome-maps.overrideAttrs (upstream: {
+      # 2023/11/21: upstreaming is blocked by libshumate, qtsvg (via pipewire/ffado)
       postPatch = (upstream.postPatch or "") + ''
         # fixes: "ERROR: Program 'gjs' not found or not executable"
         substituteInPlace meson.build \
-          --replace "find_program('gjs')" "find_program('${final.gjs}/bin/gjs')"
+          --replace "find_program('gjs')" "find_program('${gjs}/bin/gjs')"
         # fixes missing `gapplication` binary when not on PATH (needed for non-cross build too)
         substituteInPlace data/org.gnome.Maps.desktop.in.in \
-          --replace "gapplication" "${final.glib.bin}/bin/gapplication"
+          --replace "gapplication" "${glib.bin}/bin/gapplication"
       '';
     });
-    # fixes: "Program gdbus-codegen found: NO"
-    # gnome-remote-desktop = mvToNativeInputs [ final.glib ] super.gnome-remote-desktop;
     # gnome-shell = super.gnome-shell.overrideAttrs (orig: {
     #   # fixes "meson.build:128:0: ERROR: Program 'gjs' not found or not executable"
     #   # does not fix "_giscanner.cpython-310-x86_64-linux-gnu.so: cannot open shared object file: No such file or directory"  (python import failure)
-    #   nativeBuildInputs = orig.nativeBuildInputs ++ [ final.gjs final.gobject-introspection ];
+    #   nativeBuildInputs = orig.nativeBuildInputs ++ [ gjs gobject-introspection ];
     #   # try to reduce gobject-introspection/shew dependencies
     #   mesonFlags = [
     #     "-Dextensions_app=false"
@@ -826,69 +967,70 @@ in {
     gnome-shell = super.gnome-shell.overrideAttrs (upstream: {
       # 2023/08/01: upstreaming is blocked on argyllcms, gnome-keyring, gnome-clocks, ibus, libavif, webp-pixbuf-loader
       nativeBuildInputs = upstream.nativeBuildInputs ++ [
-        final.gjs  # fixes "meson.build:128:0: ERROR: Program 'gjs' not found or not executable"
+        gjs  # fixes "meson.build:128:0: ERROR: Program 'gjs' not found or not executable"
       ];
     });
     gnome-settings-daemon = super.gnome-settings-daemon.overrideAttrs (orig: {
       # 2023/07/31: upstreaming is blocked on argyllcms, libavif
       # glib solves: "Program 'glib-mkenums mkenums' not found or not executable"
-      nativeBuildInputs = orig.nativeBuildInputs ++ [ final.glib ];
+      nativeBuildInputs = orig.nativeBuildInputs ++ [ glib ];
       # pkg-config solves: "plugins/power/meson.build:22:0: ERROR: Dependency lookup for glib-2.0 with method 'pkgconfig' failed: Pkg-config binary for machine 0 not found."
       # stdenv.cc fixes: "plugins/power/meson.build:60:0: ERROR: No build machine compiler for 'plugins/power/gsd-power-enums-update.c'"
       # but then it fails with a link-time error.
-      # depsBuildBuild = orig.depsBuildBuild or [] ++ [ final.glib final.pkg-config final.buildPackages.stdenv.cc ];
+      # depsBuildBuild = orig.depsBuildBuild or [] ++ [ glib pkg-config buildPackages.stdenv.cc ];
       # hack to just not build the power plugin (panel?), to avoid cross compilation errors
       postPatch = orig.postPatch + ''
         sed -i "s/disabled_plugins = \[\]/disabled_plugins = ['power']/" plugins/meson.build
       '';
     });
+
     # 2023/08/01: upstreaming is blocked on argyllcms, gnome-keyring, gnome-clocks, ibus, libavif, webp-pixbuf-loader (gnome-shell)
     # fixes: "gdbus-codegen not found or executable"
-    # gnome-session = mvToNativeInputs [ final.glib ] super.gnome-session;
+    # gnome-session = mvToNativeInputs [ glib ] super.gnome-session;
     # gnome-terminal = super.gnome-terminal.overrideAttrs (orig: {
     #   # 2023/07/31: upstreaming is blocked on argyllcms, apache-httpd, gnome-keyring, libavif, gnome-clocks, ibus, webp-pixbuf-loader
     #   # fixes "meson.build:343:0: ERROR: Dependency "libpcre2-8" not found, tried pkgconfig"
-    #   buildInputs = orig.buildInputs ++ [ final.pcre2 ];
+    #   buildInputs = orig.buildInputs ++ [ pcre2 ];
     # });
     # 2023/07/31: upstreaming is blocked on apache-httpd
     # fixes: meson.build:111:6: ERROR: Program 'glib-compile-schemas' not found or not executable
-    # gnome-user-share = addNativeInputs [ final.glib ] super.gnome-user-share;
-    mutter = (super.mutter.overrideAttrs (orig: {
+    # gnome-user-share = addNativeInputs [ glib ] super.gnome-user-share;
+
+    mutter = super.mutter.overrideAttrs (orig: {
       # 2023/07/31: upstreaming is blocked on argyllcms, libavif
       # N.B.: not all of this suitable to upstreaming, as-is.
       # mesa and xorgserver are removed here because they *themselves* don't build for `buildPackages` (temporarily: 2023/10/26)
-      nativeBuildInputs = lib.subtractLists [ final.mesa final.xorg.xorgserver ] orig.nativeBuildInputs;
+      nativeBuildInputs = lib.subtractLists [ mesa xorg.xorgserver ] orig.nativeBuildInputs;
       buildInputs = orig.buildInputs ++ [
-        final.mesa  # fixes "meson.build:237:2: ERROR: Dependency "gbm" not found, tried pkgconfig"
+        mesa  # fixes "meson.build:237:2: ERROR: Dependency "gbm" not found, tried pkgconfig"
+        libGL  # fixes "meson.build:184:11: ERROR: Dependency "gl" not found, tried pkgconfig and system"
       ];
       # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
       mesonFlags = lib.remove "-Ddocs=true" orig.mesonFlags;
       outputs = lib.remove "devdoc" orig.outputs;
-    }));
-    nautilus = (
-      # 2023/07/31: upstreaming is blocked on apache-httpd, webp-pixbuf-loader
-      addInputs {
-        # fixes: "meson.build:123:0: ERROR: Dependency "libxml-2.0" not found, tried pkgconfig"
-        buildInputs = [ final.libxml2 ];
-        # fixes: "meson.build:226:6: ERROR: Program 'gtk-update-icon-cache' not found or not executable"
-        nativeBuildInputs = [ final.gtk4 ];
-      }
-      # fixes -msse2, -mfpmath=sse flags
-      (wrapGAppsHook4Fix super.nautilus)
-    );
+      postInstall = lib.replaceStrings [ "${glib.dev}" ] [ "${buildPackages.glib.dev}" ] orig.postInstall;
+    });
+    # nautilus = (
+    #   # 2023/11/21: upstreaming is blocked on apache-httpd, webp-pixbuf-loader, qtsvg
+    #   addInputs {
+    #     # fixes: "meson.build:123:0: ERROR: Dependency "libxml-2.0" not found, tried pkgconfig"
+    #     buildInputs = [ libxml2 ];
+    #     # fixes: "meson.build:226:6: ERROR: Program 'gtk-update-icon-cache' not found or not executable"
+    #     nativeBuildInputs = [ gtk4 ];
+    #   }
+    #   # fixes -msse2, -mfpmath=sse flags
+    #   (wrapGAppsHook4Fix super.nautilus)
+    # );
   });
 
   # gnome2 = prev.gnome2.overrideScope' (self: super: {
-  #   # inherit (emulated.gnome2)
-  #   #   GConf
-  #   # ;
   #   # GConf = (
   #   #   # python3 -> nativeBuildInputs fixes "2to3: command not found"
   #   #   # glib.dev in nativeBuildInputs fixes "gconfmarshal.list: command not found"
   #   #   # new error: "** (orbit-idl-2): WARNING **: ./GConfX.idl compilation failed"
   #   #   addNativeInputs
-  #   #     [ final.glib.dev ]
-  #   #     (mvToNativeInputs [ final.python3 ] super.GConf);
+  #   #     [ glib.dev ]
+  #   #     (mvToNativeInputs [ python3 ] super.GConf);
   #   # );
   #   # avoid gconf. last release was 2013: it's dead.
   #   GConf = super.GConf.override {
@@ -901,55 +1043,17 @@ in {
   #   #   mvToNativeInputs [ self.GConf ] super.gnome_vfs
   #   # );
   #   gnome_vfs = useEmulatedStdenv super.gnome_vfs;
-  #   libIDL  = super.libIDL.override {
-  #     # "configure: error: cannot run test program while cross compiling"
-  #     inherit (emulated) stdenv;
-  #   };
-  #   ORBit2 = super.ORBit2.override {
-  #     # "configure: error: Failed to find alignment. Check config.log for details."
-  #     inherit (emulated) stdenv;
-  #   };
   # });
 
-  # 2023/07/27: upstreaming is blocked on xdg-utils cross compilation
-  # - fails in different way than here: tries to run host python during build
+  # 2023/12/08: upstreaming is blocked on python3Packages.eyeD3
   gpodder = prev.gpodder.overridePythonAttrs (upstream: {
     # fix gobject-introspection overrides import that otherwise fails on launch
     nativeBuildInputs = upstream.nativeBuildInputs ++ [
-      final.buildPackages.gobject-introspection
+      buildPackages.gobject-introspection
     ];
-    buildInputs = lib.remove final.gobject-introspection upstream.buildInputs;
+    buildInputs = lib.remove gobject-introspection upstream.buildInputs;
     strictDeps = true;
   });
-
-  # 2023/10/23: out for review: <https://github.com/NixOS/nixpkgs/pull/263107>
-  # gsound = prev.gsound.overrideAttrs (upstream: {
-  #   # remove logic which was removing introspection/vala on cross compilation
-  #   mesonFlags = [];
-  # });
-  # 2023/10/23: out for review: <https://github.com/NixOS/nixpkgs/pull/263135>
-  # gspell = prev.gspell.overrideAttrs (upstream: {
-  #   depsBuildBuild = (upstream.depsBuildBuild or []) ++ [
-  #     # without this, vapi files ($dev/share/vapi/vala/gspell-1.vapi) aren't generated.
-  #     # that breaks consumers like `gnome.geary`
-  #     final.pkg-config
-  #   ];
-  #   configureFlags = upstream.configureFlags ++ [
-  #     # not necessary, but enforces that we really do produce vapi files
-  #     "--enable-vala"
-  #   ];
-  # });
-
-  # 2023/10/23: out for review: <https://github.com/NixOS/nixpkgs/pull/263175>
-  # gvfs = prev.gvfs.overrideAttrs (upstream: {
-  #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #     # XXX: this ends up on the runtime closure
-  #     final.openssh
-  #     final.glib  # fixes "gdbus-codegen: command not found"
-  #   ];
-  #   # fixes "meson.build:312:2: ERROR: Assert failed: http required but libxml-2.0 not found"
-  #   buildInputs = upstream.buildInputs ++ [ final.libxml2 ];
-  # });
 
   # hdf5 = prev.hdf5.override {
   #   inherit (emulated) stdenv;
@@ -959,14 +1063,14 @@ in {
   # hspell = prev.hspell.overrideAttrs (upstream: {
   #   # build perl is needed by the Makefile,
   #   # but $out/bin/multispell (which is simply copied from src) should use host perl
-  #   buildInputs = (upstream.buildInputs or []) ++ [ final.perl ];
+  #   buildInputs = (upstream.buildInputs or []) ++ [ perl ];
   #   postInstall = ''
   #     patchShebangs --update $out/bin/multispell
   #   '';
   # });
 
   # "setup: line 1595: ant: command not found"
-  # i2p = mvToNativeInputs [ final.ant final.gettext ] prev.i2p;
+  # i2p = mvToNativeInputs [ ant gettext ] prev.i2p;
 
   # ibus = (prev.ibus.override {
   #   inherit (emulated)
@@ -976,24 +1080,35 @@ in {
   # });
   # .overrideAttrs (upstream: {
   #   nativeBuildInputs = upstream.nativeBuildInputs or [] ++ [
-  #     final.glib  # fixes: ImportError: /nix/store/fi1rsalr11xg00dqwgzbf91jpl3zwygi-gobject-introspection-aarch64-unknown-linux-gnu-1.74.0/lib/gobject-introspection/giscanner/_giscanner.cpython-310-x86_64-linux-gnu.so: cannot open shared object file: No such file or directory
-  #     final.buildPackages.gobject-introspection  # fixes "_giscanner.cpython-310-x86_64-linux-gnu.so: cannot open shared object file: No such file or directory"
+  #     glib  # fixes: ImportError: /nix/store/fi1rsalr11xg00dqwgzbf91jpl3zwygi-gobject-introspection-aarch64-unknown-linux-gnu-1.74.0/lib/gobject-introspection/giscanner/_giscanner.cpython-310-x86_64-linux-gnu.so: cannot open shared object file: No such file or directory
+  #     buildPackages.gobject-introspection  # fixes "_giscanner.cpython-310-x86_64-linux-gnu.so: cannot open shared object file: No such file or directory"
   #   ];
-  #   buildInputs = lib.remove final.gobject-introspection upstream.buildInputs ++ [
-  #     final.vala  # fixes: "Package `ibus-1.0' not found in specified Vala API directories or GObject-Introspection GIR directories"
+  #   buildInputs = lib.remove gobject-introspection upstream.buildInputs ++ [
+  #     vala  # fixes: "Package `ibus-1.0' not found in specified Vala API directories or GObject-Introspection GIR directories"
   #   ];
   # });
   # ibus = buildInQemu (prev.ibus.override {
   #   # not enough: still tries to execute build machine perl
-  #   buildPackages.gtk-doc = final.gtk-doc;
+  #   buildPackages.gtk-doc = gtk-doc;
   # });
+
+  # 2023/12/08: upstreaming is blocked on qtsvg
+  iotas = prev.iotas.overrideAttrs (_: {
+    # error: "<iotas> is not allowed to refer to the following paths: <build python>"
+    # disallowedReferences = [];
+    postPatch = ''
+      # @PYTHON@ becomes the build python, but this file isn't executable anyway so shouldn't have a shebang
+      substituteInPlace iotas/const.py.in \
+        --replace '#!@PYTHON@' ""
+    '';
+  });
 
   # 2023/10/23: upstreaming blocked on argyllcms
   graphicsmagick = prev.graphicsmagick.overrideAttrs (upstream: {
     # by default the build holds onto a reference to build `mv`
     # N.B.: `imagemagick` package has this identical issue
     configureFlags = upstream.configureFlags ++ [
-      "MVDelegate=${final.coreutils}/bin/mv"
+      "MVDelegate=${coreutils}/bin/mv"
     ];
   });
 
@@ -1013,7 +1128,7 @@ in {
   #     #   # fixes "configure: error: Could not find required tool for ZIPEXE"
   #     #   # new failure: "checking for cc... [not found]"
   #     #   (mvToNativeInputs
-  #     #     [ final.zip ]
+  #     #     [ zip ]
   #     #     (useEmulatedStdenv prev.javaPackages.compiler.openjdk19)
   #     #   ).overrideAttrs (_upstream: {
   #     #     # avoid building `support/demos`, which segfaults
@@ -1025,51 +1140,96 @@ in {
   #   };
   # };
 
-  jellyfin-media-player = mvToBuildInputs
-    [ final.libsForQt5.wrapQtAppsHook ]  # this shouldn't be: but otherwise we get mixed qtbase deps
-    (prev.jellyfin-media-player.overrideAttrs (upstream: {
-      meta = upstream.meta // {
-        platforms = upstream.meta.platforms ++ [
-          "aarch64-linux"
-        ];
-      };
-    }));
-  jellyfin-media-player-qt6 = prev.jellyfin-media-player-qt6.overrideAttrs (upstream: {
-    # nativeBuildInputs => result targets x86.
-    # buildInputs => result targets correct platform, but doesn't wrap the runtime deps
-    # TODO: fix the hook in qt6 itself?
-    depsHostHost = upstream.depsHostHost or [] ++ [ final.qt6.wrapQtAppsHook ];
-    nativeBuildInputs = lib.remove [ final.qt6.wrapQtAppsHook ] upstream.nativeBuildInputs;
-  });
+  # 2023/12/20: upstreamed into staging, waiting on staging -> master merge: <https://github.com/NixOS/nixpkgs/pull/275027>
+  # jbig2dec = prev.jbig2dec.overrideAttrs (_: {
+  #   # adding configureFlags here fixes: "configure: error: cannot run C compiled programs."
+  #   #   autogen needs the --host flag, i guess
+  #   # preConfigure = ''
+  #   #   ./autogen.sh $configureFlags
+  #   # '';
+  #   # alternatively, we've set `configureScript` and so no longer need the preConfigure step
+  #   configureScript = "./autogen.sh";
+  #   preConfigure = "";
+  # });
+
+  # jellyfin-media-player = mvToBuildInputs
+  #   [ libsForQt5.wrapQtAppsHook ]  # this shouldn't be: but otherwise we get mixed qtbase deps
+  #   (prev.jellyfin-media-player.overrideAttrs (upstream: {
+  #     meta = upstream.meta // {
+  #       platforms = upstream.meta.platforms ++ [
+  #         "aarch64-linux"
+  #       ];
+  #     };
+  #   }));
+  # jellyfin-media-player-qt6 = prev.jellyfin-media-player-qt6.overrideAttrs (upstream: {
+  #   # nativeBuildInputs => result targets x86.
+  #   # buildInputs => result targets correct platform, but doesn't wrap the runtime deps
+  #   # TODO: fix the hook in qt6 itself?
+  #   depsHostHost = upstream.depsHostHost or [] ++ [ qt6.wrapQtAppsHook ];
+  #   nativeBuildInputs = lib.remove [ qt6.wrapQtAppsHook ] upstream.nativeBuildInputs;
+  # });
   # jellyfin-web = prev.jellyfin-web.override {
   #   # in node-dependencies-jellyfin-web: "node: command not found"
   #   inherit (emulated) stdenv;
   # };
 
-  komikku = wrapGAppsHook4Fix prev.komikku;
-  koreader = (prev.koreader.override {
-    # fixes runtime error: luajit: ./ffi/util.lua:757: attempt to call field 'pack' (a nil value)
-    # inherit (emulated) luajit;
-    luajit = buildInQemu (final.luajit.override {
-      buildPackages.stdenv = emulated.stdenv;  # it uses buildPackages.stdenv for HOST_CC
-    });
-  }).overrideAttrs (upstream: {
-    nativeBuildInputs = upstream.nativeBuildInputs ++ [
-      final.autoPatchelfHook
-    ];
+  # 2023/12/08: upstreaming is blocked by qtsvg (pipewire)
+  komikku = prev.komikku.overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace data/meson.build --replace \
+        "find_program('blueprint-compiler')" \
+        "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', find_program('blueprint-compiler')"
+    '';
   });
+
+  # koreader = (prev.koreader.override {
+  #   # fixes runtime error: luajit: ./ffi/util.lua:757: attempt to call field 'pack' (a nil value)
+  #   # inherit (emulated) luajit;
+  #   luajit = buildInQemu (luajit.override {
+  #     buildPackages.stdenv = emulated.stdenv;  # it uses buildPackages.stdenv for HOST_CC
+  #   });
+  # }).overrideAttrs (upstream: {
+  #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
+  #     autoPatchelfHook
+  #   ];
+  # });
   # koreader-from-src = prev.koreader-from-src.override {
   #   # fixes runtime error: luajit: ./ffi/util.lua:757: attempt to call field 'pack' (a nil value)
   #   # inherit (emulated) luajit;
-  #   luajit = buildInQemu (final.luajit.override {
+  #   luajit = buildInQemu (luajit.override {
   #     buildPackages.stdenv = emulated.stdenv;  # it uses buildPackages.stdenv for HOST_CC
   #   });
   # };
 
-  # merged 2023/11/14: <https://github.com/NixOS/nixpkgs/pull/267373>
-  libgnome-games-support = addNativeInputs [ final.gobject-introspection ] prev.libgnome-games-support;
+  # failure:
+  # ```
+  # cd /build/koreader/base/thirdparty/lua-htmlparser/build/aarch64-unknown-linux-gnu/lua-htmlparser-prefix/src/lua-htmlparser && luarocks make --tree=/build/koreader/base/build/aarch64-unknown-linux-gnu/rocks rockspecs/htmlparser-scm-0.rockspec ...
+  # bin/.luarocks-wrapped: line 2: package.loaded[luarocks.core.hardcoded]: command not found
+  # bin/.luarocks-wrapped: bin/luarocks: line 3: syntax error near unexpected token `]]'
+  # bin/.luarocks-wrapped: bin/luarocks: line 3: `package.path=[[/nix/store/b7wa76cvxki14k9cmdi0vzd954nx6nww-luarocks-aarch64-unknown-linux-gnu-3.9.1/share/lua/5.1/?.lua;]] .. package.path'
+  # ```
+  # koreader-from-src = needsBinfmt prev.koreader-from-src;
 
-  # libgweather = rmNativeInputs [ final.glib ] (prev.libgweather.override {
+  lemoa = prev.lemoa.overrideAttrs (upstream:
+    let
+      rustTargetPlatform = rust.toRustTarget stdenv.hostPlatform;
+    in {
+      # nixpkgs sets CARGO_BUILD_TARGET to the build platform target, so correct that.
+      buildPhase = ''
+        runHook preBuild
+
+        mkdir -p target/release
+        ln -s ../${rustTargetPlatform}/release/lemoa target/release/lemoa
+
+        ${rust.envVars.setEnv} "CARGO_BUILD_TARGET=${rustTargetPlatform}" ninja -j$NIX_BUILD_CORES
+
+        runHook postBuild
+      '';
+    }
+  );
+
+  # libgweather = rmNativeInputs [ glib ] (prev.libgweather.override {
   #   # alternative to emulating python3 is to specify it in `buildInputs` instead of `nativeBuildInputs` (upstream),
   #   #   but presumably that's just a different way to emulate it.
   #   # the python gobject-introspection stuff is a tangled mess that's impossible to debug:
@@ -1081,11 +1241,11 @@ in {
   #   ;
   # });
   # libgweather = prev.libgweather.overrideAttrs (upstream: {
-  #   nativeBuildInputs = (lib.remove final.gobject-introspection upstream.nativeBuildInputs) ++ [
-  #     final.buildPackages.gobject-introspection  # fails to fix "gi._error.GError: g-invoke-error-quark: Could not locate g_option_error_quark: /nix/store/dsx6kqmyg7f3dz9hwhz7m3jrac4vn3pc-glib-aarch64-unknown-linux-gnu-2.74.3/lib/libglib-2.0.so.0"
+  #   nativeBuildInputs = (lib.remove gobject-introspection upstream.nativeBuildInputs) ++ [
+  #     buildPackages.gobject-introspection  # fails to fix "gi._error.GError: g-invoke-error-quark: Could not locate g_option_error_quark: /nix/store/dsx6kqmyg7f3dz9hwhz7m3jrac4vn3pc-glib-aarch64-unknown-linux-gnu-2.74.3/lib/libglib-2.0.so.0"
   #   ];
   #   # fixes "Run-time dependency vapigen found: NO (tried pkgconfig)"
-  #   buildInputs = upstream.buildInputs ++ [ final.vala ];
+  #   buildInputs = upstream.buildInputs ++ [ vala ];
   # });
 
   # 2023/08/27: out for PR: <https://github.com/NixOS/nixpkgs/pull/251956>
@@ -1111,6 +1271,23 @@ in {
   #   '';
   # });
 
+  # 2023/11/21: upstreaming is blocked by qtsvg (via pipewire/ffado)
+  libpanel = prev.libpanel.overrideAttrs (upstream: {
+    doCheck = false;
+    # depsBuildBuild = (upstream.depsBuildBuild or []) ++ [
+    #   # fixes "Build-time dependency gi-docgen found: NO (tried pkgconfig and cmake)"
+    #   pkg-config
+    # ];
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [
+      buildPackages.gtk4  # fixes "ERROR: Program 'gtk-update-icon-cache' not found or not executable"
+    ];
+    # it can't figure out where gi-docgen lives
+    mesonFlags = (upstream.mesonFlags or []) ++ [
+      "-Ddocs=disabled"
+    ];
+    outputs = lib.remove "devdoc" upstream.outputs;
+  });
+
   # libsForQt5 = prev.libsForQt5.overrideScope' (self: super: {
   #   qgpgme = super.qgpgme.overrideAttrs (orig: {
   #     # fix so it can find the MOC compiler
@@ -1120,36 +1297,57 @@ in {
   #   });
   #   phonon = super.phonon.overrideAttrs (orig: {
   #     # fixes "ECM (required version >= 5.60), Extra CMake Modules"
-  #     buildInputs = orig.buildInputs ++ [ final.extra-cmake-modules ];
+  #     buildInputs = orig.buildInputs ++ [ extra-cmake-modules ];
   #   });
   # });
   # libsForQt5 = prev.libsForQt5.overrideScope' (self: super: {
   #   # emulate all the qt5 packages, but rework `libsForQt5.callPackage` and `mkDerivation`
   #   # to use non-emulated stdenv by default.
-  #   mkDerivation = self.mkDerivationWith final.stdenv.mkDerivation;
-  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit (final) stdenv; };
+  #   mkDerivation = self.mkDerivationWith stdenv.mkDerivation;
+  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit stdenv; };
   # });
 
+  # 2023/11/21: upstreaming is unblocked
+  #   but i don't think either the pkg-config fix (which breaks binfmt cross) nor disabling docs is the right fix.
   libshumate = prev.libshumate.overrideAttrs (upstream: {
     # fixes "Build-time dependency gi-docgen found: NO (tried pkgconfig and cmake)"
     mesonFlags = (upstream.mesonFlags or []) ++ [ "-Dgtk_doc=false" ];
     # alternative partial fix, but then it tries to link against the build glib
-    # depsBuildBuild = (upstream.depsBuildBuild or []) ++ [ final.pkg-config ];
+    # depsBuildBuild = (upstream.depsBuildBuild or []) ++ [ pkg-config ];
+  });
+
+  # 2023/12/19: upstreaming blocked on glycin-loaders
+  loupe = prev.loupe.overrideAttrs (upstream:
+  let
+    cargoEnvWrapper = buildPackages.writeShellScript "cargo-env-wrapper" ''
+      CARGO_BIN="$1"
+      shift
+      CARGO_OP="$1"
+      shift
+
+      ${rust.envVars.setEnv} "$CARGO_BIN" "$CARGO_OP" --target "${rust.envVars.rustHostPlatformSpec}" "$@"
+    '';
+  in {
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace src/meson.build \
+        --replace "cargo, 'build'," "'${cargoEnvWrapper}', cargo, 'build'," \
+        --replace "'src' / rust_target" "'src' / '${rust.envVars.rustHostPlatformSpec}' / rust_target"
+    '';
   });
 
   mepo = (prev.mepo.override {
     # nixpkgs mepo correctly puts `zig_0_11.hook` in nativeBuildInputs,
     # but for some reason that tries to use the host zig instead of the build zig.
-    zig_0_11 = final.buildPackages.zig_0_11;
+    zig_0_11 = buildPackages.zig_0_11;
   }).overrideAttrs (upstream: {
     dontUseZigCheck = true;
     nativeBuildInputs = upstream.nativeBuildInputs ++ [
       # zig hardcodes the /lib/ld-linux.so interpreter which breaks nix dynamic linking & dep tracking.
       # this shouldn't have to be buildPackages.autoPatchelfHook...
       # but without specifying `buildPackages` the host coreutils ends up on the builder's path and breaks things
-      final.buildPackages.autoPatchelfHook
+      buildPackages.autoPatchelfHook
       # zig hard-codes `pkg-config` inside lib/std/build.zig
-      (final.buildPackages.writeShellScriptBin "pkg-config" ''
+      (buildPackages.writeShellScriptBin "pkg-config" ''
         exec $PKG_CONFIG $@
       '')
     ];
@@ -1174,11 +1372,11 @@ in {
   });
 
   # mepo = emulateBuildMachine (prev.mepo.override {
-  #   zig = (final.buildPackages.zig.overrideAttrs (upstream: {
+  #   zig = (buildPackages.zig.overrideAttrs (upstream: {
   #     cmakeFlags = (upstream.cmakeFlags or []) ++ [
-  #       "-DZIG_EXECUTABLE=${final.buildPackages.zig}/bin/zig"
+  #       "-DZIG_EXECUTABLE=${buildPackages.zig}/bin/zig"
   #       "-DZIG_TARGET_TRIPLE=aarch64-linux-gnu"
-  #       # "-DZIG_MCPU=${final.targetPlatform.gcc.cpu}"
+  #       # "-DZIG_MCPU=${targetPlatform.gcc.cpu}"
   #     ];
   #     # makeFlags = (upstream.makeFlags or []) ++ [
   #     #   # stop at the second stage.
@@ -1195,13 +1393,13 @@ in {
 
   # mepo =
   #   # let
-  #   #   zig = final.zig.override {
+  #   #   zig = zig.override {
   #   #     inherit (emulated) stdenv;
   #   #   };
-  #   #   # makeWrapper = final.makeWrapper.override {
+  #   #   # makeWrapper = makeWrapper.override {
   #   #   #   inherit (emulated) stdenv;
   #   #   # };
-  #   #   # makeWrapper = emulated.stdenv.mkDerivation final.makeWrapper;
+  #   #   # makeWrapper = emulated.stdenv.mkDerivation makeWrapper;
   #   # in
   #   # (prev.mepo.overrideAttrs (upstream: {
   #   #   checkPhase = lib.replaceStrings [ "zig" ] [ "${zig}/bin/zig" ] upstream.checkPhase;
@@ -1245,18 +1443,18 @@ in {
   #     installPhase = lib.replaceStrings [ "zig" ] [ "${zig}/bin/zig" ] upstreamMepo.installPhase;
   #   };
   # in
-  #   emulateBuildMachine (final.callPackage mepoDefn {
+  #   emulateBuildMachine (callPackage mepoDefn {
   #     upstreamMepo = prev.mepo;
-  #     zig = final.zig.overrideAttrs (upstream: {
+  #     zig = zig.overrideAttrs (upstream: {
   #       # TODO: for zig1 we can actually set ZIG_EXECUTABLE and use the build zig.
   #       # zig2 doesn't support that.
   #       postPatch = (upstream.postPatch or "") + ''
   #         substituteInPlace CMakeLists.txt \
-  #           --replace "COMMAND zig1 " "COMMAND ${final.stdenv.hostPlatform.emulator final.buildPackages} $PWD/build/zig1 " \
-  #           --replace "COMMAND zig2 " "COMMAND ${final.stdenv.hostPlatform.emulator final.buildPackages} $PWD/build/zig2 "
+  #           --replace "COMMAND zig1 " "COMMAND ${stdenv.hostPlatform.emulator buildPackages} $PWD/build/zig1 " \
+  #           --replace "COMMAND zig2 " "COMMAND ${stdenv.hostPlatform.emulator buildPackages} $PWD/build/zig2 "
   #       '';
   #     });
-  #     # zig = emulateBuildMachine (final.zig.overrideAttrs (upstream: {
+  #     # zig = emulateBuildMachine (zig.overrideAttrs (upstream: {
   #     #   # speed up the emulated build by skipping docs and tests
   #     #   outputs = [ "out" ];
   #     #   postBuild = "";  # don't build docs
@@ -1274,8 +1472,8 @@ in {
   #   #   inherit zig;
   #   #   # inherit makeWrapper;
   #   # }).overrideAttrs (upstream: {
-  #   #   # nativeBuildInputs = [ final.pkg-config makeWrapper ];
-  #   #   # nativeBuildInputs = [ final.pkg-config emulated.makeWrapper ];
+  #   #   # nativeBuildInputs = [ pkg-config makeWrapper ];
+  #   #   # nativeBuildInputs = [ pkg-config emulated.makeWrapper ];
   #   #   # ref to zig by full path because otherwise it doesn't end up on the path...
   #   #   #checkPhase = lib.replaceStrings [ "zig" ] [ "${zig}/bin/zig" ] upstream.checkPhase;
   #   #   #installPhase = lib.replaceStrings [ "zig" ] [ "${zig}/bin/zig" ] upstream.installPhase;
@@ -1287,7 +1485,7 @@ in {
   #   # - "error: makeWrapper/makeShellWrapper must be in nativeBuildInputs"
   #   inherit (emulated) makeWrapper stdenv zig;
   # }).overrideAttrs (upstream: {
-  #   nativeBuildInputs = [ final.pkg-config emulated.makeWrapper ];
+  #   nativeBuildInputs = [ pkg-config emulated.makeWrapper ];
   #   # ref to zig by full path because otherwise it doesn't end up on the path...
   #   checkPhase = lib.replaceStrings [ "zig" ] [ "${emulated.zig}/bin/zig" ] upstream.checkPhase;
   #   installPhase = lib.replaceStrings [ "zig" ] [ "${emulated.zig}/bin/zig" ] upstream.installPhase;
@@ -1295,8 +1493,8 @@ in {
   # mepo = (prev.mepo.override {
   #   inherit (emulated) stdenv;
   # }).overrideAttrs (upstream: {
-  #   nativeBuildInputs = with final; [ pkg-config emulated.makeWrapper ];
-  #   buildInputs = with final; [
+  #   nativeBuildInputs = [ pkg-config emulated.makeWrapper ];
+  #   buildInputs = [
   #     curl SDL2 SDL2_gfx SDL2_image SDL2_ttf jq ncurses
   #     emulated.zig
   #   ];
@@ -1331,46 +1529,26 @@ in {
   #   # '';
   # });
 
-  mpv-unwrapped = prev.mpv-unwrapped.overrideAttrs (upstream: {
-    # 2023/10/10: upstreaming is easiest to do after the next staging -> master merge
-    #   otherwise the result will still have a transient dep on python.
-    #   - <https://github.com/NixOS/nixpkgs/pull/259109>
-    # nativeBuildInputs = lib.remove final.python3 upstream.nativeBuildInputs;
-    # umpv gets the build python, somehow -- even with python3 removed from nativeBuildInputs.
-    # and mpv_identify.sh gets the build bash.
-    # patch these both to use the host files
-    buildInputs = (upstream.buildInputs or []) ++ [ final.bash final.python3 ];
-    postFixup = (upstream.postFixup or "") + ''
-      patchShebangs --update --host $out/bin/umpv $out/bin/mpv_identify.sh
-    '';
-  });
-
-  # mpvScripts = prev.mpvScripts // {
-  #   # "line 1: pkg-config: command not found"
-  #   #   "mpris.c:1:10: fatal error: gio/gio.h: No such file or directory"
-  #   # 2023/07/31: upstreaming unblocked, implemented on servo
-  #   mpris = addNativeInputs [ final.pkg-config ] prev.mpvScripts.mpris;
-  # };
   # fixes: "ar: command not found"
   # `ar` is provided by bintools
   # 2023/07/27: upstreaming is unblocked by deps; but turns out to not be this simple
-  ncftp = addNativeInputs [ final.bintools ] prev.ncftp;
+  ncftp = addNativeInputs [ bintools ] prev.ncftp;
   # fixes "gdbus-codegen: command not found"
   # 2023/07/31: upstreaming is blocked on p11-kit, openfortivpn, qttranslations (qtbase) cross compilation
-  networkmanager-fortisslvpn = mvToNativeInputs [ final.glib ] prev.networkmanager-fortisslvpn;
+  # networkmanager-fortisslvpn = mvToNativeInputs [ glib ] prev.networkmanager-fortisslvpn;
   # networkmanager-iodine = prev.networkmanager-iodine.overrideAttrs (orig: {
   #   # fails to fix "configure.ac:58: error: possibly undefined macro: AM_GLIB_GNU_GETTEXT"
-  #   nativeBuildInputs = orig.nativeBuildInputs ++ [ final.gettext ];
+  #   nativeBuildInputs = orig.nativeBuildInputs ++ [ gettext ];
   # });
   # networkmanager-iodine = prev.networkmanager-iodine.override {
   #   # fixes "configure.ac:58: error: possibly undefined macro: AM_GLIB_GNU_GETTEXT"
   #   inherit (emulated) stdenv;
   # };
-  # networkmanager-iodine = addNativeInputs [ final.gettext ] prev.networkmanager-iodine;
+  # networkmanager-iodine = addNativeInputs [ gettext ] prev.networkmanager-iodine;
   # networkmanager-iodine = prev.networkmanager-iodine.overrideAttrs (upstream: {
-  #   # buildInputs = upstream.buildInputs ++ [ final.intltool final.gettext ];
-  #   # nativeBuildInputs = lib.remove final.intltool upstream.nativeBuildInputs;
-  #   # nativeBuildInputs = upstream.nativeBuildInputs ++ [ final.gettext ];
+  #   # buildInputs = upstream.buildInputs ++ [ intltool gettext ];
+  #   # nativeBuildInputs = lib.remove intltool upstream.nativeBuildInputs;
+  #   # nativeBuildInputs = upstream.nativeBuildInputs ++ [ gettext ];
   #   postPatch = upstream.postPatch or "" + ''
   #     sed -i s/AM_GLIB_GNU_GETTEXT/AM_GNU_GETTEXT/ configure.ac
   #   '';
@@ -1379,39 +1557,39 @@ in {
   # fixes "gdbus-codegen: command not found"
   # fixes "gtk4-builder-tool: command not found"
   # 2023/07/31: upstreaming is unblocked,implemented
-  # networkmanager-l2tp = addNativeInputs [ final.gtk4 ]
-  #   (mvToNativeInputs [ final.glib ] prev.networkmanager-l2tp);
+  # networkmanager-l2tp = addNativeInputs [ gtk4 ]
+  #   (mvToNativeInputs [ glib ] prev.networkmanager-l2tp);
   # fixes "properties/gresource.xml: Permission denied"
   #   - by providing glib-compile-resources
   # 2023/07/31: upstreaming is blocked on libavif cross compilation
-  # networkmanager-openconnect = mvToNativeInputs [ final.glib ] prev.networkmanager-openconnect;
+  # networkmanager-openconnect = mvToNativeInputs [ glib ] prev.networkmanager-openconnect;
   # fixes "properties/gresource.xml: Permission denied"
   #   - by providing glib-compile-resources
   # 2023/07/31: upstreaming is unblocked,implemented
-  # networkmanager-openvpn = mvToNativeInputs [ final.glib ] prev.networkmanager-openvpn;
+  # networkmanager-openvpn = mvToNativeInputs [ glib ] prev.networkmanager-openvpn;
   # 2023/07/31: upstreaming is unblocked,implemented
   # networkmanager-sstp = (
   #   # fixes "gdbus-codegen: command not found"
-  #   mvToNativeInputs [ final.glib ] (
+  #   mvToNativeInputs [ glib ] (
   #     # fixes gtk4-builder-tool wrong format
-  #     addNativeInputs [ final.gtk4.dev ] prev.networkmanager-sstp
+  #     addNativeInputs [ gtk4.dev ] prev.networkmanager-sstp
   #   )
   # );
   # 2023/07/31: upstreaming is blocked on vpnc cross compilation
-  # networkmanager-vpnc = mvToNativeInputs [ final.glib ] prev.networkmanager-vpnc;
+  # networkmanager-vpnc = mvToNativeInputs [ glib ] prev.networkmanager-vpnc;
   # fixes "properties/gresource.xml: Permission denied"
   #   - by providing glib-compile-resources
   # 2023/07/27: upstreaming is blocked on p11-kit, coeurl cross compilation
   nheko = (prev.nheko.override {
-    gst_all_1 = final.gst_all_1 // {
+    gst_all_1 = gst_all_1 // {
       # don't build gst-plugins-good with "qt5 support"
       # alternative build fix is to remove `qtbase` from nativeBuildInputs:
       # - that avoids the mixd qt5 deps, but forces a rebuild of gst-plugins-good and +20MB to closure
-      gst-plugins-good.override = attrs: final.gst_all_1.gst-plugins-good.override (builtins.removeAttrs attrs [ "qt5Support" ]);
+      gst-plugins-good.override = attrs: gst_all_1.gst-plugins-good.override (builtins.removeAttrs attrs [ "qt5Support" ]);
     };
   }).overrideAttrs (orig: {
     # fixes "fatal error: lmdb++.h: No such file or directory
-    buildInputs = orig.buildInputs ++ [ final.lmdbxx ];
+    buildInputs = orig.buildInputs ++ [ lmdbxx ];
   });
   # 2023/08/02: upstreaming in PR: <https://github.com/NixOS/nixpkgs/pull/225111/files>
   # - needs (my) review
@@ -1422,17 +1600,17 @@ in {
   #   postPatch = upstream.postPatch or "" + ''
   #     sed -i 's/pkg-config/\$PKG_CONFIG/g' configure
   #   '';
-  #   XAPIAN_CONFIG = final.buildPackages.writeShellScript "xapian-config" ''
-  #     exec ${lib.getBin final.xapian}/bin/xapian-config $@
+  #   XAPIAN_CONFIG = buildPackages.writeShellScript "xapian-config" ''
+  #     exec ${lib.getBin xapian}/bin/xapian-config $@
   #   '';
-  #   # depsBuildBuild = [ final.gnupg ];
+  #   # depsBuildBuild = [ gnupg ];
   #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #     final.gnupg  # nixpkgs specifies gpg as a buildInput instead of a nativeBuildInput
-  #     final.perl  # used to build manpages
-  #     # final.pythonPackages.python
-  #     # final.shared-mime-info
+  #     gnupg  # nixpkgs specifies gpg as a buildInput instead of a nativeBuildInput
+  #     perl  # used to build manpages
+  #     # pythonPackages.python
+  #     # shared-mime-info
   #   ];
-  #   buildInputs = with final; [
+  #   buildInputs = [
   #     xapian gmime3 talloc zlib  # dependencies described in INSTALL
   #     # perl
   #     # pythonPackages.python
@@ -1440,12 +1618,12 @@ in {
   #   ];
   #   # buildInputs =
   #   #   (lib.remove
-  #   #     final.perl
+  #   #     perl
   #   #     (lib.remove
-  #   #       final.gmime
-  #   #       (lib.remove final.gnupg upstream.buildInputs)
+  #   #       gmime
+  #   #       (lib.remove gnupg upstream.buildInputs)
   #   #     )
-  #   #   ) ++ [ final.gmime ];
+  #   #   ) ++ [ gmime ];
   # });
   # notmuch = prev.notmuch.overrideAttrs (upstream: {
   #   # fixes "Error: The dependencies of notmuch could not be satisfied"  (xapian, gmime, glib, talloc)
@@ -1453,72 +1631,50 @@ in {
   #   # so just replace these with the nix-supplied env-var which resolves to the relevant pkg-config.
   #   postPatch = upstream.postPatch or "" + ''
   #     sed -i 's/pkg-config/\$PKG_CONFIG/g' configure
-  #     sed -i 's: gpg : ${final.buildPackages.gnupg}/bin/gpg :' configure
+  #     sed -i 's: gpg : ${buildPackages.gnupg}/bin/gpg :' configure
   #   '';
-  #   XAPIAN_CONFIG = final.buildPackages.writeShellScript "xapian-config" ''
-  #     exec ${lib.getBin final.xapian}/bin/xapian-config $@
+  #   XAPIAN_CONFIG = buildPackages.writeShellScript "xapian-config" ''
+  #     exec ${lib.getBin xapian}/bin/xapian-config $@
   #   '';
   #   # depsBuildBuild = upstream.depsBuildBuild or [] ++ [
-  #   #   final.buildPackages.stdenv.cc
+  #   #   buildPackages.stdenv.cc
   #   # ];
   #   nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #     # final.gnupg
-  #     final.perl
+  #     # gnupg
+  #     perl
   #   ];
-  #   # buildInputs = lib.remove final.gnupg upstream.buildInputs;
+  #   # buildInputs = lib.remove gnupg upstream.buildInputs;
   # });
-
-  # fixes "/nix/store/0wk6nr1mryvylf5g5frckjam7g7p9gpi-bash-5.2-p15/bin/bash: line 2: --prefix=ods_manager: command not found"
-  # - dbus-glib should maybe be removed from buildInputs, too? but doing so breaks upstream configure
-  obex_data_server = addNativeInputs [ final.dbus-glib ] prev.obex_data_server;
 
   # openfortivpn = prev.openfortivpn.override {
   #   # fixes "checking for /proc/net/route... configure: error: cannot check for file existence when cross compiling"
   #   inherit (emulated) stdenv;
   # };
-  # ostree = prev.ostree.override {
-  #   # fixes "configure: error: Need GPGME_PTHREAD version 1.1.8 or later"
-  #   inherit (emulated) stdenv;
-  # };
-
-  # 2023/09/02: upstreaming is implemented on servo `wip-ostree` branch
-  ostree = prev.ostree.overrideAttrs (upstream: {
-    # fixes: "configure: error: Need GPGME_PTHREAD version 1.1.8 or later"
-    # new failure mode: "./src/libotutil/ot-gpg-utils.h:22:10: fatal error: gpgme.h: No such file or directory"
-    # buildInputs = lib.remove final.gpgme upstream.buildInputs;
-    # nativeBuildInputs = upstream.nativeBuildInputs ++ [ final.gpgme ];
-    # buildInputs = lib.remove final.gjs upstream.buildInputs;
-    # configureFlags = lib.remove "--enable-installed-tests" upstream.configureFlags;
-    postPatch = (upstream.postPatch or "") + ''
-      substituteInPlace Makefile-libostree.am \
-        --replace "CC=gcc" "CC=${final.stdenv.cc.targetPrefix}cc"
-    '';
-  });
 
   # fixes (meson) "Program 'glib-mkenums mkenums' not found or not executable"
   # 2023/07/27: upstreaming is blocked on p11-kit, argyllcms, libavif cross compilation
-  phoc = mvToNativeInputs [ final.wayland-scanner final.glib ] prev.phoc;
+  phoc = mvToNativeInputs [ wayland-scanner glib ] prev.phoc;
   phosh = prev.phosh.overrideAttrs (upstream: {
     buildInputs = upstream.buildInputs ++ [
-      final.libadwaita  # "plugins/meson.build:41:2: ERROR: Dependency "libadwaita-1" not found, tried pkgconfig"
+      libadwaita  # "plugins/meson.build:41:2: ERROR: Dependency "libadwaita-1" not found, tried pkgconfig"
     ];
     mesonFlags = upstream.mesonFlags ++ [
       "-Dphoc_tests=disabled"  # "tests/meson.build:20:0: ERROR: Program 'phoc' not found or not executable"
     ];
     # postPatch = upstream.postPatch or "" + ''
-    #   sed -i 's:gio_querymodules = :gio_querymodules = "${final.buildPackages.glib.dev}/bin/gio-querymodules" if True else :' build-aux/post_install.py
+    #   sed -i 's:gio_querymodules = :gio_querymodules = "${buildPackages.glib.dev}/bin/gio-querymodules" if True else :' build-aux/post_install.py
     # '';
   });
   phosh-mobile-settings = mvInputs {
     # fixes "meson.build:26:0: ERROR: Dependency "phosh-plugins" not found, tried pkgconfig"
     # phosh is used only for its plugins; these are specified as a runtime dep in src.
     # it's correct for them to be runtime dep: src/ms-lockscreen-panel.c loads stuff from
-    buildInputs = [ final.phosh ];
+    buildInputs = [ phosh ];
     nativeBuildInputs = [
-      final.gettext  # fixes "data/meson.build:1:0: ERROR: Program 'msgfmt' not found or not executable"
-      final.wayland-scanner  # fixes "protocols/meson.build:7:0: ERROR: Program 'wayland-scanner' not found or not executable"
-      final.glib  # fixes "src/meson.build:1:0: ERROR: Program 'glib-mkenums mkenums' not found or not executable"
-      final.desktop-file-utils  # fixes "meson.build:116:8: ERROR: Program 'update-desktop-database' not found or not executable"
+      gettext  # fixes "data/meson.build:1:0: ERROR: Program 'msgfmt' not found or not executable"
+      wayland-scanner  # fixes "protocols/meson.build:7:0: ERROR: Program 'wayland-scanner' not found or not executable"
+      glib  # fixes "src/meson.build:1:0: ERROR: Program 'glib-mkenums mkenums' not found or not executable"
+      desktop-file-utils  # fixes "meson.build:116:8: ERROR: Program 'update-desktop-database' not found or not executable"
     ];
   } prev.phosh-mobile-settings;
 
@@ -1528,36 +1684,34 @@ in {
   #   ffadoSupport = false;
   # };
 
-  # playerctl = prev.playerctl.overrideAttrs (upstream: {
-  #   mesonFlags = upstream.mesonFlags ++ [ "-Dgtk-doc=false" ];
-  # });
-
   # psqlodbc = prev.psqlodbc.override {
   #   # fixes "configure: error: odbc_config not found (required for unixODBC build)"
   #   inherit (emulated) stdenv;
   # };
 
+  # 2023/12/13: upstreaming is blocked by qtsvg (via pipewire)
+  pwvucontrol = prev.pwvucontrol.overrideAttrs (upstream:
+  let
+    rustTargetPlatform = rust.toRustTarget stdenv.hostPlatform;
+  in {
+    postPatch = (upstream.postPatch or "") + ''
+      substituteInPlace src/meson.build --replace \
+        "'src' / rust_target" \
+        "'src' / '${rustTargetPlatform}' / rust_target"
+    '';
+    # nixpkgs sets CARGO_BUILD_TARGET to the build platform target, so correct that.
+    buildPhase = ''
+      runHook preBuild
+
+      ${rust.envVars.setEnv} "CARGO_BUILD_TARGET=${rustTargetPlatform}" ninja -j$NIX_BUILD_CORES
+
+      runHook postBuild
+    '';
+  });
+
   pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
     (py-final: py-prev: {
-
-      # aiohttp = py-prev.aiohttp.overridePythonAttrs (orig: {
-      #   # fixes "ModuleNotFoundError: No module named 'setuptools'"
-      #   propagatedBuildInputs = orig.propagatedBuildInputs ++ [
-      #     py-final.setuptools
-      #   ];
-      # });
-
-      # defcon = py-prev.defcon.overridePythonAttrs (orig: {
-      #   nativeBuildInputs = orig.nativeBuildInputs ++ orig.nativeCheckInputs;
-      # });
-      # executing = py-prev.executing.overridePythonAttrs (orig: {
-      #   # test has an assertion that < 1s of CPU time elapsed => flakey
-      #   disabledTestPaths = orig.disabledTestPaths or [] ++ [
-      #     # "tests/test_main.py::TestStuff::test_many_source_for_filename_calls"
-      #     "tests/test_main.py"
-      #   ];
-      # });
-
+      # 2023/12/08: upstreaming is unblocked  (eyeD3 is a dep of gpodder)
       eyeD3 = py-prev.eyeD3.overrideAttrs (orig: {
         # weird double-wrapping of the output executable, but somehow with the build python ends up on PYTHONPATH
         postInstall = "";
@@ -1573,80 +1727,37 @@ in {
       #   buildInputs = [];
       #   # HDF5_DIR = "${hdf5}";
       # });
-      # ipython = py-prev.ipython.overridePythonAttrs (orig: {
-      #   # fixes "FAILED IPython/terminal/tests/test_debug_magic.py::test_debug_magic_passes_through_generators - pexpect.exceptions.TIMEOUT: Timeout exceeded."
-      #   disabledTests = orig.disabledTests ++ [ "test_debug_magic_passes_through_generator" ];
-      # });
-      # mutatormath = py-prev.mutatormath.overridePythonAttrs (orig: {
-      #   nativeBuildInputs = orig.nativeBuildInputs or [] ++ orig.nativeCheckInputs;
-      # });
-      # pandas = py-prev.pandas.overridePythonAttrs (orig: {
-      #   # XXX: we only actually need numpy when building in ~/nixpkgs repo: not sure why we need all the propagatedBuildInputs here.
-      #   # nativeBuildInputs = orig.nativeBuildInputs ++ [ py-final.numpy ];
-      #   nativeBuildInputs = orig.nativeBuildInputs ++ orig.propagatedBuildInputs;
-      # });
-      # psycopg2 = py-prev.psycopg2.overridePythonAttrs (orig: {
-      #   # TODO: upstream  (see tracking issue)
-      #   #
-      #   # psycopg2 *links* against libpg, so we need the host postgres available at build time!
-      #   # present-day nixpkgs only includes it in nativeBuildInputs
-      #   buildInputs = orig.buildInputs ++ [ final.postgresql ];
-      # });
-      # s3transfer = py-prev.s3transfer.overridePythonAttrs (orig: {
-      #   # tests explicitly expect host CPU == build CPU
-      #   # Bail out! ERROR:../plugins/core.c:221:qemu_plugin_vcpu_init_hook: assertion failed: (success)
-      #   # Bail out! ERROR:../accel/tcg/cpu-exec.c:954:cpu_exec: assertion failed: (cpu == current_cpu)
-      #   disabledTestPaths = orig.disabledTestPaths ++ [
-      #     # "tests/functional/test_processpool.py::TestProcessPoolDownloader::test_cleans_up_tempfile_on_failure"
-      #     "tests/functional/test_processpool.py"
-      #     # "tests/unit/test_compat.py::TestBaseManager::test_can_provide_signal_handler_initializers_to_start"
-      #     "tests/unit/test_compat.py"
-      #   ];
-      # });
-      # scipy = py-prev.scipy.override {
-      #   inherit (emulated) stdenv;
-      # };
-      # scipy = py-prev.scipy.overridePythonAttrs (orig: {
-      #   # "/nix/store/yhz6yy9bp52x9fvcda4lr6kgsngxnv2l-python3.10-numpy-1.24.2/lib/python3.10/site-packages/numpy/core/include/../lib/libnpymath.a: error adding symbols: file in wrong format"
-      #   # mesonFlags = orig.mesonFlags or [] ++ [ "-Duse-pythran=false" ];
-      #   # don't know how to plumb meson falgs through python apps
-      #   # postPatch = orig.postPatch or "" + ''
-      #   #   sed -i "s/option('use-pythran', type: 'boolean', value: true,/option('use-pythran', type: 'boolean', value: false,/" meson_options.txt
-      #   # '';
-      #   SCIPY_USE_PYTHRAN = false;
-      #   nativeBuildInputs = lib.remove py-final.pythran orig.nativeBuildInputs;
-      # });
       # skia-pathops = ?
       #   it tries to call `cc` during the build, but can't find it.
     })
   ];
 
-  qt5 = let
-    emulatedQt5 = prev.qt5.override {
-      # emulate qt5base and all qtModules.
-      # because qt5 doesn't place this `stdenv` argument into its scope, `libsForQt5` doesn't inherit
-      # this stdenv. so anything using `libsForQt5.callPackage` builds w/o emulation.
-      stdenv = final.stdenv // {
-        mkDerivation = args: buildInQemu {
-          override = { stdenv }: stdenv.mkDerivation args;
-        };
-      };
-    };
-  in prev.qt5.overrideScope (self: super: {
-    inherit (emulatedQt5)
-      qtbase
-      # without emulation these all fail with "Project ERROR: Cannot run compiler 'g++'."
-      qtdeclarative
-      qtgraphicaleffects
-      qtimageformats
-      qtmultimedia
-      qtquickcontrols
-      qtquickcontrols2
-      qtsvg
-      qttools
-      qtwayland
-    ;
-  });
+  # qt5 = let
+  #   emulatedQt5 = prev.qt5.override {
+  #     # emulate qt5base and all qtModules.
+  #     # because qt5 doesn't place this `stdenv` argument into its scope, `libsForQt5` doesn't inherit
+  #     # this stdenv. so anything using `libsForQt5.callPackage` builds w/o emulation.
+  #     stdenv = stdenv // {
+  #       mkDerivation = args: buildInQemu {
+  #         override = { stdenv }: stdenv.mkDerivation args;
+  #       };
+  #     };
+  #   };
+  # in prev.qt5.overrideScope (self: super: {
+  #   inherit (emulatedQt5)
+  #     qtbase
+  #     # without emulation these all fail with "Project ERROR: Cannot run compiler 'g++'."
+  #     qtdeclarative
+  #     qtgraphicaleffects
+  #     qtimageformats
+  #     qtmultimedia
+  #     qtquickcontrols
+  #     qtquickcontrols2
+  #     qtsvg
+  #     qttools
+  #     qtwayland
+  #   ;
+  # });
 
   # qt5 = prev.qt5.overrideScope (self: super: {
   #   # emulate all qt5 modules
@@ -1688,40 +1799,40 @@ in {
 
   # qt5 = prev.qt5.overrideScope (self: super: {
   #   # stdenv.mkDerivation is used by qtModule, so this emulates all the qt modules
-  #   stdenv = final.stdenv // {
+  #   stdenv = stdenv // {
   #     mkDerivation = args: buildInQemu {
   #       override = { stdenv }: stdenv.mkDerivation args;
   #     };
   #   };
   #   # callPackage/mkDerivation is used by libsForQt5, so we avoid emulating qt consumers.
-  #   # mkDerivation = final.stdenv.mkDerivation;
+  #   # mkDerivation = stdenv.mkDerivation;
   #   # callPackage = self.newScope {
   #   #   inherit (self) qtCompatVersion qtModule srcs;
-  #   #   inherit (final) stdenv;
+  #   #   inherit stdenv;
   #   # };
 
   #   # qtbase = buildInQemu super.qtbase;
   # });
   # libsForQt5 = prev.libsForQt5.overrideScope (self: super: {
-  #   stdenv = final.stdenv;
+  #   inherit stdenv;
   #   inherit (self.stdenv) mkderivation;
   # });
 
   # qt5 = (prev.qt5.override {
   #   # qt5 modules see this stdenv; they don't pick up the scope's qtModule or stdenv
   #   stdenv = emulated.stdenv // {
-  #     # mkDerivation = args: buildInQemu (final.stdenv.mkDerivation args);
+  #     # mkDerivation = args: buildInQemu (stdenv.mkDerivation args);
   #     mkDerivation = args: buildInQemu {
   #       # clunky buildInQemu API, when not used via `callPackage`
-  #       override = _attrs: final.stdenv.mkDerivation args;
+  #       override = _attrs: stdenv.mkDerivation args;
   #     };
   #   };
   # }).overrideScope (self: super: {
   #   # but for anything using `libsForQt5.callPackage`, don't emulate.
   #   # note: alternative approach is to only `libsForQt5` (it's a separate scope),.
   #   # it inherits so much from the `qt5` scope, so not a clear improvement.
-  #   mkDerivation = self.mkDerivationWith final.stdenv.mkDerivation;
-  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit (final) stdenv; };
+  #   mkDerivation = self.mkDerivationWith stdenv.mkDerivation;
+  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit stdenv; };
   #   # except, still emulate qtbase.
   #   # all other modules build with qtModule (which emulates), except for qtbase which is behind a `callPackage` and uses `stdenv.mkDerivation`.
   #   # therefore we need to re-emulate it when make callPackage not emulate here.
@@ -1735,16 +1846,16 @@ in {
   # qt5 = emulated.qt5.overrideScope (self: super: {
   #   # emulate all the qt5 packages, but rework `libsForQt5.callPackage` and `mkDerivation`
   #   # to use non-emulated stdenv by default.
-  #   mkDerivation = self.mkDerivationWith final.stdenv.mkDerivation;
-  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit (final) stdenv; };
+  #   mkDerivation = self.mkDerivationWith stdenv.mkDerivation;
+  #   callPackage = self.newScope { inherit (self) qtCompatVersion qtModule srcs; inherit stdenv; };
   # });
   # qt6 = prev.qt6.overrideScope' (self: super: {
   #   # # inherit (emulated.qt6) qtModule;
   #   # qtbase = super.qtbase.overrideAttrs (upstream: {
-  #   #   # cmakeFlags = upstream.cmakeFlags ++ lib.optionals (final.stdenv.buildPlatform != final.stdenv.hostPlatform) [
-  #   #   cmakeFlags = upstream.cmakeFlags ++ lib.optionals (final.stdenv.buildPlatform != final.stdenv.hostPlatform) [
+  #   #   # cmakeFlags = upstream.cmakeFlags ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+  #   #   cmakeFlags = upstream.cmakeFlags ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
   #   #     # "-DCMAKE_CROSSCOMPILING=True" # fails to solve QT_HOST_PATH error
-  #   #     "-DQT_HOST_PATH=${final.buildPackages.qt6.full}"
+  #   #     "-DQT_HOST_PATH=${buildPackages.qt6.full}"
   #   #   ];
   #   # });
   #   # qtModule = args: (super.qtModule args).overrideAttrs (upstream: {
@@ -1767,7 +1878,7 @@ in {
   #   # # };
 
   #   qtwebengine = super.qtwebengine.overrideAttrs (upstream: {
-  #     # depsBuildBuild = upstream.depsBuildBuild or [] ++ [ final.pkg-config ];
+  #     # depsBuildBuild = upstream.depsBuildBuild or [] ++ [ pkg-config ];
   #     # XXX: qt seems to use its own terminology for "host" and "target":
   #     # - <https://www.qt.io/blog/qt6-development-hosts-and-targets>
   #     # - "host" = machine invoking the compiler
@@ -1780,7 +1891,7 @@ in {
   #       export PKG_CONFIG_HOST="$PKG_CONFIG_FOR_BUILD"
   #       # expose -isystem <zlib> to x86 builds
   #       export NIX_CFLAGS_COMPILE_x86_64_unknown_linux_gnu="$NIX_CFLAGS_COMPILE"
-  #       export NIX_LDFLAGS_x86_64_unknown_linux_gnu="-L${final.buildPackages.zlib}/lib"
+  #       export NIX_LDFLAGS_x86_64_unknown_linux_gnu="-L${buildPackages.zlib}/lib"
   #     '';
   #     patches = upstream.patches or [] ++ [
   #       # ./qtwebengine-host-pkg-config.patch
@@ -1792,43 +1903,43 @@ in {
   #       sed -i s/options.debug/True/g src/3rdparty/chromium/build/config/linux/pkg-config.py
   #     '';
   #     nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #       final.bintools-unwrapped  # for readelf
-  #       final.buildPackages.cups  # for cups-config
-  #       final.buildPackages.fontconfig
-  #       final.buildPackages.glib
-  #       final.buildPackages.harfbuzz
-  #       final.buildPackages.icu
-  #       final.buildPackages.libjpeg
-  #       final.buildPackages.libpng
-  #       final.buildPackages.libwebp
-  #       final.buildPackages.nss
-  #       # final.gcc-unwrapped.libgcc  # for libgcc_s.so
-  #       final.buildPackages.zlib
+  #       bintools-unwrapped  # for readelf
+  #       buildPackages.cups  # for cups-config
+  #       buildPackages.fontconfig
+  #       buildPackages.glib
+  #       buildPackages.harfbuzz
+  #       buildPackages.icu
+  #       buildPackages.libjpeg
+  #       buildPackages.libpng
+  #       buildPackages.libwebp
+  #       buildPackages.nss
+  #       # gcc-unwrapped.libgcc  # for libgcc_s.so
+  #       buildPackages.zlib
   #     ];
-  #     depsBuildBuild = upstream.depsBuildBuild or [] ++ [ final.pkg-config ];
+  #     depsBuildBuild = upstream.depsBuildBuild or [] ++ [ pkg-config ];
   #     # buildInputs = upstream.buildInputs ++ [
-  #     #   final.gcc-unwrapped.libgcc  # for libgcc_s.so. this gets loaded during build, suggesting i surely messed something up
+  #     #   gcc-unwrapped.libgcc  # for libgcc_s.so. this gets loaded during build, suggesting i surely messed something up
   #     # ];
   #     # buildInputs = upstream.buildInputs ++ [
-  #     #   final.gcc-unwrapped.libgcc
+  #     #   gcc-unwrapped.libgcc
   #     # ];
   #     # nativeBuildInputs = upstream.nativeBuildInputs ++ [
-  #     #   final.icu
+  #     #   icu
   #     # ];
   #     # buildInputs = upstream.buildInputs ++ [
-  #     #   final.icu
+  #     #   icu
   #     # ];
   #     # env.NIX_DEBUG="1";
   #     # env.NIX_DEBUG="7";
   #     # cmakeFlags = lib.remove "-DQT_FEATURE_webengine_system_icu=ON" upstream.cmakeFlags;
-  #     cmakeFlags = upstream.cmakeFlags ++ lib.optionals (final.stdenv.hostPlatform != final.stdenv.buildPlatform) [
-  #       # "--host-cc=${final.buildPackages.stdenv.cc}/bin/cc"
-  #       # "--host-cxx=${final.buildPackages.stdenv.cc}/bin/c++"
+  #     cmakeFlags = upstream.cmakeFlags ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+  #       # "--host-cc=${buildPackages.stdenv.cc}/bin/cc"
+  #       # "--host-cxx=${buildPackages.stdenv.cc}/bin/c++"
   #       # these are my own vars, used by my own patch
-  #       "-DCMAKE_HOST_C_COMPILER=${final.buildPackages.stdenv.cc}/bin/gcc"
-  #       "-DCMAKE_HOST_CXX_COMPILER=${final.buildPackages.stdenv.cc}/bin/g++"
-  #       "-DCMAKE_HOST_AR=${final.buildPackages.stdenv.cc}/bin/ar"
-  #       "-DCMAKE_HOST_NM=${final.buildPackages.stdenv.cc}/bin/nm"
+  #       "-DCMAKE_HOST_C_COMPILER=${buildPackages.stdenv.cc}/bin/gcc"
+  #       "-DCMAKE_HOST_CXX_COMPILER=${buildPackages.stdenv.cc}/bin/g++"
+  #       "-DCMAKE_HOST_AR=${buildPackages.stdenv.cc}/bin/ar"
+  #       "-DCMAKE_HOST_NM=${buildPackages.stdenv.cc}/bin/nm"
   #     ];
   #   });
   # });
@@ -1845,7 +1956,7 @@ in {
     env = upstream.env // lib.optionalAttrs (upstream.version == "4.18.1") {
       # 4.19.0 upgrade should fix cross compilation.
       # see: <https://github.com/NixOS/nixpkgs/pull/260558>
-      PYTHON = final.python3.interpreter;
+      PYTHON = python3.interpreter;
     };
   });
 
@@ -1854,8 +1965,8 @@ in {
   #   # this solves that, but `CPP` must be a *single* path -- not an expression.
   #   # i do not understand how the original error arises, as my ccacheStdenv should match the API of the base stdenv (except for cpp being a symlink??).
   #   # but oh well, this fixes it.
-  #   CPP = final.buildPackages.writeShellScript "cpp" ''
-  #     exec ${lib.getBin final.stdenv.cc}/bin/${final.stdenv.cc.targetPrefix}cc -E $@;
+  #   CPP = buildPackages.writeShellScript "cpp" ''
+  #     exec ${lib.getBin stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc -E $@;
   #   '';
   # });
 
@@ -1863,17 +1974,6 @@ in {
   #   # fails to fix original error
   #   inherit (emulated) stdenv;
   # };
-
-  # 2023/10/23: upstreaming: <https://github.com/NixOS/nixpkgs/pull/263187>
-  # snapper = prev.snapper.overrideAttrs (upstream: {
-  #   # replace references to build diff/rm to runtime diff/rm
-  #   # also reduces closure 305628736 -> 262698112
-  #   configureFlags = (upstream.configureFlags or []) ++ [
-  #     "DIFFBIN=${final.diffutils}/bin/diff"
-  #     "RMBIN=${final.coreutils}/bin/rm"
-  #   ];
-  #   # strictDeps = true;  #< doesn't actually prevent original symptom
-  # });
 
   spandsp = prev.spandsp.overrideAttrs (upstream: {
     configureFlags = upstream.configureFlags or [] ++ [
@@ -1884,9 +1984,10 @@ in {
     ];
   });
 
+  # 2023/12/19: upstreaming is blocked by qtsvg (via pipewire)
   spot = prev.spot.overrideAttrs (upstream:
     let
-      rustTargetPlatform = final.rust.toRustTarget final.stdenv.hostPlatform;
+      rustTargetPlatform = rust.toRustTarget stdenv.hostPlatform;
     in {
       postPatch = (upstream.postPatch or "") + ''
         substituteInPlace build-aux/cargo.sh --replace \
@@ -1897,7 +1998,7 @@ in {
       buildPhase = ''
         runHook preBuild
 
-        ${final.rust.envVars.setEnv} "CARGO_BUILD_TARGET=${rustTargetPlatform}" ninja -j$NIX_BUILD_CORES
+        ${rust.envVars.setEnv} "CARGO_BUILD_TARGET=${rustTargetPlatform}" ninja -j$NIX_BUILD_CORES
 
         runHook postBuild
       '';
@@ -1912,9 +2013,9 @@ in {
     mesonFlags =
       let
         # ERROR: 'rust' compiler binary not defined in cross or native file
-        crossFile = final.writeText "cross-file.conf" ''
+        crossFile = writeText "cross-file.conf" ''
           [binaries]
-          rust = [ 'rustc', '--target', '${final.rust.toRustTargetSpec final.stdenv.hostPlatform}' ]
+          rust = [ 'rustc', '--target', '${rust.toRustTargetSpec stdenv.hostPlatform}' ]
         '';
       in
         # upstream.mesonFlags or [] ++
@@ -1924,7 +2025,7 @@ in {
           "-Donline=false"
         ]
         ++ lib.optional
-          (final.stdenv.hostPlatform != final.stdenv.buildPlatform)
+          (stdenv.hostPlatform != stdenv.buildPlatform)
           "--cross-file=${crossFile}"
         ;
 
@@ -1932,10 +2033,10 @@ in {
     # cargoVendorDir = "vendor";
 
     # depsBuildBuild = (upstream.depsBuildBuild or []) ++ [
-    #   final.pkg-config
+    #   pkg-config
     # ];
     # this is identical to upstream, but somehow build fails if i remove it??
-    nativeBuildInputs = with final; [
+    nativeBuildInputs = [
       meson
       ninja
       pkg-config
@@ -1961,6 +2062,7 @@ in {
   #   ;
   # };
 
+  # 2023/12/08: upstreaming is unblocked
   swaynotificationcenter = prev.swaynotificationcenter.overrideAttrs (upstream: {
     mesonFlags = (upstream.mesonFlags or []) ++ [
       # fixes "[can't find scdoc]"
@@ -1969,88 +2071,22 @@ in {
     ];
     # for "error: Package `libpulse' not found in specified Vala API directories or GObject-Introspection GIR directories"
     # apparently vala setuphook incorrectly uses hostOffset, instead of targetOffset?
-    nativeBuildInputs = upstream.nativeBuildInputs ++ [ final.libpulseaudio ];
+    # - probably fixed by <https://github.com/NixOS/nixpkgs/pull/267550/files>
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [ libpulseaudio ];
   });
 
-  # sysprof = (
-  #   # fixes: "src/meson.build:12:2: ERROR: Program 'gdbus-codegen' not found or not executable"
-  #   # 2023/07/27: upstreaming is blocked on p11-kit cross compilation
-  #   mvToNativeInputs [ final.glib ] prev.sysprof
-  # );
-  # tangram = rmNativeInputs [ final.gobject-introspection ] (
-  # tangram = mvToBuildInputs [ (dontCheck (useEmulatedStdenv final.blueprint-compiler)) ] (
-  #   addNativeInputs [ final.gjs ] (  # new error: "gi._error.GError: g-invoke-error-quark: Could not locate g_option_error_quark" loading glib
-  #     prev.tangram.override {
-  #       blueprint-compiler = dontCheck (useEmulatedStdenv final.blueprint-compiler);
-  #     }
-  #   )
-  # );
-  # tangram = (prev.tangram.override {
-  #   inherit (emulated) stdenv;
-  # }).overrideAttrs (upstream: {
-  #   nativeBuildInputs = (lib.remove final.blueprint-compiler upstream.nativeBuildInputs)++ [
-  #     # final.gjs
-  #   ];
-  #   buildInputs = upstream.buildInputs ++ [
-  #     (dontCheck (useEmulatedStdenv final.blueprint-compiler))
-  #   ];
-  # });
-  # tangram = prev.tangram.override {
-  #   gjs = emulated.gjs.overrideAttrs {
-  #     doCheck = false;  # tests time out
-  #   };
-  # };
-  # tangram = useEmulatedStdenv prev.tangram;
-  # tangram = addNativeInputs [ final.gjs ] (prev.tangram.override {
-  #   gjs = emulated.gjs.overrideAttrs {
-  #     doCheck = false;  # tests time out
-  #   };
-  # });
-  # tangram = prev.tangram.override {
-  #   inherit (emulated) stdenv;
-  #   gjs = emulated.gjs.overrideAttrs {
-  #     doCheck = false;  # tests time out
-  #   };
-  # };
-  tangram = (prev.tangram.override {
-    # N.B. blueprint-compiler is in nativeBuildInputs.
-    # the trick here is to force the aarch64 versions to be used during build (via emulation).
-    # blueprint-compiler override shared with flare-signal-nixified.
-    blueprint-compiler = buildInQemu (final.blueprint-compiler.overrideAttrs (_: {
-      # default is to propagate gobject-introspection *as a buildInput*, when it's supposed to be native.
-      propagatedBuildInputs = [];
-      # "Namespace Gtk not available"
-      doCheck = false;
-    }));
-    # blueprint-compiler = dontCheck emulated.blueprint-compiler;
-    # gjs = dontCheck emulated.gjs;
-    # gjs = dontCheck (mvToBuildInputs [ final.gobject-introspection ] (useEmulatedStdenv final.gjs));
-    # gjs = dontCheck (final.gjs.override {
-    #   inherit (emulated) stdenv gobject-introspection;
-    # });
-    # inherit (emulated) gobject-introspection;
-    # gobject-introspection = useEmulatedStdenv final.gobject-introspection;
-  }).overrideAttrs (upstream: {
+  # 2023/12/08: upstreaming is blocked by qtsvg (via pipewire)
+  tangram = prev.tangram.overrideAttrs (upstream: {
+    # blueprint-compiler runs on the build machine, but tries to load gobject-introspection types meant for the host.
+    # additionally, gsjpack has a shebang for the host gjs. patchShebangs --build doesn't fix that: just manually specify the build gjs
     postPatch = (upstream.postPatch or "") + ''
       substituteInPlace src/meson.build \
-        --replace "find_program('gjs').full_path()" "'${final.gjs}/bin/gjs'"
-    '';
-    # buildInputs = upstream.buildInputs ++ [ final.gobject-introspection ];
-    # nativeBuildInputs = lib.remove final.gobject-introspection upstream.nativeBuildInputs;
-  });
-  # tangram = (mvToBuildInputs [ final.blueprint-compiler final.gobject-introspection ] prev.tangram).overrideAttrs (upstream: {
-  #   postPatch = (upstream.postPatch or "") + ''
-  #     substituteInPlace src/meson.build \
-  #       --replace "find_program('gjs').full_path()" "'${final.gjs}/bin/gjs'"
-  #   '';
-  # });
+        --replace "find_program('gjs').full_path()" "'${gjs}/bin/gjs'" \
+        --replace "gjspack," "'env', 'GI_TYPELIB_PATH=${buildPackages.gdk-pixbuf.out}/lib/girepository-1.0:${buildPackages.harfbuzz.out}/lib/girepository-1.0:${buildPackages.gtk4.out}/lib/girepository-1.0:${buildPackages.graphene}/lib/girepository-1.0:${buildPackages.libadwaita}/lib/girepository-1.0:${buildPackages.pango.out}/lib/girepository-1.0', '${buildPackages.gjs}/bin/gjs', '-m', gjspack,"
 
-  # fixes "meson.build:425:23: ERROR: Program 'glib-compile-schemas' not found or not executable"
-  # 2023/07/31: upstreaming is unblocked,implemented on servo
-  # tracker-miners = mvToNativeInputs [ final.glib ] (
-  #   # fixes "meson.build:183:0: ERROR: Can not run test applications in this cross environment."
-  #   addNativeInputs [ final.mesonEmulatorHook ] prev.tracker-miners
-  # );
+    '';
+  });
+
   # twitter-color-emoji = prev.twitter-color-emoji.override {
   #   # fails to fix original error
   #   inherit (emulated) stdenv;
@@ -2058,17 +2094,17 @@ in {
 
   # fixes: "ar: command not found"
   # `ar` is provided by bintools
-  # 2023/07/27: upstreaming is blocked on p11-kit, gnustep cross compilation
-  unar = addNativeInputs [ final.bintools ] prev.unar;
+  # 2023/12/08: upstreaming is blocked on gnustep-base cross compilation
+  unar = addNativeInputs [ bintools ] prev.unar;
   # unixODBCDrivers = prev.unixODBCDrivers // {
   #   # TODO: should this package be deduped with toplevel psqlodbc in upstream nixpkgs?
   #   psql = prev.unixODBCDrivers.psql.overrideAttrs (_upstream: {
   #     # XXX: these are both available as configureFlags, if we prefer that (we probably do, so as to make them available only during specific parts of the build).
-  #     ODBC_CONFIG = final.buildPackages.writeShellScript "odbc_config" ''
-  #       exec ${final.stdenv.hostPlatform.emulator final.buildPackages} ${final.unixODBC}/bin/odbc_config $@
+  #     ODBC_CONFIG = buildPackages.writeShellScript "odbc_config" ''
+  #       exec ${stdenv.hostPlatform.emulator buildPackages} ${unixODBC}/bin/odbc_config $@
   #     '';
-  #     PG_CONFIG = final.buildPackages.writeShellScript "pg_config" ''
-  #       exec ${final.stdenv.hostPlatform.emulator final.buildPackages} ${final.postgresql}/bin/pg_config $@
+  #     PG_CONFIG = buildPackages.writeShellScript "pg_config" ''
+  #       exec ${stdenv.hostPlatform.emulator buildPackages} ${postgresql}/bin/pg_config $@
   #     '';
   #   });
   # };
@@ -2078,21 +2114,22 @@ in {
   #   # setting this to null means visidata will work as normal but not be able to load hdf files.
   #   h5py = null;
   # };
-  # 2023/07/27: upstreaming is blocked on p11-kit, qtbase cross compilation
   vlc = prev.vlc.overrideAttrs (orig: {
+    # 2023/11/21: upstreaming is blocked on qtsvg, qtx11extras
     # fixes: "configure: error: could not find the LUA byte compiler"
     # fixes: "configure: error: protoc compiler needed for chromecast was not found"
-    nativeBuildInputs = orig.nativeBuildInputs ++ [ final.lua5 final.protobuf ];
+    nativeBuildInputs = orig.nativeBuildInputs ++ [ lua5 protobuf ];
     # fix that it can't find the c compiler
     # makeFlags = orig.makeFlags or [] ++ [ "CC=${prev.stdenv.cc.targetPrefix}cc" ];
     env = orig.env // {
-      BUILDCC = "${final.stdenv.cc}/bin/${final.stdenv.cc.targetPrefix}cc";
+      BUILDCC = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
     };
   });
   # fixes "perl: command not found"
   # 2023/07/30: upstreaming is unblocked, but requires alternative fix
   # - i think the build script tries to run the generated binary?
-  vpnc = mvToNativeInputs [ final.perl ] prev.vpnc;
+  vpnc = mvToNativeInputs [ perl ] prev.vpnc;
+
   # wrapGAppsHook = prev.wrapGAppsHook.override {
   #   # prevents build gtk3 from being propagated into places it shouldn't (e.g. waybar)
   #   isGraphical = false;
@@ -2102,51 +2139,77 @@ in {
   #   # ^ maybe that's because of the stuff in depsTargetTargetPropagated?
   #   # N.B.: this makes the hook functionally equivalent to `wrapGAppsNoGuiHook`
   #   isGraphical = false;
-  #   # gtk3 = final.emptyDirectory;
+  #   # gtk3 = emptyDirectory;
   # };
-  # xapian = prev.xapian.overrideAttrs (upstream: {
-  #   # the output has #!/bin/sh scripts.
-  #   # - shebangs get re-written on native build, but not cross build
-  #   buildInputs = upstream.buildInputs ++ [ final.bash ];
-  # });
+
+  # 2023/11/21: upstreaming is blocked on flatpak
+  xdg-desktop-portal = prev.xdg-desktop-portal.overrideAttrs (upstream: {
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [
+      # fixes "meson.build:117:8: ERROR: Program 'bwrap' not found or not executable"
+      bubblewrap
+    ]; # ++ upstream.nativeCheckInputs;
+    mesonFlags = (upstream.mesonFlags or []) ++ [
+      # fixes "tests/meson.build:268:9: ERROR: Program 'pytest-3 pytest' not found or not executable"
+      # nixpkgs should add this whenever doCheck == false, i think
+      "-Dpytest=disabled"
+    ];
+  });
   # fixes "No package 'xdg-desktop-portal' found"
-  # 2023/07/27: upstreaming is blocked on p11-kit,argyllcms cross compilation
-  xdg-desktop-portal-gtk = mvToBuildInputs [ final.xdg-desktop-portal ] prev.xdg-desktop-portal-gtk;
+  # 2023/12/08: upstreaming is blocked on argyllcms, flatpak, qtsvg (via pipewire/ffado)
+  xdg-desktop-portal-gtk = mvToBuildInputs [ xdg-desktop-portal ] prev.xdg-desktop-portal-gtk;
   # fixes: "data/meson.build:33:5: ERROR: Program 'msgfmt' not found or not executable"
   # fixes: "src/meson.build:25:0: ERROR: Program 'gdbus-codegen' not found or not executable"
   # 2023/07/27: upstreaming is blocked on p11-kit cross compilation
   xdg-desktop-portal-gnome = (
-    addNativeInputs [ final.wayland-scanner ] (
-      mvToNativeInputs [ final.gettext final.glib ] prev.xdg-desktop-portal-gnome
+    addNativeInputs [ wayland-scanner ] (
+      mvToNativeInputs [ gettext glib ] prev.xdg-desktop-portal-gnome
     )
   );
 
-  # 2023/07/31: upstreaming is blocked on playerctl
+  # 2023/12/08: upstreaming is blocked on wlroots-hyprland
+  # needs binfmt: "meson.build:420:8: ERROR: Dependency lookup for scdoc with method 'pkgconfig' failed: Pkg-config binary for machine 0 not found. Giving up."
   waybar = (prev.waybar.override {
     runTests = false;
     cavaSupport = false;  # doesn't cross compile
     hyprlandSupport = false;  # doesn't cross compile
-    # hopefully fixes: "/nix/store/sc1pz0zaqwpai24zh7xx0brjinflmc6v-aarch64-unknown-linux-gnu-binutils-2.40/bin/aarch64-unknown-linux-gnu-ld: /nix/store/ghxl1zrfnvh69dmv7xa1swcbyx06va4y-wayland-1.22.0/lib/libwayland-client.so: error adding symbols: file in wrong format"
-    wrapGAppsHook = final.wrapGAppsHook.override {
+    # fixes: "/nix/store/sc1pz0zaqwpai24zh7xx0brjinflmc6v-aarch64-unknown-linux-gnu-binutils-2.40/bin/aarch64-unknown-linux-gnu-ld: /nix/store/ghxl1zrfnvh69dmv7xa1swcbyx06va4y-wayland-1.22.0/lib/libwayland-client.so: error adding symbols: file in wrong format"
+    wrapGAppsHook = wrapGAppsHook.override {
       isGraphical = false;
+      # tries to invoke the pkgsHostHost compiler :s
+      makeWrapper = null;
     };
   }).overrideAttrs (upstream: {
-    depsBuildBuild = upstream.depsBuildBuild or [] ++ [ final.pkg-config ];
+    nativeBuildInputs = upstream.nativeBuildInputs ++ [
+      buildPackages.wayland-scanner
+      (makeShellWrapper.overrideAttrs (_: {
+        shell = runtimeShell;
+      }))
+    ];
+    mesonFlags = upstream.mesonFlags ++ [
+      # fixes "Dependency lookup for scdoc with method 'pkgconfig' failed: Pkg-config binary for machine 0 not found. Giving up."
+      "-Dman-pages=disabled"
+    ];
   });
 
   webkitgtk = prev.webkitgtk.overrideAttrs (upstream: {
     # fixes "wayland-scanner: line 5: syntax error: unterminated quoted string"
     # also: `/nix/store/nnnn-wayland-aarch64-unknown-linux-gnu-1.22.0-bin/bin/wayland-scanner: line 0: syntax error: unexpected word (expecting ")")`
+    # verbose error:
+    #   [6376/6819] Generating ../../WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c
+    #   FAILED: WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c /build/webkitgtk-2.40.5/build/WebKitGTK/DerivedSources/pointer-constraints-unstable-v1-protocol.c 
+    #   cd /build/webkitgtk-2.40.5/build/Source/WebKit && /nix/store/6xbpap00kkdgrayizbc61mzf19ygsp9j-wayland-aarch64-unknown-linux-gnu-1.22.0-bin/bin/wayland-scanner private-code //nix/store/26nypvflsc8ggbdkns0wjvh4mjrj>
+    #   /nix/store/6xbpap00kkdgrayizbc61mzf19ygsp9j-wayland-aarch64-unknown-linux-gnu-1.22.0-bin/bin/wayland-scanner: line 5: syntax error: unterminated quoted string
     # with this i can maybe remove `wayland` from nativeBuildInputs, too?
     # note that `webkitgtk` != `webkitgtk_6_0`, so this patch here might be totally unnecessary.
     # 2023/11/06: hostPkgs.moby.webkitgtk_6_0 builds fine on servo; stock pkgsCross.aarch64-multiplatform.webkitgtk_6_0 does not.
     # 2023/11/06: out for PR: <https://github.com/NixOS/nixpkgs/pull/265968>
     cmakeFlags = upstream.cmakeFlags ++ [
-      "-DWAYLAND_SCANNER=${final.buildPackages.wayland-scanner}/bin/wayland-scanner"
+      "-DWAYLAND_SCANNER=${buildPackages.wayland-scanner}/bin/wayland-scanner"
     ];
   });
-  # webkitgtk = prev.webkitgtk.override { stdenv = final.ccacheStdenv; };
+  # webkitgtk = prev.webkitgtk.override { stdenv = ccacheStdenv; };
 
+  # 2023/12/08: upstreaming is unblocked
   webp-pixbuf-loader = prev.webp-pixbuf-loader.overrideAttrs (upstream: {
     # fixes: "Builder called die: Cannot wrap '/nix/store/kpp8qhzdjqgvw73llka5gpnsj0l4jlg8-gdk-pixbuf-aarch64-unknown-linux-gnu-2.42.10/bin/gdk-pixbuf-thumbnailer' because it is not an executable file"
     # gdk-pixbuf doesn't create a `bin/` directory when cross-compiling, breaks some thumbnailing stuff.
@@ -2156,7 +2219,9 @@ in {
   });
   # XXX: aarch64 webp-pixbuf-loader wanted by gdk-pixbuf-loaders.cache.drv, wanted by aarch64 gnome-control-center
 
+  # 2023/12/08: upstreaming is blocked by qtsvg (via pipewire)
   wike = prev.wike.overrideAttrs (upstream: {
+    # error: "<wike> is not allowed to refer to the following paths: <build python>"
     # wike's meson build script sets host binaries to use build PYTHON
     # disallowedReferences = [];
     postFixup = (upstream.postFixup or "") + ''
@@ -2164,20 +2229,28 @@ in {
     '';
   });
 
-  wrapFirefox = prev.wrapFirefox.override {
-    buildPackages = let
-      bpkgs = final.buildPackages;
-    in bpkgs // {
-      # fixes "extract-binary-wrapper-cmd: line 2: strings: command not found"
-      # ^- in the `nix log` output of cross-compiled `firefox` (it's non-fatal)
-      makeBinaryWrapper = bpkgs.makeBinaryWrapper.overrideAttrs (upstream: {
-        passthru.extractCmd = bpkgs.writeShellScript "extract-binary-wrapper-cmd" ''
-          ${final.stdenv.cc.targetPrefix}strings -dw "$1" | sed -n '/^makeCWrapper/,/^$/ p'
-        '';
-      });
-    };
-  };
+  # wrapFirefox = prev.wrapFirefox.override {
+  #   buildPackages = buildPackages // {
+  #     # fixes "extract-binary-wrapper-cmd: line 2: strings: command not found"
+  #     # ^- in the `nix log` output of cross-compiled `firefox` (it's non-fatal)
+  #     makeBinaryWrapper = bpkgs.makeBinaryWrapper.overrideAttrs (upstream: {
+  #       passthru.extractCmd = bpkgs.writeShellScript "extract-binary-wrapper-cmd" ''
+  #         ${stdenv.cc.targetPrefix}strings -dw "$1" | sed -n '/^makeCWrapper/,/^$/ p'
+  #       '';
+  #     });
+  #   };
+  # };
+
+  wrapNeovimUnstable = neovim: config: (prev.wrapNeovimUnstable neovim config).overrideAttrs (upstream: {
+    # nvim wrapper has a sanity check that the plugins will load correctly.
+    # this is effectively a check phase and should be rewritten as such
+    postBuild = lib.replaceStrings
+      [ "! $out/bin/nvim-wrapper" ]
+      # [ "${stdenv.hostPlatform.emulator buildPackages} $out/bin/nvim-wrapper" ]
+      [ "false && $out/bin/nvim-wrapper" ]
+      upstream.postBuild;
+  });
 
   # 2023/07/30: upstreaming is blocked on unar (gnustep), unless i also make that optional
-  xarchiver = mvToNativeInputs [ final.libxslt ] prev.xarchiver;
+  xarchiver = mvToNativeInputs [ libxslt ] prev.xarchiver;
 }

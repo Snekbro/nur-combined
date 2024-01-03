@@ -7,24 +7,25 @@
 # Create xdg user directories, such as ~/Pictures
 xdg-user-dirs-update
 
-sxmo_daemons.sh start daemon_manager
+sxmo_jobs.sh start daemon_manager
 
 # Periodically update some status bar components
-sxmo_hook_statusbar.sh all
-sxmo_daemons.sh start statusbar_periodics sxmo_run_aligned.sh 60 \
-	sxmo_hook_statusbar.sh periodics
+# don't: statusbar is managed by waybar
+#   sxmo_hook_statusbar.sh all
+#   sxmo_jobs.sh start statusbar_periodics sxmo_run_aligned.sh 60 \
+#     sxmo_hook_statusbar.sh periodics
 
 # TODO: start these externally, via `wantedBy` in nix
-# don't: mako is managed externally
+# don't: i don't use mako
 #   superctl start mako
-systemctl --user start sxmo_wob
+# systemctl --user start sxmo_wob
 systemctl --user start sxmo_menumode_toggler
 systemctl --user start bonsaid
 # don't: sway background is managed externally
 #   swaymsg output '*' bg "$SXMO_BG_IMG" fill
 
 # To setup initial lock state
-sxmo_state_switch.sh set unlock
+sxmo_state.sh set unlock
 
 # Turn on auto-suspend
 if [ -w "/sys/power/wakeup_count" ] && [ -f "/sys/power/wake_lock" ]; then
@@ -49,21 +50,26 @@ fi
 #   superctl start sxmo_conky
 
 # Monitor the battery
-systemctl --user start sxmo_battery_monitor
+# don't: this is *exclusively* for sxmo_hook_statusbar.sh, which i don't use.
+#   systemctl --user start sxmo_battery_monitor
 
 # It watch network changes and update the status bar icon by example
-systemctl --user start sxmo_networkmonitor
+# don't: this is for sxmo_hook_statusbar.sh, which i don't use.
+# this means we never call sxmo_hook_network_{up,down,...}, but the defaults are no-op anyway
+#   systemctl --user start sxmo_networkmonitor
 
 # The daemon that display notifications popup messages
+# more importantly: it lights the led green when a notification arrives
 systemctl --user start sxmo_notificationmonitor
 
 # monitor for headphone for statusbar
+# this also invokes `wob` whenever the volume is changed
 systemctl --user start sxmo_soundmonitor
 
 # rotate UI based on physical display angle by default
 if [ -n "$SXMO_AUTOROTATE" ]; then
 	# TODO: this could use ~/.cache/sxmo/sxmo.autorotate like for lisgd above
-	sxmo_daemons.sh start autorotate sxmo_autorotate.sh
+	sxmo_jobs.sh start autorotate sxmo_autorotate.sh
 fi
 
 # Play a funky startup tune if you want (disabled by default)

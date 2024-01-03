@@ -1,5 +1,5 @@
-{ buildGo118Module, fetchFromGitHub, lib, ... }:
-buildGo118Module rec {
+{ buildGoModule, fetchFromGitHub, lib, ... }:
+buildGoModule rec {
   pname = "org-stats";
   version = "1.11.2";
 
@@ -10,7 +10,7 @@ buildGo118Module rec {
     sha256 = "sha256-b0Cfs4EqQOft/HNAoJvRriCMzNiOgYagBLiPYgsDgJM=";
   };
 
-  vendorSha256 = "sha256-LKpnEXVfxBR3cebv46QontDVeA64MJe0vNiKSnTjLtQ=";
+  vendorHash = "sha256-LKpnEXVfxBR3cebv46QontDVeA64MJe0vNiKSnTjLtQ=";
 
   meta = with lib; {
     description =

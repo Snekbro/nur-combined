@@ -18,11 +18,23 @@
   outputs = { self, flake-utils, flake-linter, nixpkgs }:
     {
       overlays = import ./overlays;
-      nixosModules = builtins.mapAttrs (name: value: import value) (import ./nixos/modules);
+      nixosModules = import ./nixos/modules;
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
-          config.allowUnfree = true;
+          config = {
+            allowUnfreePredicate = pkg: builtins.elem (builtins.parseDrvName (nixpkgs.lib.getName pkg)).name [
+              "anytype"
+              "anytype-heart"
+              "clonehero"
+              "virtualparadise"
+            ];
+
+            permittedInsecurePackages = [
+              "electron-24.8.6"
+            ];
+          };
+
           inherit system;
         };
 
@@ -36,9 +48,6 @@
                 (ignore: !(nixpkgs.lib.hasSuffix ignore path))
                 [
                   "gemset.nix"
-                  "node-composition.nix"
-                  "node-env.nix"
-                  "node-packages.nix"
                 ]))
             (flake-linter-lib.walkFlake ./.));
 

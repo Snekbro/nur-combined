@@ -25,6 +25,7 @@ in
     ./tuning.nix
     ./unstore.nix
     ./user.nix
+    ./postgres-backup.nix
   ];
 
   boot.supportedFilesystems = [ "nfs" ];
@@ -86,6 +87,7 @@ in
 
   environment = {
     systemPackages = with pkgs; [
+      ts # simple queue system
       rlwrap
       wget
       curl

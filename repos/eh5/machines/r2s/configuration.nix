@@ -4,10 +4,11 @@
     defaultSopsFormat = "yaml";
     defaultSopsFile = ./secrets/secrets.sops.yaml;
     secrets = {
-      "sb-config.json" = {};
-      "mosdns.yaml" = {};
-      "tproxy.nft" = {};
-      "v2ray.v5.json" = {};
+      "sb-config.json" = { mode = "0400"; };
+      "mosdns.yaml" = { };
+      "tproxy.nft" = { };
+      "v2ray.v5.json" = { };
+      "udpspeeder.conf" = { };
     };
   };
 
@@ -73,9 +74,11 @@
     iperf
     lm_sensors
     lsof
+    mtr
     screen
     sops
     tcpdump
+    traceroute
     usbutils
     sing-box
   ] ++ (with config.boot.kernelPackages; [

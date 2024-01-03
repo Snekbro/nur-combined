@@ -19,6 +19,7 @@ in
       };
     };
 
+    slowToBuild = true;  # uses webkitgtk 4.1
     persist.byStore.private = [
       # attachments, and email -- contained in a sqlite db
       ".local/share/geary"
@@ -64,6 +65,7 @@ in
       transport_security=transport
       credentials=use-incoming
     '';
+    secrets.".config/geary/account_02/geary.ini" = ../../../secrets/common/geary_account_02.ini.bin;
 
     services.geary = {
       description = "Geary email client";

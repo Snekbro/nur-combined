@@ -8,27 +8,28 @@
 
 { pkgs ? import <nixpkgs> { } }:
 
-{
+rec {
   # The `lib`, `modules`, and `overlay` names are special
   lib = import ./lib { inherit pkgs; }; # functions
   modules = import ./modules; # NixOS modules
   overlays = import ./overlays; # nixpkgs overlays
 
+  colima = pkgs.callPackage ./pkgs/colima { };
   copyq = pkgs.callPackage ./pkgs/copyq { };
-  doq = pkgs.python3Packages.callPackage ./pkgs/doq { };
   ligaturizer = pkgs.callPackage ./pkgs/ligaturizer { };
-  mmseqs2 = pkgs.callPackage ./pkgs/mmseqs2 {
-    inherit (pkgs.llvmPackages) openmp;
-  };
+  nixfmt = pkgs.callPackage ./pkgs/nixfmt { };
+  nixpkgs-review = pkgs.callPackage ./pkgs/nixpkgs-review { };
   nowplaying-cli = pkgs.callPackage ./pkgs/nowplaying-cli { 
     inherit (pkgs.darwin.apple_sdk.frameworks) Cocoa;
   };
   psipred = pkgs.callPackage ./pkgs/psipred { };
   qutebrowser = pkgs.callPackage ./pkgs/qutebrowser { };
-  hackgen = pkgs.callPackage ./pkgs/data/fonts/hackgen { };
-  hackgen-nf = pkgs.callPackage ./pkgs/data/fonts/hackgen-nf { };
-  liga-hackgen-font = pkgs.callPackage ./pkgs/data/fonts/liga-hackgen { };
-  liga-hackgen-nf-font = pkgs.callPackage ./pkgs/data/fonts/liga-hackgen/nerdfont.nix { };
+  liga-hackgen-font = pkgs.callPackage ./pkgs/data/fonts/liga-hackgen { 
+    inherit ligaturizer; 
+  };
+  liga-hackgen-nf-font = liga-hackgen-font.override { 
+    nerdfont = true; 
+  };
 
   vimPlugins = pkgs.recurseIntoAttrs (pkgs.callPackage ./pkgs/vim-plugins { inherit (pkgs.vimUtils) buildVimPlugin; });
 }

@@ -12,7 +12,7 @@
 Run packages directly from this repository(no cache):
 
 ```sh
-nix run github:ryan4yin/nur-packages#yazi
+nix run github:ryan4yin/nur-packages#some-pakcage
 ```
 
 Use this repository in `flake.nix`:
@@ -20,6 +20,15 @@ Use this repository in `flake.nix`:
 ```nix
 # flake.nix
 {
+  # the nixConfig here only affects the flake itself, not the system configuration!
+  # for more information, see:
+  #     https://nixos-and-flakes.thiscute.world/nixos-with-flakes/add-custom-cache-servers
+  nixConfig = {
+    # substituers will be appended to the default substituters when fetching packages
+    extra-substituters = [ "https://ryan4yin.cachix.org" ];
+    extra-trusted-public-keys = [ "ryan4yin.cachix.org-1:Gbk27ZU5AYpGS9i3ssoLlwdvMIh0NxG0w8it/cv9kbU=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nur-ryan4yin = {
@@ -32,14 +41,10 @@ Use this repository in `flake.nix`:
     nixosConfigurations.default = nixpkgs.lib.nixosSystem rec {
       system = "x86_64-linux";
       modules = [
-        ({ ... }: {
-          # Binary cache (optional)
-          nix.settings.substituters = [ "https://ryan4yin.cachix.org" ];
-          nix.settings.trusted-public-keys = [ "ryan4yin.cachix.org-1:Gbk27ZU5AYpGS9i3ssoLlwdvMIh0NxG0w8it/cv9kbU=" ];
-
+        ({ pkgs, ... }: {
           environment.systemPackages = with pkgs; [
             # Add packages from this repo
-            nur-ryan4yin.packages.${system}.yazi  # terminal file manager
+            nur-ryan4yin.packages.${system}.some-package
           ];
         })
       ];

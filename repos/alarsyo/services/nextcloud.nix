@@ -42,9 +42,7 @@ in {
       ensureUsers = [
         {
           name = "nextcloud";
-          ensurePermissions = {
-            "DATABASE ${dbName}" = "ALL PRIVILEGES";
-          };
+          ensureDBOwnership = true;
         }
       ];
     };
@@ -62,11 +60,9 @@ in {
     services.nextcloud = {
       enable = true;
 
-      enableBrokenCiphersForSSE = false;
-
       hostName = "cloud.${domain}";
       https = true;
-      package = pkgs.nextcloud26;
+      package = pkgs.nextcloud27;
 
       maxUploadSize = "1G";
 

@@ -74,12 +74,14 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
 
   gaupol = python3.pkgs.callPackage ./pkgs/gaupol/gaupol.nix { };
 
-  autosub-by-abhirooptalasila = callPackage ./pkgs/autosub-by-abhirooptalasila/autosub.nix { };
+  autosub-by-abhirooptalasila = python3.pkgs.callPackage ./pkgs/autosub-by-abhirooptalasila/autosub.nix { };
 
   proftpd = callPackage ./pkgs/proftpd/proftpd.nix { };
 
   pyload = python3.pkgs.pyload;
   #pyload = python3Packages.pyload;
+
+  speedtest-cli = python3.pkgs.speedtest-cli;
 
   rose = callPackage ./pkgs/rose/rose.nix { };
 
@@ -264,13 +266,68 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
         pdfium = pdfium-bin;
       };
 
+      stt = callPackage ./pkgs/python3/pkgs/stt/stt.nix { };
+
+      webdataset = callPackage ./pkgs/python3/pkgs/webdataset/webdataset.nix { };
+
+      plasma-disassembler = python3.pkgs.callPackage ./pkgs/development/tools/analysis/plasma-disassembler/plasma-disassembler.nix {
+        capstone-system = pkgs.capstone;
+      };
+
+      argostranslate_2 = callPackage ./pkgs/python3/pkgs/argostranslate/argostranslate_2.nix {
+        ctranslate2-cpp = pkgs.ctranslate2;
+      };
+
+      gnumake-tokenpool = callPackage ./pkgs/python3/pkgs/gnumake-tokenpool { };
+
+      chromecontroller = callPackage ./pkgs/python3/pkgs/chromecontroller/chromecontroller.nix { };
+
+      browser-debugger-tools = callPackage ./pkgs/python3/pkgs/browser-debugger-tools/browser-debugger-tools.nix { };
+
+      pychrome = callPackage ./pkgs/python3/pkgs/pychrome/pychrome.nix { };
+
+      pychromedevtools = callPackage ./pkgs/python3/pkgs/pychromedevtools/pychromedevtools.nix { };
+
+      speedtest-cli = callPackage ./pkgs/python3/pkgs/speedtest-cli/speedtest-cli.nix { };
+
+      cdp-socket = callPackage ./pkgs/python3/pkgs/cdp-socket/cdp-socket.nix { };
+
+      selenium-driverless = callPackage ./pkgs/python3/pkgs/selenium-driverless/selenium-driverless.nix { };
+
+      undetected-chromedriver = callPackage ./pkgs/python3/pkgs/undetected-chromedriver/undetected-chromedriver.nix {
+        # FIXME scope: error: attribute 'undetected-chromedriver' missing
+        #pkgs-undetected-chromedriver = pkgs.undetected-chromedriver;
+        pkgs-undetected-chromedriver = callPackage ./pkgs/development/tools/selenium/chromedriver/undetected-chromedriver.nix { };
+      };
+
+      flaresolverr = callPackage ./pkgs/python3/pkgs/flaresolverr/flaresolverr.nix {
+        chromium = pkgs.ungoogled-chromium;
+        #chromium = pkgs.google-chrome;
+      };
+
+      aeneas = callPackage ./pkgs/python3/pkgs/aeneas/aeneas.nix { };
+
     #}))); # python3.pkgs
 
   #}))); # python3
 
   }))); # python3Packages
 
+  bazel_2 = callPackage ./pkgs/development/tools/build-managers/bazel/bazel_2/bazel_2.nix {
+    inherit (pkgs.darwin) cctools;
+    inherit (pkgs.darwin.apple_sdk.frameworks) Foundation CoreFoundation CoreServices;
+    buildJdk = pkgs.jdk11_headless;
+    buildJdkName = "java11";
+    runJdk = pkgs.jdk11_headless;
+    stdenv = if pkgs.stdenv.cc.isClang then pkgs.llvmPackages.stdenv else pkgs.gcc10StdenvCompat;
+    bazel_self = bazel_2;
+  };
+
+  plasma-disassembler = python3Packages.plasma-disassembler;
+
   chromium-depot-tools = python3Packages.chromium-depot-tools;
+
+  flaresolverr = python3Packages.flaresolverr;
 
   deno = pkgs.deno // {
     pkgs = (pkgs.deno.pkgs or {}) // (
@@ -287,8 +344,6 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
   brother-hll6400dw = callPackage ./pkgs/misc/cups/drivers/brother/hll6400dw/hll6400dw.nix { };
 
   brother-hll5100dn = callPackage ./pkgs/misc/cups/drivers/brother/hll5100dn/hll5100dn.nix { };
-
-  npmlock2nix = callPackage ./pkgs/development/tools/npmlock2nix/npmlock2nix.nix { };
 
   nix-gitignore = callPackage ./pkgs/build-support/nix-gitignore/nix-gitignore.nix { };
 
@@ -447,7 +502,7 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
       # https://github.com/curl/curl/discussions/11125
       (pkgs.fetchurl {
         url = "https://github.com/curl/curl/pull/11236.patch";
-        sha256 = "sha256-Ma5pOVLTAz/bbdmo4s5QH3UFDlpVr7DZ9xSMcUy98B8=";
+        sha256 = "sha256-7UMLiUJEZglACu5oF4A5CTKbFyJptmpulYGJmIgP/Wc=";
       })
     ];
   }));
@@ -509,7 +564,14 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
       };
     };
 
+    gittorrent = callPackage ./pkgs/node-pkgs/gittorrent/gittorrent.nix { };
+
   })));
+
+  inherit (nodePackages)
+    npmlock2nix
+    gittorrent
+  ;
 
   fontforge-dev = pkgs.fontforge.overrideAttrs (oldAttrs: {
     version = oldAttrs.version + "-dev";
@@ -546,6 +608,63 @@ pkgs.lib.makeScope pkgs.newScope (self: let inherit (self) callPackage; in rec {
   # FIXME error: undefined variable 'pyqt5'
   #krop = callPackage ./pkgs/applications/graphics/krop/krop.nix { };
   krop = pkgs.callPackage ./pkgs/applications/graphics/krop/krop.nix { };
+
+  sevenzip = sevenzip_23_01;
+
+  sevenzip_23_01 = callPackage ./pkgs/tools/archivers/sevenzip/sevenzip_23_01.nix { };
+
+  sevenzip_22_01 = callPackage ./pkgs/tools/archivers/sevenzip/sevenzip_22_01.nix { };
+
+  nmake2msbuild = callPackage ./pkgs/development/tools/nmake2msbuild/nmake2msbuild.nix { };
+
+  fuse-zip = callPackage ./pkgs/tools/filesystems/fuse-zip/fuse-zip.nix { };
+
+  ffmpeg-full = callPackage ./pkgs/development/libraries/ffmpeg/6.nix {
+    inherit (pkgs.darwin.apple_sdk.frameworks)
+      Cocoa CoreServices CoreAudio CoreMedia AVFoundation MediaToolbox
+      VideoDecodeAcceleration VideoToolbox;
+    ffmpegVariant = "full";
+  };
+
+  dtmfdial = callPackage ./pkgs/tools/networking/dtmfdial/dtmfdial.nix { };
+
+  # this packages is called "fdkaac" on github, debian, archlinux, ...
+  # the library is called "fdk_aac", so better rename that to "libfdk_aac"
+  fdkaac = pkgs.fdk-aac-encoder;
+
+  cortile = callPackage ./pkgs/applications/window-managers/cortile/cortile.nix { };
+
+  ragnar = callPackage ./pkgs/applications/window-managers/ragnar/ragnar.nix { };
+
+  #wingo = callPackage ./pkgs/applications/window-managers/wingo/wingo.nix { };
+
+  buster-client = callPackage ./pkgs/tools/X11/buster-client/buster-client.nix { };
+
+  buster-client-setup = callPackage ./pkgs/tools/X11/buster-client/buster-client-setup.nix { };
+
+  buster-client-setup-cli = callPackage ./pkgs/tools/X11/buster-client/buster-client-setup-cli.nix { };
+
+  wzshiming-bridge = callPackage ./pkgs/tools/networking/wzshiming/wzshiming-bridge.nix { };
+
+  wzshiming-socks5 = callPackage ./pkgs/tools/networking/wzshiming/wzshiming-socks5.nix { };
+
+  undetected-chromedriver = callPackage ./pkgs/development/tools/selenium/chromedriver/undetected-chromedriver.nix { };
+
+  perlPackages = pkgs.recurseIntoAttrs (pkgs.lib.makeScope pkgs.perlPackages.newScope (self: let inherit (self) callPackage; in ({
+
+    AptPkg = callPackage ./pkgs/perl/pkgs/apt-pkg/apt-pkg.nix { };
+
+  }))); # perlPackages
+
+  apt = callPackage ./pkgs/tools/package-management/apt/apt.nix {
+    # fix: error: attribute 'perl' missing at perlPackages.perl
+    # FIXME scope
+    perlPackages = pkgs.perlPackages; # // { perl = pkgs.perl; };
+  };
+
+  apt-init-config = callPackage ./pkgs/tools/package-management/apt-init-config/apt-init-config.nix { };
+
+  apt-file = perlPackages.callPackage ./pkgs/tools/package-management/apt-file/apt-file.nix { };
 
 }
 

@@ -22,7 +22,6 @@
       # the device type informs (at least):
       # - SXMO_WIFI_MODULE
       # - SXMO_RTW_SCAN_INTERVAL
-      # - SXMO_SYS_FILES
       # - SXMO_TOUCHSCREEN_ID
       # - SXMO_MONITOR
       # - SXMO_ALSA_CONTROL_NAME
@@ -33,7 +32,7 @@
       #   and so it just wouldn't handle any button inputs (sxmo_hook_inputhandler.sh not on path)
       SXMO_DEVICE_NAME = "three_button_touchscreen";
     };
-    package = (pkgs.sxmo-utils-latest.override { preferSystemd = true; }).overrideAttrs (base: {
+    package = (pkgs.sxmo-utils.override { preferSystemd = true; }).overrideAttrs (base: {
       postPatch = (base.postPatch or "") + ''
         # after volume-button navigation mode, restore full keyboard functionality
         cp ${./xkb_mobile_normal_buttons} ./configs/xkb/xkb_mobile_normal_buttons

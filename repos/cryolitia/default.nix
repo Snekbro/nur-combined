@@ -29,8 +29,8 @@ rec {
   };
 
   MaaAssistantArknights-beta = MaaAssistantArknights.override {
-    maaVersion = "4.26.1";
-    maaSourceHash = "sha256-35pl5eeDbumadMSHKCrGgQGsdZm4HQT9CXg9/BnkJBU=";
+    #maaVersion = "4.28.0";
+    #maaSourceHash = "sha256-SKPKFD70wwmBXqolh8eLmHbL1ckDORiAH+LFBjC+o1A=";
   };
 
   MaaAssistantArknights-beta-cuda = MaaAssistantArknights-beta.override {
@@ -41,7 +41,7 @@ rec {
     onnxruntime-cuda = onnxruntime-cuda-bin;
   };
 
-  fastdeploy_ppocr = pkgs.callPackage ./pkgs/MaaAssistantArknights/fastdeploy_ppocr.nix { };
+  # fastdeploy_ppocr = pkgs.callPackage ./pkgs/MaaAssistantArknights/fastdeploy_ppocr.nix { };
 
   MaaX = pkgs.callPackage ./pkgs/MaaX { };
 
@@ -56,4 +56,6 @@ rec {
   go-musicfox-fastupdate = pkgs.callPackage ./pkgs/common/go-musicfox.nix { };
 
   rime-project-trans = pkgs.callPackage ./pkgs/rimePackages/rime-project-trans.nix { };
+
+  ryzen-smu = pkgs.linuxPackages.callPackage ./pkgs/common/ryzen-smu.nix { };
 }

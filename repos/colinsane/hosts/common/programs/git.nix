@@ -13,6 +13,7 @@ in
     user.name = "Colin";
     user.email = "colin@uninsane.org";
 
+    alias.amend   = "commit --amend --no-edit";
     alias.br      = "branch";
     alias.co      = "checkout";
     alias.cp      = "cherry-pick";
@@ -23,6 +24,7 @@ in
     alias.st      = "status";
     alias.stat    = "status";
 
+    diff.noprefix = true;  #< don't show a/ or b/ prefixes in diffs
     # difftastic docs:
     # - <https://difftastic.wilfred.me.uk/git.html>
     diff.tool = "difftastic";

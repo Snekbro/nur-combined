@@ -4,8 +4,8 @@
 # sway-config docs: `man 5 sway`
 let
   cfg = config.sane.gui.sway;
-  defaultPackage = let
-    # `defaultPackage` exists to create a `sway.desktop` file
+  wrapSway = sway': swayOverrideArgs: let
+    # `wrapSway` exists to create a `sway.desktop` file
     # which will launch sway with our desired debugging facilities.
     # i.e. redirect output to syslog.
     scfg = config.programs.sway;
@@ -14,30 +14,35 @@ let
       echo "launching sway-session (sway.desktop)..." | ${systemd-cat} --identifier=sway-session
       sway 2>&1 | ${systemd-cat} --identifier=sway-session
     '';
-    origSway = (pkgs.sway.override {
-      # this override is what `programs.nixos` would do internally if we left `package` unset.
-      extraSessionCommands = scfg.extraSessionCommands;
-      extraOptions = scfg.extraOptions;
-      withBaseWrapper = scfg.wrapperFeatures.base;
-      withGtkWrapper = scfg.wrapperFeatures.gtk;
-      isNixOS = true;
-      # TODO: `enableXWayland = ...`?
-    });
+    # this override is what `programs.nixos` would do internally if we left `package` unset.
+    configuredSway = sway'.override swayOverrideArgs;
     desktop-file = pkgs.runCommand "sway-desktop-wrapper" {} ''
       mkdir -p $out/share/wayland-sessions
-      substitute ${origSway}/share/wayland-sessions/sway.desktop $out/share/wayland-sessions/sway.desktop \
+      substitute ${configuredSway}/share/wayland-sessions/sway.desktop $out/share/wayland-sessions/sway.desktop \
         --replace 'Exec=sway' 'Exec=${swayWithLogger}/bin/sway-session'
       # XXX(2023/09/24) phog greeter (mobile greeter) will crash if DesktopNames is not set
       echo "DesktopNames=Sway" >> $out/share/wayland-sessions/sway.desktop
     '';
   in pkgs.symlinkJoin {
-    inherit (origSway) name meta;
+    inherit (configuredSway) name meta;
     # the order of these `paths` is suchs that the desktop-file should claim share/wayland-sessions/sway.deskop,
-    # overriding whatever the origSway provides
-    paths = [ desktop-file origSway ];
+    # overriding whatever the configuredSway provides
+    paths = [ desktop-file configuredSway ];
     passthru = {
-      inherit (origSway.passthru) providedSessions;
+      inherit (configuredSway.passthru) providedSessions;
+      # nixos/modules/programs/wayland/sway.nix will call `.override` on the package we provide it
+      override = wrapSway sway';
     };
+  };
+  defaultPackage = wrapSway pkgs.sway {
+    # this is technically optional, in that the nixos sway module will call `override` with these args anyway.
+    # but that wasn't always the case; it may change again; so don't rely on it.
+    inherit (config.programs.sway)
+      extraSessionCommands extraOptions;
+    withBaseWrapper = config.programs.sway.wrapperFeatures.base;
+    withGtkWrapper  = config.programs.sway.wrapperFeatures.gtk;
+    isNixOS = true;
+      # TODO: `enableXWayland = ...`?
   };
 in
 {
@@ -112,7 +117,7 @@ in
       # TODO: split these into their own option scope
       brightness_down_cmd = mkOption {
         type = types.str;
-        default = "${pkgs.brightnessctl}/bin/brightnessctl set -2%";
+        default = "${pkgs.brightnessctl}/bin/brightnessctl set 2%-";
         description = "command to run when use wants to decrease screen brightness";
       };
       brightness_up_cmd = mkOption {
@@ -197,7 +202,7 @@ in
       sane.gui.gtk.enable = lib.mkDefault true;
       # sane.gui.gtk.gtk-theme = lib.mkDefault "Fluent-Light-compact";
       sane.gui.gtk.gtk-theme = lib.mkDefault "Tokyonight-Light-B";
-      sane.gui.gtk.icon-theme = lib.mkDefault "HighContrast";  # 4/5 coverage on moby
+      # sane.gui.gtk.icon-theme = lib.mkDefault "HighContrast";  # 4/5 coverage on moby
       # sane.gui.gtk.icon-theme = lib.mkDefault "WhiteSur";  # 3.5/5 coverage on moby, but it provides a bunch for Fractal/Dino
       # sane.gui.gtk.icon-theme = lib.mkDefault "Humanity";  # 3.5/5 coverage on moby, but it provides the bookmark icon
       # sane.gui.gtk.icon-theme = lib.mkDefault "Paper";  # 3.5/5 coverage on moby, but it provides the bookmark icon
@@ -230,6 +235,7 @@ in
         # emulate pulseaudio for legacy apps (e.g. sxmo-utils)
         pulse.enable = true;
       };
+      services.gvfs.enable = true;  # allow nautilus to mount remote filesystems (e.g. ftp://...)
       # rtkit/RealtimeKit: allow applications which want realtime audio (e.g. Dino? Pulseaudio server?) to request it.
       # this might require more configuration (e.g. polkit-related) to work exactly as desired.
       # - readme outlines requirements: <https://github.com/heftig/rtkit>
@@ -254,7 +260,6 @@ in
       # };
       # sane.persist.sys.byStore.plaintext = [ "/var/lib/alsa" ];
 
-      networking.useDHCP = false;
       networking.networkmanager.enable = true;
       networking.wireless.enable = lib.mkForce false;
 
@@ -277,6 +282,7 @@ in
         # - org.freedesktop.impl.portal.ScreenCast
         # - org.freedesktop.impl.portal.Screenshot
         enable = true;
+        package = cfg.package;
         extraPackages = [];  # nixos adds swaylock, swayidle, foot, dmenu by default
         # extraOptions = [ "--debug" ];
         # "wrapGAppsHook wrapper to execute sway with required environment variables for GTK applications."
@@ -287,7 +293,6 @@ in
         # this sets XDG_CURRENT_DESKTOP=sway
         # and makes sure that sway is launched dbus-run-session.
         wrapperFeatures.base = true;
-        package = cfg.package;
       };
       programs.xwayland.enable = cfg.config.xwayland;
       # provide portals for:

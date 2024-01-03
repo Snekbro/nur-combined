@@ -9,6 +9,7 @@
     sessionVariables = {
       BROWSER = "firefox";
       EDITOR = "vim";
+      COLORTERM = "truecolor";
     };
 
     shellAliases = {
@@ -17,7 +18,10 @@
       t = "tmux a || smug start lobby && smug start doen && smug start sudo && smug start nixos && smug start tekst";
       lin = "vim -c LinnyStart";
       tn = "tmux new -d -s";
-      smugs = "smug start doen && smug start sudo && smug start nixos && smug start quiqr_dev_run && smug start quiqr_data && smug start technative_aws && smug start lobby";
+      tmxa = "tmux unbind C-a && tmux set-option -g prefix C-a && tmux bind-key C-a send-prefix";
+      tmxb = "tmux unbind C-b && tmux set-option -g prefix C-b && tmux bind-key C-b send-prefix";
+      smugs = "smug start doen && smug start sudo && smug start nixos && smug start technative_aws && smug start lobby";
+      smugs_quiqr = "smug start quiqr_dev_run && smug start quiqr_data";
 
       crb_status = "mount | grep /mnt/cryptobox";
       crb_mount = "crb_status || sudo cryptobox --mount /home/pim/Nextcloud/Vaults/keys.luks.ext4.img /mnt/cryptobox";
@@ -25,7 +29,7 @@
       crb_diff = "diff -qr ~/.aws /mnt/cryptobox/encrypim/.aws; diff -qr ~/.ssh /mnt/cryptobox/encrypim/.ssh";
 
       # technative
-      tn_aws_mfa = "aws-mfa --profile technative --device arn:aws:iam::521402697040:mfa/pim@technative.nl"
+      tn_aws_mfa = "aws-mfa --profile technative --device arn:aws:iam::521402697040:mfa/pim@technative.nl";
 
       # adevinta
       ffadevinta = "MOZ_ENABLE_WAYLAND=0 proxychains4 firefox -P adevinta --class ffextra --no-remote";
@@ -33,6 +37,8 @@
       adedsocksamf = "ssh -D 9050 pim.snel@192.168.0.139";
       adedsockshur = "ssh -D 9050 pim.snel@192.168.13.26";
       adedmoshamf = "mosh pim.snel@192.168.0.139 --server=/usr/local/bin/mosh-server";
+
+      hm_reset_envs = "unset __HM_SESS_VARS_SOURCED __HM_ZSH_SESS_VARS_SOURCED && source ~/.zshenv";
     };
 
     plugins = [

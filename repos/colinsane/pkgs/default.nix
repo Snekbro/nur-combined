@@ -14,46 +14,44 @@ let
     inherit (py-final) callPackage;
     inherit pkgs;
   };
-  final' = if final != null then final else pkgs.appendOverlays [(_: _: sane)];
-  sane = with final'; {
+  final' = if final != null then final else pkgs.appendOverlays [(_: _: sane-overlay)];
+  sane-additional = with final'; {
     sane-data = import ../modules/data { inherit lib sane-lib; };
     sane-lib = import ../modules/lib final';
 
     ### ADDITIONAL PACKAGES
     alsa-ucm-conf-sane = callPackage ./additional/alsa-ucm-conf-sane { };
-    animatch = callPackage ./additional/animatch { };
-    # TODO: move target flags to upstream PR and re-enable this bonsai
-    # bonsai = unpatched.bonsai or (callPackage ./additional/bonsai { });
     bonsai = callPackage ./additional/bonsai { };
     bootpart-uefi-x86_64 = callPackage ./additional/bootpart-uefi-x86_64 { };
     cargoDocsetHook = callPackage ./additional/cargo-docset/hook.nix { };
     chatty-latest = callPackage ./additional/chatty-latest { };
+    codemadness-frontends = callPackage ./additional/codemadness-frontends { };
+    codemadness-frontends_0_6 = codemadness-frontends.v0_6;
+    delfin = callPackage ./additional/delfin { };
     eg25-control = callPackage ./additional/eg25-control { };
     eg25-manager = callPackage ./additional/eg25-manager { };
     feeds = lib.recurseIntoAttrs (callPackage ./additional/feeds { });
-    flare-signal-nixified = callPackage ./additional/flare-signal-nixified { };
-    lemoa = callPackage ./additional/lemoa { };
-    jellyfin-media-player-qt6 = callPackage ./additional/jellyfin-media-player-qt6 { };
     firefox-extensions = lib.recurseIntoAttrs (callPackage ./additional/firefox-extensions { });
+    flare-signal-nixified = callPackage ./additional/flare-signal-nixified { };
     gopass-native-messaging-host = callPackage ./additional/gopass-native-messaging-host { };
     gpodder-adaptive = callPackage ./additional/gpodder-adaptive { };
     gpodder-adaptive-configured = callPackage ./additional/gpodder-configured {
       gpodder = final'.gpodder-adaptive;
     };
     gpodder-configured = callPackage ./additional/gpodder-configured { };
-    hare-ev = unpatched.hare-ev or (callPackage ./additional/hare-ev { });
-    hare-json = unpatched.hare-json or (callPackage ./additional/hare-json { });
+    jellyfin-media-player-qt6 = callPackage ./additional/jellyfin-media-player-qt6 { };
     koreader-from-src = callPackage ./additional/koreader-from-src { };
     ldd-aarch64 = callPackage ./additional/ldd-aarch64 { };
+    lemoa = callPackage ./additional/lemoa { };
     lightdm-mobile-greeter = callPackage ./additional/lightdm-mobile-greeter { };
     linux-firmware-megous = callPackage ./additional/linux-firmware-megous { };
     # XXX: eval error: need to port past linux_6_4
     # linux-manjaro = callPackage ./additional/linux-manjaro { };
     linux-megous = callPackage ./additional/linux-megous { };
     mcg = callPackage ./additional/mcg { };
-    mpv-uosc-latest = callPackage ./additional/mpv-uosc-latest { };
     mx-sanebot = callPackage ./additional/mx-sanebot { };
     phog = callPackage ./additional/phog { };
+    pipeline = callPackage ./additional/pipeline { };
     rtl8723cs-firmware = callPackage ./additional/rtl8723cs-firmware { };
     rtl8723cs-wowlan = callPackage ./additional/rtl8723cs-wowlan { };
     sane-scripts = lib.recurseIntoAttrs (callPackage ./additional/sane-scripts { });
@@ -61,9 +59,7 @@ let
     signal-desktop-from-src = callPackage ./additional/signal-desktop-from-src { };
     static-nix-shell = callPackage ./additional/static-nix-shell { };
     sublime-music-mobile = callPackage ./additional/sublime-music-mobile { };
-    sxmo-utils' = lib.recurseIntoAttrs (callPackage ./additional/sxmo-utils { });
-    sxmo-utils = sxmo-utils'.stable;
-    sxmo-utils-latest = sxmo-utils'.latest;
+    sxmo-utils = callPackage ./additional/sxmo-utils { };
     tow-boot-pinephone = callPackage ./additional/tow-boot-pinephone { };
     tree-sitter-nix-shell = callPackage ./additional/tree-sitter-nix-shell { };
     trivial-builders = lib.recurseIntoAttrs (callPackage ./additional/trivial-builders { });
@@ -72,7 +68,6 @@ let
     ;
     unftp = callPackage ./additional/unftp { };
     where-am-i = callPackage ./additional/where-am-i { };
-    xdg-terminal-exec = callPackage ./additional/xdg-terminal-exec { };
     zecwallet-light-cli = callPackage ./additional/zecwallet-light-cli { };
 
     # packages i haven't used for a while, may or may not still work
@@ -90,9 +85,10 @@ let
 
     # provided by nixpkgs patch or upstream PR
     # i still conditionally callPackage these to make them available to external consumers (like NUR)
-    splatmoji = unpatched.splatmoji or (callPackage ./additional/splatmoji { });
+    splatmoji = callPackage ./additional/splatmoji { };
+  };
 
-
+  sane-patched = with final'; {
     ### PATCHED PACKAGES
 
     # XXX: the `inherit`s here are because:
@@ -129,7 +125,6 @@ let
 
     # jackett doesn't allow customization of the bind address: this will probably always be here.
     jackett = callPackage ./patched/jackett { inherit (unpatched) jackett; };
-    libgweather = callPackage ./patched/libgweather { inherit (unpatched) libgweather; };
 
     # modemmanager = callPackage ./patched/modemmanager { inherit (unpatched) modemmanager; };
 
@@ -144,4 +139,12 @@ let
       packageOverrides = pythonPackagesOverlayFor final';
     };
   };
-in sane
+  sane-overlay = {
+    sane = lib.recurseIntoAttrs (sane-additional // sane-patched);
+  }
+    # patched packages always override anything:
+    // (lib.mapAttrs (pname: _pkg: final'.sane."${pname}") sane-patched)
+    # "additional" packages only get added if they've not been upstreamed:
+    // (lib.mapAttrs (pname: _pkg: unpatched."${pname}" or final'.sane."${pname}") sane-additional)
+  ;
+in sane-overlay

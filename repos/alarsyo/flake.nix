@@ -5,7 +5,7 @@
       type = "github";
       owner = "NixOS";
       repo = "nixpkgs";
-      ref = "nixos-23.05";
+      ref = "nixos-23.11";
     };
 
     nixpkgs-unstable-small = {
@@ -25,7 +25,7 @@
       type = "github";
       owner = "nix-community";
       repo = "home-manager";
-      ref = "release-23.05";
+      ref = "release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -42,6 +42,13 @@
       repo = "nixos-hardware";
       ref = "master";
     };
+
+    disko = {
+      type = "github";
+      owner = "nix-community";
+      repo = "disko";
+      ref = "master";
+    };
   };
 
   outputs = {
@@ -49,6 +56,7 @@
     nixpkgs,
     home-manager,
     agenix,
+    disko,
     ...
   } @ inputs:
     {
@@ -60,9 +68,14 @@
           home-manager.verbose = true;
         };
         nix-path = {
-          nix.nixPath = [
-            "nixpkgs=${inputs.nixpkgs}"
-          ];
+          nix = {
+            nixPath = [
+              "nixpkgs=${inputs.nixpkgs}"
+            ];
+            registry = {
+              nixpkgs.flake = inputs.nixpkgs;
+            };
+          };
         };
       };
 
@@ -92,23 +105,13 @@
             {
               nixpkgs = {
                 overlays = shared_overlays;
-                config.permittedInsecurePackages = [
-                  "zotero-6.0.26"
-                ];
+                config.permittedInsecurePackages = [];
               };
+              hardware.enableRedistributableFirmware = true;
             }
           ]
           ++ (nixpkgs.lib.attrValues self.nixosModules);
       in {
-        poseidon = nixpkgs.lib.nixosSystem rec {
-          inherit system;
-          modules =
-            [
-              ./poseidon.nix
-            ]
-            ++ sharedModules;
-        };
-
         hades = nixpkgs.lib.nixosSystem rec {
           inherit system;
           modules =
@@ -138,19 +141,6 @@
             ++ sharedModules;
         };
 
-        zephyrus = nixpkgs.lib.nixosSystem rec {
-          inherit system;
-          modules =
-            [
-              ./zephyrus.nix
-
-              inputs.nixos-hardware.nixosModules.common-cpu-intel
-              inputs.nixos-hardware.nixosModules.common-pc-laptop
-              inputs.nixos-hardware.nixosModules.common-pc-ssd
-            ]
-            ++ sharedModules;
-        };
-
         hephaestus = nixpkgs.lib.nixosSystem rec {
           inherit system;
           modules =
@@ -161,6 +151,16 @@
               inputs.nixos-hardware.nixosModules.common-gpu-amd
               inputs.nixos-hardware.nixosModules.common-pc-laptop
               inputs.nixos-hardware.nixosModules.common-pc-ssd
+            ]
+            ++ sharedModules;
+        };
+
+        thanatos = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules =
+            [
+              disko.nixosModules.default
+              ./thanatos.nix
             ]
             ++ sharedModules;
         };

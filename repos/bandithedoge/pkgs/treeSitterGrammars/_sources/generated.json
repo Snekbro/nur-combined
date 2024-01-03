@@ -1,0 +1,22 @@
+{
+  "tree-sitter-hypr": {
+    "cargoLocks": null,
+    "date": "2023-11-26",
+    "extract": null,
+    "name": "tree-sitter-hypr",
+    "passthru": null,
+    "pinned": false,
+    "src": {
+      "deepClone": false,
+      "fetchSubmodules": false,
+      "leaveDotGit": false,
+      "name": null,
+      "owner": "luckasRanarison",
+      "repo": "tree-sitter-hypr",
+      "rev": "da3c1d780c8e04446722ece04beadb6a44eb442d",
+      "sha256": "sha256-P3ZiIurixNdBqKJrsmFibmScnwD0pjhljLo4L8BLtws=",
+      "type": "github"
+    },
+    "version": "da3c1d780c8e04446722ece04beadb6a44eb442d"
+  }
+}

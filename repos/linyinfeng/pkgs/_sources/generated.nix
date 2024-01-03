@@ -14,17 +14,6 @@
     };
     date = "2023-08-24";
   };
-  bird-babel-rtt = {
-    pname = "bird-babel-rtt";
-    version = "v2.13-babel-rtt";
-    src = fetchFromGitHub {
-      owner = "linyinfeng";
-      repo = "bird";
-      rev = "v2.13-babel-rtt";
-      fetchSubmodules = false;
-      sha256 = "sha256-e+HPBVHiZGMCpwz8iPQlIGRuDFydG83rpw1jFf1uavc=";
-    };
-  };
   cowrie = {
     pname = "cowrie";
     version = "v2.5.0";
@@ -178,29 +167,29 @@
   };
   rime-cangjie = {
     pname = "rime-cangjie";
-    version = "8dfad9e537f18821b71ba28773315d9c670ae245";
+    version = "75b10325bf4c590a3ffef7039a6f052a729edc55";
     src = fetchgit {
       url = "https://github.com/rime/rime-cangjie.git";
-      rev = "8dfad9e537f18821b71ba28773315d9c670ae245";
+      rev = "75b10325bf4c590a3ffef7039a6f052a729edc55";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-fmWGgYqWndCpDUV6nzx0zjkcf5AcVeDIYwp0023iMwk=";
+      sha256 = "sha256-5Ku2dO1qULadIocOq4dYHx+p2HhvqCtz7h//wos19RY=";
     };
-    date = "2021-02-23";
+    date = "2023-12-11";
   };
   rime-cantonese = {
     pname = "rime-cantonese";
-    version = "e3c6b17e638ac8a9aeab4d5852e5909b049c5ab3";
+    version = "e2e088ed4f27df1d8727cfd986c6a46e76697814";
     src = fetchgit {
       url = "https://github.com/rime/rime-cantonese.git";
-      rev = "e3c6b17e638ac8a9aeab4d5852e5909b049c5ab3";
+      rev = "e2e088ed4f27df1d8727cfd986c6a46e76697814";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-uJAiSY5gmVLQzMOvDSxr+78tLgNfwBifjmb5EygxKpw=";
+      sha256 = "sha256-64gB7NYtktQktWaVXQK6MrIDB7gilTxeWsD1VvM5Doo=";
     };
-    date = "2023-09-12";
+    date = "2024-01-02";
   };
   rime-double-pinyin = {
     pname = "rime-double-pinyin";
@@ -243,16 +232,16 @@
   };
   rime-ice = {
     pname = "rime-ice";
-    version = "db2375b0d9dba21247da4e5dd58c3d36c56c2b5a";
+    version = "bccc7809ea5ec8420b28f7b59d6211481b0da0c3";
     src = fetchgit {
       url = "https://github.com/iDvel/rime-ice.git";
-      rev = "db2375b0d9dba21247da4e5dd58c3d36c56c2b5a";
+      rev = "bccc7809ea5ec8420b28f7b59d6211481b0da0c3";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-AXUFFa+aJDJm0FsSfsnheJNj2tGMjwNc54BAI0Oojzw=";
+      sha256 = "sha256-eLsJhcdlfA7IEkfq/iMBV8v5jgStR7D4d4UmS+dtZkk=";
     };
-    date = "2023-11-14";
+    date = "2024-01-03";
   };
   rime-loengfan = {
     pname = "rime-loengfan";
@@ -321,16 +310,16 @@
   };
   rime-stroke = {
     pname = "rime-stroke";
-    version = "e6c7608925009636577ff7469eecc870f1de18f3";
+    version = "65fdbbf2f9485cc907cb9a6d6b9210938a50f71e";
     src = fetchgit {
       url = "https://github.com/rime/rime-stroke.git";
-      rev = "e6c7608925009636577ff7469eecc870f1de18f3";
+      rev = "65fdbbf2f9485cc907cb9a6d6b9210938a50f71e";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-D20ul7R3rPS0kQR3wsSbJi//ViRV1vSNlkkn4PSk7Oc=";
+      sha256 = "sha256-BuZhyFZGTKzhH23sfQ0TSlLbz65wgE/IOmLQPgwJseE=";
     };
-    date = "2023-06-09";
+    date = "2023-12-07";
   };
   rime-terra-pinyin = {
     pname = "rime-terra-pinyin";
@@ -373,30 +362,30 @@
   };
   swayosd = {
     pname = "swayosd";
-    version = "1c7d2f5b3ee262f25bdd3c899eadf17efb656d26";
+    version = "a0709bcd89d6ca19889486972bac35e69f1fa8e4";
     src = fetchgit {
       url = "https://github.com/ErikReider/SwayOSD.git";
-      rev = "1c7d2f5b3ee262f25bdd3c899eadf17efb656d26";
+      rev = "a0709bcd89d6ca19889486972bac35e69f1fa8e4";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-Y22O6Ktya/WIhidnoyxnZu5YvXWNmSS6vecDU8zDD34=";
+      sha256 = "sha256-3NJHZv4Ed7haUUmE9JV9Yl4rRnJlPqQFv53Xuw0q+IY=";
     };
     cargoLock."Cargo.lock" = {
-      lockFile = ./swayosd-1c7d2f5b3ee262f25bdd3c899eadf17efb656d26/Cargo.lock;
+      lockFile = ./swayosd-a0709bcd89d6ca19889486972bac35e69f1fa8e4/Cargo.lock;
       outputHashes = { };
     };
-    date = "2023-09-26";
+    date = "2023-12-10";
   };
   synapse-s3-storage-provider = {
     pname = "synapse-s3-storage-provider";
-    version = "v1.2.1";
+    version = "v1.3.0";
     src = fetchFromGitHub {
       owner = "matrix-org";
       repo = "synapse-s3-storage-provider";
-      rev = "v1.2.1";
+      rev = "v1.3.0";
       fetchSubmodules = false;
-      sha256 = "sha256-92Xkq54jrUE2I9uVOxI72V9imLNU6K4JqDdOZb+4f+Y=";
+      sha256 = "sha256-2mQjhZk3NsbjiGWoa/asGjhaKM3afXsCl633p6ZW0DY=";
     };
   };
   telegram-send = {
@@ -453,16 +442,16 @@
   };
   waybar-git = {
     pname = "waybar-git";
-    version = "0a747ddafc10ace2a2d8588ba673b9c2015d8446";
+    version = "3e55d0d7f29bc91bf6ad908bf72c1f0fcb93ed1e";
     src = fetchgit {
       url = "https://github.com/Alexays/Waybar.git";
-      rev = "0a747ddafc10ace2a2d8588ba673b9c2015d8446";
+      rev = "3e55d0d7f29bc91bf6ad908bf72c1f0fcb93ed1e";
       fetchSubmodules = true;
       deepClone = false;
       leaveDotGit = false;
-      sha256 = "sha256-ldqKDs+ar00ReJ1RZCpxhcHrRw9tT6y8ORfup2XJiJ0=";
+      sha256 = "sha256-ic5bz6uLEgSFMTYmqOW6rlCQykErFcehLhrH53IDW8Q=";
     };
-    date = "2023-11-15";
+    date = "2023-12-31";
   };
   yacd = {
     pname = "yacd";

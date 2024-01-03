@@ -11,13 +11,13 @@
   };
   g3kb-switch = {
     pname = "g3kb-switch";
-    version = "1.3";
+    version = "1.4";
     src = fetchFromGitHub {
       owner = "lyokha";
       repo = "g3kb-switch";
-      rev = "1.3";
+      rev = "1.4";
       fetchSubmodules = false;
-      sha256 = "sha256-90ELWRVHkdLLQoUIQuE1yc2F1Rj9UOMcxmKTmK1S8yY=";
+      sha256 = "sha256-mcZduHcteZ+nS0YEZG5DfmpA8xrnLhwxumq6hLuLPIs=";
     };
   };
   manpager = {
@@ -41,34 +41,26 @@
   };
   mutt-language-server = {
     pname = "mutt-language-server";
-    version = "0.0.2";
+    version = "0.0.3";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/m/mutt-language-server/mutt-language-server-0.0.2.tar.gz";
-      sha256 = "sha256-xfEzhHAnpsbKXTOf9xrgGqtQLDbe7UwNeaCSHAPdH3c=";
-    };
-  };
-  repl-python-codestats = {
-    pname = "repl-python-codestats";
-    version = "0.0.6";
-    src = fetchurl {
-      url = "https://pypi.org/packages/source/r/repl-python-codestats/repl-python-codestats-0.0.6.tar.gz";
-      sha256 = "sha256-WqU654n2hLvajGKTRR447HDvLht5lqolYjDqtqGx13E=";
+      url = "https://pypi.org/packages/source/m/mutt-language-server/mutt-language-server-0.0.3.tar.gz";
+      sha256 = "sha256-QVN1QYdkZvx9Qce6LldpL9BcahAjr4gCVzF4Crmnl7A=";
     };
   };
   repl-python-wakatime = {
     pname = "repl-python-wakatime";
-    version = "0.0.6";
+    version = "0.0.10";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/r/repl-python-wakatime/repl-python-wakatime-0.0.6.tar.gz";
-      sha256 = "sha256-s2UelniMn4+wWILbVIIKidRCFaOvo/nNNofA7yf2+9c=";
+      url = "https://pypi.org/packages/source/r/repl-python-wakatime/repl-python-wakatime-0.0.10.tar.gz";
+      sha256 = "sha256-bNJ6ZN3JWuwQ7CYRgEPtFG59GFiYJJ9Sb3QlxyhB/FE=";
     };
   };
   requirements-language-server = {
     pname = "requirements-language-server";
-    version = "0.0.9";
+    version = "0.0.14";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/r/requirements-language-server/requirements-language-server-0.0.9.tar.gz";
-      sha256 = "sha256-3gE1w5rwn5qXDDrNlZnX07FnukwKbu2E89Y+uKVTnqg=";
+      url = "https://pypi.org/packages/source/r/requirements-language-server/requirements-language-server-0.0.14.tar.gz";
+      sha256 = "sha256-aRdw2/cbIL0r+Wyy+K6tqMY6m35TvurEHtkclhYwa1E=";
     };
   };
   sublime-syntax-language-server = {
@@ -81,26 +73,26 @@
   };
   termux-language-server = {
     pname = "termux-language-server";
-    version = "0.0.12";
+    version = "0.0.16";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/t/termux-language-server/termux-language-server-0.0.12.tar.gz";
-      sha256 = "sha256-PKoa+IvCWYLKEjuaWFMZ7w+3+ZURZ4EC47dl6vxVlBE=";
+      url = "https://pypi.org/packages/source/t/termux-language-server/termux-language-server-0.0.16.tar.gz";
+      sha256 = "sha256-l/cjD9LKSPO6yumMiArn9Norx/b0NFOQdcs7ly2eEpU=";
     };
   };
   tmux-language-server = {
     pname = "tmux-language-server";
-    version = "0.0.1";
+    version = "0.0.2";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/t/tmux-language-server/tmux-language-server-0.0.1.tar.gz";
-      sha256 = "sha256-G5ZU4eL3GTLxo+/84mWxD6ajxeCIIHH3hjAQy8pUK2c=";
+      url = "https://pypi.org/packages/source/t/tmux-language-server/tmux-language-server-0.0.2.tar.gz";
+      sha256 = "sha256-TKnQ2nQMSRj62HTo8rjPvUYatyQuG2R2N49a03UCDBI=";
     };
   };
   translate-shell = {
     pname = "translate-shell";
-    version = "0.0.42";
+    version = "0.0.49";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/t/translate-shell/translate-shell-0.0.42.tar.gz";
-      sha256 = "sha256-rko3r1m6z0lgos1yNpfIC4+Z5WCG+ZjL+FurRSXqPSc=";
+      url = "https://pypi.org/packages/source/t/translate-shell/translate-shell-0.0.49.tar.gz";
+      sha256 = "sha256-E2cr3PcU4Cfx2bxfZltMKtd4GJe3O1lF15kU8reg51w=";
     };
   };
   undollar = {
@@ -124,10 +116,10 @@
   };
   zathura-language-server = {
     pname = "zathura-language-server";
-    version = "0.0.1";
+    version = "0.0.5";
     src = fetchurl {
-      url = "https://pypi.org/packages/source/z/zathura-language-server/zathura-language-server-0.0.1.tar.gz";
-      sha256 = "sha256-Kzl0XvEhmtN3zy55lqapWddVuaRS+gc5CGZsJk35L40=";
+      url = "https://pypi.org/packages/source/z/zathura-language-server/zathura-language-server-0.0.5.tar.gz";
+      sha256 = "sha256-XG0AxXHJ9oWn6tyDsIkc0Zw8F+TLxuLccsuR++K34Dk=";
     };
   };
 }

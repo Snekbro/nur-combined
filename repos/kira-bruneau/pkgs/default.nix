@@ -47,7 +47,13 @@ in
 {
   inherit callPackage;
 
-  caprine = callPackage ./applications/networking/instant-messengers/caprine { };
+  anytype = callPackage ./development/tools/misc/anytype {
+    # electron_25+ breaks wayland support
+    # https://github.com/electron/electron/issues/39449
+    electron = electron_24;
+  };
+
+  anytype-heart = callPackage ./development/libraries/anytype-heart { };
 
   ccache = callPackage ./development/tools/misc/ccache { };
 
@@ -64,6 +70,8 @@ in
       inherit libgamemode32;
     }).lib;
   };
+
+  ggt = callPackage ./development/tools/ggt { };
 
   git-review = python3Packages.callPackage ./applications/version-management/git-review { };
 
@@ -96,11 +104,15 @@ in
     webkitgtk = webkitgtk_6_0;
   };
 
+  pdfrip = callPackage ./tools/security/pdfrip { };
+
   poke = callPackage ./applications/editors/poke { };
 
   pokemmo-installer = callPackage ./games/pokemmo-installer {
     inherit (gnome) zenity;
   };
+
+  protoc-gen-js = callPackage ./development/tools/protoc-gen-js { };
 
   protontricks = python3Packages.callPackage ./tools/package-management/protontricks {
     steam-run = steamPackages.steam-fhsenv-without-steam.run;

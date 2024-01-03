@@ -6,9 +6,6 @@ rec {
     unzipSupport = true;
     unrarSupport = true;
   };
-  lmms = super.lmms.overrideAttrs (oldAttrs: optionalAttrs (config.services.jack.enable or config.services.pipewire.jack.enable or false) {
-    cmakeFlags = oldAttrs.cmakeFlags ++ [ "-DWANT_WEAKJACK=OFF" ];
-  });
   ddccontrol = super.ddccontrol.overrideAttrs (oldAttrs: {
     prePatch = ''
       ${oldAttrs.prePatch}
@@ -34,7 +31,7 @@ rec {
   });
   # https://github.com/jellyfin/jellyfin/issues/7642
   jellyfin-ffmpeg = super.jellyfin-ffmpeg.override (optionalAttrs (config.services.jellyfin.enable or false) {
-    ffmpeg_5-full = super.ffmpeg_5-full.override {
+    ffmpeg_6-full = super.ffmpeg_6-full.override {
       libva = let
         mesa = super.mesa.overrideAttrs (oldAttrs: rec {
           postPatch = ''
@@ -55,6 +52,10 @@ rec {
       substituteInPlace vpn_slice/posix.py \
         --replace /etc/hosts /var/lib/dnsmasq/hosts/hosts
     '';
+  });
+  # https://github.com/NixOS/nixpkgs/issues/271333
+  sunshine = super.sunshine.overrideAttrs (oldAttrs: optionalAttrs (config.programs.sunshine.enable or false) {
+    runtimeDependencies = oldAttrs.runtimeDependencies ++ [ super.libglvnd ];
   });
 } // optionalAttrs (config.hardware.regdomain.enable or false) {
   inherit (pkgs.nur.repos.dukzcry) wireless-regdb;

@@ -5,19 +5,19 @@
 
 stdenv.mkDerivation(finalAttrs: {
   pname = "pscripts";
-  version = "2023-10-29";
+  version = "2023-11-29";
 
   src = fetchFromGitHub {
     owner = "presto8";
     repo = "pscripts";
-    rev = "d7e294f14a995bc5bf28280d73c3236fe5f15e18";
-    hash = "sha256-bgL5TlGxigYwSiVHvJwrt7nawN3KIjTEy+qgtwErV6g=";
+    rev = "e550833d94b1fb8297ecdb71f545ba79c9441195";
+    hash = "sha256-vsHkfJ+0sFAbDb2nk2+fAMYpBwquBuzyEvwjzxVSS7U=";
   };
 
   installPhase = ''
     runHook preInstall
 
-    for exe in pnix pdrives pmove; do
+    for exe in lastf pdrives pfs phash pmove pnix psg; do
       install -D -m 755 "$exe"/"$exe" $out/bin/"$exe"
     done
 

@@ -61,6 +61,9 @@
     nix-requirefile.url = "github:lucasew/nix-requirefile";
     nix-requirefile.flake = false;
 
+    nix-requirefile-data.url = "github:lucasew/nix-requirefile/data";
+    nix-requirefile-data.flake = false;
+
     borderless-browser.url = "github:lucasew/borderless-browser.nix";
     borderless-browser.flake = false;
 
@@ -93,11 +96,13 @@
     climod.url = "github:nixosbrasil/climod";
     climod.flake = false;
 
-    src-python-std2.url = "github:ms-jpq/std2/std";
-    src-python-std2.flake = false;
+    # src-python-std2.url = "github:ms-jpq/std2/std";
+    # src-python-std2.flake = false;
 
-    src-python-pynvim_pp.url = "github:ms-jpq/pynvim_pp/pp";
-    src-python-pynvim_pp.flake = false;
+    # src-python-pynvim_pp.url = "github:ms-jpq/pynvim_pp/pp";
+    # src-python-pynvim_pp.flake = false;
+    src-cached-nix-shell.url = "github:xzfc/cached-nix-shell";
+    src-cached-nix-shell.flake = false;
   };
 
   outputs = {
@@ -150,6 +155,7 @@
             # "openssl-1.1.1u"
             # "openssl-1.1.1v"
             # "openssl-1.1.1w"
+            "electron-25.9.0"
         ];
       };
       overlays = if disableOverlays then [] else (overlays ++ (builtins.attrValues self.outputs.overlays));
@@ -161,7 +167,7 @@
       nodeIps = {
         riverwood = { ts = "100.107.51.95";   zt = "192.168.69.2"; };
         whiterun =  { ts = "100.85.38.19";    zt = "192.168.69.1"; };
-        phone =     { ts = "100.108.254.101"; zt = "192.168.69.4"; };
+        phone =     { ts = "100.76.88.29";    zt = "192.168.69.4"; };
       };
       selectedDesktopEnvironment = "i3";
       rootPath = "/home/${username}/.dotfiles";
@@ -207,7 +213,7 @@
     inherit pkgs;
     inherit self;
 
-    colors = inputs.nix-colors.colorschemes."classic-dark";
+    colors = inputs.nix-colors.colorschemes."ayu-dark" // {isDark = true; };
 
     homeConfigurations = pkgs.callPackage ./nix/homes {
       inherit extraArgs;
@@ -216,10 +222,45 @@
       };
     };
 
-    packages.x86_64-linux.default = pkgs.writeShellScriptBin "default" ''
-      ${global.environmentShell}
-      "$@"
-    '';
+    packages.x86_64-linux = {
+      default = pkgs.writeShellScriptBin "default" ''
+        ${global.environmentShell}
+        "$@"
+      '';
+
+      deploy = let
+        home = self.homeConfigurations.main.activationPackage;
+        riverwood = self.nixosConfigurations.riverwood.config.system.build.toplevel;
+        whiterun = self.nixosConfigurations.whiterun.config.system.build.toplevel;
+      in pkgs.writeShellScriptBin "deploy" ''
+        nix-copy-closure --to riverwood ${riverwood} ${home}
+        nix-copy-closure --to whiterun ${whiterun} ${home}
+        riverwood_cmd=boot
+        whiterun_cmd=boot
+        if [[ "$(realpath ${riverwood}/etc/.nixpkgs-used)" == "$(ssh riverwood realpath /etc/.nixpkgs-used)" ]]; then
+          riverwood_cmd=switch
+        fi
+       if [[ "$(realpath ${whiterun}/etc/.nixpkgs-used)" == "$(ssh whiterun realpath /etc/.nixpkgs-used)" ]]; then
+          whiterun_cmd=switch
+        fi
+
+        ssh -t riverwood ${home}/bin/home-manager-generation 
+        ssh -t whiterun ${home}/bin/home-manager-generation 
+        
+        if [[ "${riverwood}" != "$(ssh riverwood realpath /run/current-system)" ]]; then
+          ssh -t riverwood sudo ${riverwood}/bin/switch-to-configuration $riverwood_cmd
+        else
+          echo "INFO(riverwood): newly built generation results in the same path that is already running"
+        fi
+
+        if [[ "${whiterun}" != "$(ssh whiterun realpath /run/current-system)" ]]; then
+          ssh -t whiterun sudo ${whiterun}/bin/switch-to-configuration $whiterun_cmd
+        else
+          echo "INFO(whiterun): newly built generation results in the same path that is already running"
+        fi
+
+      '';
+    };
 
     nixosConfigurations = pkgs.callPackage ./nix/nodes {
       inherit extraArgs;

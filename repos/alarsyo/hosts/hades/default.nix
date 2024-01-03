@@ -62,6 +62,11 @@ in {
       privatePort = 8082;
     };
 
+    immich = {
+      enable = true;
+      port = 8089;
+    };
+
     jellyfin = {
       enable = true;
     };
@@ -74,6 +79,12 @@ in {
     matrix = {
       enable = true;
       secretConfigFile = config.age.secrets."matrix-synapse/secret-config".path;
+    };
+
+    microbin = {
+      enable = true;
+      privatePort = 8088;
+      passwordFile = config.age.secrets."microbin/secret-config".path;
     };
 
     miniflux = {
@@ -91,6 +102,8 @@ in {
       enable = true;
       adminpassFile = config.age.secrets."nextcloud/admin-pass".path;
     };
+
+    nginx.enable = true;
 
     paperless = {
       enable = true;
@@ -125,7 +138,7 @@ in {
 
     tailscale = {
       enable = true;
-      exitNode = true;
+      useRoutingFeatures = "server";
     };
 
     transmission = {

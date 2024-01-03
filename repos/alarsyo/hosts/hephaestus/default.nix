@@ -22,6 +22,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # boot.initrd.systemd.enable = true;
+  # boot.plymouth.enable = true;
+  # boot.kernelParams = ["quiet"];
+
   boot.initrd.secrets = {
     "/crypto_keyfile.bin" = null;
   };
@@ -45,7 +49,11 @@
 
   # List services that you want to enable:
   my.services = {
-    tailscale.enable = true;
+    tailscale = {
+      enable = true;
+      useRoutingFeatures = "client";
+    };
+
     pipewire.enable = true;
 
     restic-backup = {
@@ -98,6 +106,7 @@
 
   services = {
     tlp = {
+      enable = true;
       settings = {
         START_CHARGE_THRESH_BAT0 = 70;
         STOP_CHARGE_THRESH_BAT0 = 80;
@@ -125,10 +134,8 @@
     LC_MEASUREMENT = "fr_FR.UTF-8";
     LC_MONETARY = "fr_FR.UTF-8";
     LC_NAME = "fr_FR.UTF-8";
-    LC_NUMERIC = "fr_FR.UTF-8";
     LC_PAPER = "fr_FR.UTF-8";
     LC_TELEPHONE = "fr_FR.UTF-8";
-    LC_TIME = "fr_FR.UTF-8";
   };
 
   # Enable the X11 windowing system.
@@ -137,6 +144,7 @@
   # Enable the KDE Plasma Desktop Environment.
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
+  services.power-profiles-daemon.enable = false;
 
   # Configure console keymap
   console.keyMap = "us";

@@ -29,22 +29,24 @@
     # - daily:
     #   - nixos-unstable cut from master after enough packages have been built in caches.
     # - every 6 hours:
-    #   - master auto-merged into staging.
+    #   - master auto-merged into staging and staging-next
     #   - staging-next auto-merged into staging.
     # - manually, approximately once per month:
     #   - staging-next is cut from staging.
     #   - staging-next merged into master.
     #
     # which branch to source from?
-    # - for everyday development, prefer `nixos-unstable` branch, as it provides good caching.
-    # - if need to test bleeding updates (e.g. if submitting code into staging):
-    #   - use `staging-next` if it's been cut (i.e. if there's an active staging-next -> master PR)
-    #   - use `staging` if no staging-next branch has been cut.
+    # - nixos-unstable: for everyday development; it provides good caching
+    # - master: temporarily if i'm otherwise cherry-picking lots of already-applied patches
+    # - staging-next: if testing stuff that's been PR'd into staging, i.e. base library updates.
+    # - staging: maybe if no staging-next -> master PR has been cut yet?
     #
     # <https://github.com/nixos/nixpkgs/tree/nixos-unstable>
-    nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    # nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=staging-next";
-    # nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=staging";
+    # nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=master";
+    # nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=nixos-staging";
+    # nixpkgs-unpatched.url = "github:nixos/nixpkgs?ref=nixos-staging-next";
+    nixpkgs-next-unpatched.url = "github:nixos/nixpkgs?ref=staging-next";
 
     mobile-nixos = {
       # <https://github.com/nixos/mobile-nixos>
@@ -73,6 +75,7 @@
   outputs = {
     self,
     nixpkgs-unpatched,
+    nixpkgs-next-unpatched ? nixpkgs-unpatched,
     mobile-nixos,
     sops-nix,
     uninsane-dot-org,
@@ -91,9 +94,9 @@
       # rather than apply our nixpkgs patches as a flake input, do that here instead.
       # this (temporarily?) resolves the bad UX wherein a subflake residing in the same git
       # repo as the main flake causes the main flake to have an unstable hash.
-      nixpkgs = (import ./nixpatches/flake.nix).outputs {
-        self = nixpkgs;
-        nixpkgs = nixpkgs-unpatched;
+      patchNixpkgs = variant: nixpkgs: (import ./nixpatches/flake.nix).outputs {
+        inherit variant nixpkgs;
+        self = patchNixpkgs variant nixpkgs;
       } // {
         # provide values that nixpkgs ordinarily sources from the flake.lock file,
         # inaccessible to it here because of the import-from-derivation.
@@ -109,21 +112,24 @@
         inherit (self) shortRev;
       };
 
-      nixpkgsCompiledBy = system: nixpkgs.legacyPackages."${system}";
+      nixpkgs' = patchNixpkgs "master" nixpkgs-unpatched;
+      nixpkgsCompiledBy = system: nixpkgs'.legacyPackages."${system}";
 
-      evalHost = { name, local, target }: nixpkgs.lib.nixosSystem {
+      evalHost = { name, local, target, light ? false, nixpkgs ? nixpkgs' }: nixpkgs.lib.nixosSystem {
         system = target;
         modules = [
           {
-            nixpkgs = (if (local != null) then {
-              buildPlatform = local;
-            } else {}) // {
-              # TODO: does the earlier `system` arg to nixosSystem make its way here?
-              hostPlatform.system = target;
-            };
-            # nixpkgs.buildPlatform = local;  # set by instantiate.nix instead
+            nixpkgs.buildPlatform.system = local;
             # nixpkgs.config.replaceStdenv = { pkgs }: pkgs.ccacheStdenv;
           }
+          (optionalAttrs (local != target) {
+            # XXX(2023/12/11): cache.nixos.org uses `system = ...` instead of `hostPlatform.system`, and that choice impacts the closure of every package.
+            # so avoid specifying hostPlatform.system on non-cross builds, so i can use upstream caches.
+            nixpkgs.hostPlatform.system = target;
+          })
+          (optionalAttrs light {
+            sane.enableSlowPrograms = false;
+          })
           (import ./hosts/instantiate.nix { hostName = name; })
           self.nixosModules.default
           self.nixosModules.passthru
@@ -136,39 +142,24 @@
         ];
       };
     in {
-      nixosConfigurations =
-        let
-          hosts = {
-            servo =  { name = "servo"; local = "x86_64-linux"; target = "x86_64-linux"; };
-            desko =  { name = "desko"; local = "x86_64-linux"; target = "x86_64-linux"; };
-            lappy =  { name = "lappy"; local = "x86_64-linux"; target = "x86_64-linux"; };
-            moby  =  { name = "moby";  local = "x86_64-linux"; target = "aarch64-linux"; };
-            rescue = { name = "rescue"; local = "x86_64-linux"; target = "x86_64-linux"; };
-          };
-          # cross-compiled builds: instead of emulating the host, build using a cross-compiler.
-          # - these are faster to *build* than the emulated variants (useful when tweaking packages),
-          # - but fewer of their packages can be found in upstream caches.
-          cross = mapAttrValues evalHost hosts;
-          emulated = mapAttrValues
-            ({name, local, target}: evalHost {
-              inherit name target;
-              local = null;
-            })
-            hosts;
-          prefixAttrs = prefix: attrs: mapAttrs'
-            (name: value: {
-              name = prefix + name;
-              inherit value;
-            })
-            attrs;
-        in
-          (prefixAttrs "cross-" cross) //
-          (prefixAttrs "emulated-" emulated) // {
-            # prefer native builds for these machines:
-            inherit (emulated) servo desko lappy rescue;
-            # prefer cross-compiled builds for these machines:
-            inherit (cross) moby;
-          };
+      nixosConfigurations = let
+        hosts = {
+          servo       = { name = "servo";  local = "x86_64-linux"; target = "x86_64-linux";  };
+          desko       = { name = "desko";  local = "x86_64-linux"; target = "x86_64-linux";  };
+          desko-light = { name = "desko";  local = "x86_64-linux"; target = "x86_64-linux";  light = true; };
+          lappy       = { name = "lappy";  local = "x86_64-linux"; target = "x86_64-linux";  };
+          lappy-light = { name = "lappy";  local = "x86_64-linux"; target = "x86_64-linux";  light = true; };
+          moby        = { name = "moby";   local = "x86_64-linux"; target = "aarch64-linux"; };
+          moby-light  = { name = "moby";   local = "x86_64-linux"; target = "aarch64-linux"; light = true; };
+          rescue      = { name = "rescue"; local = "x86_64-linux"; target = "x86_64-linux";  };
+        };
+        hostsNext = mapAttrs' (h: v: {
+          name = "${h}-next";
+          value = v // { nixpkgs = patchNixpkgs "staging-next" nixpkgs-next-unpatched; };
+        }) hosts;
+      in mapAttrValues evalHost (
+        hosts // hostsNext
+      );
 
       # unofficial output
       # this produces a EFI-bootable .img file (GPT with a /boot partition and a system (/ or /nix) partition).
@@ -187,8 +178,12 @@
       imgs = mapAttrValues (host: host.config.system.build.img) self.nixosConfigurations;
 
       # unofficial output
+      hostConfigs = mapAttrValues (host: host.config) self.nixosConfigurations;
+      hostSystems = mapAttrValues (host: host.config.system.build.toplevel) self.nixosConfigurations;
       hostPkgs = mapAttrValues (host: host.config.system.build.pkgs) self.nixosConfigurations;
       hostPrograms = mapAttrValues (host: mapAttrValues (p: p.package) host.config.sane.programs) self.nixosConfigurations;
+
+      patched.nixpkgs = nixpkgs';
 
       overlays = {
         # N.B.: `nix flake check` requires every overlay to take `final: prev:` at defn site,
@@ -203,7 +198,7 @@
         passthru = final: prev:
           let
             mobile = (import "${mobile-nixos}/overlay/overlay.nix");
-            uninsane = uninsane-dot-org.overlay;
+            uninsane = uninsane-dot-org.overlays.default;
           in
             (mobile final prev)
             // (uninsane final prev)
@@ -258,17 +253,27 @@
           pkgs = self.legacyPackages."x86_64-linux";
           sanePkgs = import ./pkgs { inherit pkgs; };
           deployScript = host: addr: action: pkgs.writeShellScript "deploy-${host}" ''
-            nix build '.#nixosConfigurations.${host}.config.system.build.toplevel' --out-link ./result-${host} $@
+            nix build '.#nixosConfigurations.${host}.config.system.build.toplevel' --out-link ./result-${host} "$@"
             sudo nix sign-paths -r -k /run/secrets/nix_serve_privkey $(readlink ./result-${host})
 
             # XXX: this triggers another config eval & (potentially) build.
             # if the config changed between these invocations, the above signatures might not apply to the deployed config.
-            # let the user handle that edge case by re-running this whole command
-            nixos-rebuild --flake '.#${host}' ${action} --target-host colin@${addr} --use-remote-sudo $@
+            # let the user handle that edge case by re-running this whole command.
+            # N.B.: `--fast` option here is critical to cross-compiled deployments: without it the build machine will try to invoke the host machine's `nix` binary.
+            # TODO: solve this by replacing the nixos-build invocation with:
+            # - nix-copy-closure --to $host $result
+            # - on target: nix-env set -p /nix/var/nix/profiles/system $result
+            # - on target: $result/bin/switch-to-configuration
+            nixos-rebuild --flake '.#${host}' ${action} --target-host colin@${addr} --use-remote-sudo "$@" --fast
           '';
+          deployApp = host: addr: action: {
+            type = "app";
+            program = ''${deployScript host addr action}'';
+          };
 
           # pkg updating.
           # a cleaner alternative lives here: <https://discourse.nixos.org/t/how-can-i-run-the-updatescript-of-personal-packages/25274/2>
+          # mkUpdater :: [ String ] -> { type = "app"; program = path; }
           mkUpdater = attrPath: {
             type = "app";
             program = let
@@ -293,7 +298,7 @@
               } else {}
             )
             (pkgs.lib.getAttrFromPath basePath sanePkgs);
-          mkUpdaters = { ignore ? [] }@opts: basePath:
+          mkUpdaters = { ignore ? [], flakePrefix ? [] }@opts: basePath:
             let
               updaters = mkUpdatersNoAliases opts basePath;
               invokeUpdater = name: pkg:
@@ -303,7 +308,7 @@
 
                   # in case `name` has a `.` in it, we have to quote it
                   escapedPath = builtins.map (p: ''"${p}"'') fullPath;
-                  updatePath = builtins.concatStringsSep "." ([ "update" "pkgs" ] ++ escapedPath);
+                  updatePath = builtins.concatStringsSep "." (flakePrefix ++ escapedPath);
                 in pkgs.lib.optionalString doUpdateByDefault (
                   pkgs.lib.escapeShellArgs [
                     "nix" "run" ".#${updatePath}"
@@ -311,8 +316,9 @@
                 );
             in {
               type = "app";
+              # top-level app just invokes the updater of everything one layer below it
               program = builtins.toString (pkgs.writeShellScript
-                (builtins.concatStringsSep "-" (["update"] ++ basePath))
+                (builtins.concatStringsSep "-" (flakePrefix ++ basePath))
                 (builtins.concatStringsSep
                   "\n"
                   (pkgs.lib.mapAttrsToList invokeUpdater updaters)
@@ -332,7 +338,7 @@
                 - `nix run '.#update.feeds'`
                   - updates metadata for all feeds
                 - `nix run '.#init-feed' <url>`
-                - `nix run '.#deploy-{lappy,moby,moby-test,servo}' [nixos-rebuild args ...]`
+                - `nix run '.#deploy.{desko,lappy,moby,servo}[-light][.test]' [nixos-rebuild args ...]`
                 - `nix run '.#check'`
                   - make sure all systems build; NUR evaluates
 
@@ -346,48 +352,70 @@
               nix flake show --option allow-import-from-derivation true
             '');
           };
-          update.pkgs = mkUpdaters { ignore = [ ["feeds"] ]; } [];
-          update.feeds = mkUpdaters {} [ "feeds" ];
+          # wrangle some names to get package updaters which refer back into the flake, but also conditionally ignore certain paths (e.g. sane.feeds).
+          # TODO: better design
+          update = rec {
+            _impl.pkgs.sane = mkUpdaters { flakePrefix = [ "update" "_impl" "pkgs" ]; ignore = [ [ "sane" "feeds" ] ]; } [ "sane" ];
+            pkgs = _impl.pkgs.sane;
+            _impl.feeds.sane.feeds = mkUpdaters { flakePrefix = [ "update" "_impl" "feeds" ]; } [ "sane" "feeds" ];
+            feeds = _impl.feeds.sane.feeds;
+          };
 
           init-feed = {
             type = "app";
             program = "${pkgs.feeds.init-feed}";
           };
 
-          deploy-lappy = {
-            type = "app";
-            program = ''${deployScript "lappy" "lappy" "switch"}'';
-          };
-          deploy-moby-test = {
-            type = "app";
-            program = ''${deployScript "moby" "moby-hn" "test"}'';
-          };
-          deploy-moby = {
-            type = "app";
-            program = ''${deployScript "moby" "moby-hn" "switch"}'';
-          };
-          deploy-servo = {
-            type = "app";
-            program = ''${deployScript "servo" "servo" "switch"}'';
+          deploy = {
+            lappy       = deployApp "lappy"       "lappy" "switch";
+            lappy-light = deployApp "lappy-light" "lappy" "switch";
+            moby        = deployApp "moby"        "moby"  "switch";
+            moby-light  = deployApp "moby-light"  "moby"  "switch";
+            moby-test   = deployApp "moby"        "moby"  "test";
+            servo       = deployApp "servo"       "servo" "switch";
           };
 
-          sync-moby = {
-            # copy music from the current device to moby
-            # TODO: should i actually sync from /mnt/servo-media/Music instead of the local drive?
+          sync = {
             type = "app";
-            program = builtins.toString (pkgs.writeShellScript "sync-to-moby" ''
-              sudo mount /mnt/moby-home
-              ${pkgs.sane-scripts.sync-music}/bin/sane-sync-music ~/Music /mnt/moby-home/Music
+            program = builtins.toString (pkgs.writeShellScript "sync-all" ''
+              RC_lappy=$(nix run '.#sync.lappy' -- "$@")
+              RC_moby=$(nix run '.#sync.moby' -- "$@")
+              RC_desko=$(nix run '.#sync.desko' -- "$@")
+
+              echo "lappy: $RC_lappy"
+              echo "moby: $RC_moby"
+              echo "desko: $RC_desko"
             '');
           };
 
-          sync-lappy = {
+          sync.desko = {
+            # copy music from servo to desko
+            # can run this from any device that has ssh access to desko and servo
+            type = "app";
+            program = builtins.toString (pkgs.writeShellScript "sync-to-desko" ''
+              sudo mount /mnt/desko-home
+              ${pkgs.sane-scripts.sync-music}/bin/sane-sync-music --compat /mnt/servo-media/Music /mnt/desko-home/Music "$@"
+            '');
+          };
+
+          sync.lappy = {
             # copy music from servo to lappy
-            # can run this from any device that has ssh access to lappy
+            # can run this from any device that has ssh access to lappy and servo
             type = "app";
             program = builtins.toString (pkgs.writeShellScript "sync-to-lappy" ''
               sudo mount /mnt/lappy-home
-              ${pkgs.sane-scripts.sync-music}/bin/sane-sync-music /mnt/servo-media/Music /mnt/lappy-home/Music
+              ${pkgs.sane-scripts.sync-music}/bin/sane-sync-music --compress --compat /mnt/servo-media/Music /mnt/lappy-home/Music "$@"
+            '');
+          };
+
+          sync.moby = {
+            # copy music from servo to moby
+            # can run this from any device that has ssh access to moby and servo
+            type = "app";
+            program = builtins.toString (pkgs.writeShellScript "sync-to-moby" ''
+              sudo mount /mnt/moby-home
+              # N.B.: limited by network/disk -> reduce job count to improve pause/resume behavior
+              ${pkgs.sane-scripts.sync-music}/bin/sane-sync-music --compress --compat --jobs 4 /mnt/servo-media/Music /mnt/moby-home/Music "$@"
             '');
           };
 
@@ -396,12 +424,12 @@
             program = builtins.toString (pkgs.writeShellScript "check-all" ''
               nix run '.#check.nur'
               RC0=$?
-              nix run '.#check.host-configs'
+              nix run '.#check.hostConfigs'
               RC1=$?
               nix run '.#check.rescue'
               RC2=$?
               echo "nur: $RC0"
-              echo "host-configs: $RC1"
+              echo "hostConfigs: $RC1"
               echo "rescue: $RC2"
               exit $(($RC0 | $RC1 | $RC2))
             '');
@@ -418,32 +446,59 @@
                 --option restrict-eval true \
                 --option allow-import-from-derivation true \
                 --drv-path --show-trace \
-                -I nixpkgs=$(nix-instantiate --find-file nixpkgs) \
+                -I nixpkgs=${nixpkgs-unpatched} \
                 -I ../../ \
                 | tee  # tee to prevent interactive mode
             '');
           };
 
-          check.host-configs = {
+          check.hostConfigs = {
             type = "app";
             program = let
-              checkHost = host: ''
-                nix build -v '.#nixosConfigurations.${host}.config.system.build.toplevel' --out-link ./result-${host} -j2 $@
-                RC_${host}=$?
+              checkHost = host: let
+                shellHost = pkgs.lib.replaceStrings [ "-" ] [ "_" ] host;
+              in ''
+                nix build -v '.#nixosConfigurations.${host}.config.system.build.toplevel' --out-link ./result-${host} -j2 "$@"
+                RC_${shellHost}=$?
               '';
             in builtins.toString (pkgs.writeShellScript
               "check-host-configs"
               ''
+                # build minimally-usable hosts first, then their full image.
+                # this gives me a minimal image i can deploy or copy over, early.
+                ${checkHost "desko-light"}
+                ${checkHost "moby-light"}
+                ${checkHost "lappy-light"}
+
                 ${checkHost "desko"}
                 ${checkHost "lappy"}
                 ${checkHost "servo"}
                 ${checkHost "moby"}
                 ${checkHost "rescue"}
+
+                # still want to build the -light variants first so as to avoid multiple simultaneous webkitgtk builds
+                ${checkHost "desko-light-next"}
+                ${checkHost "moby-light-next"}
+
+                ${checkHost "desko-next"}
+                ${checkHost "lappy-next"}
+                ${checkHost "servo-next"}
+                ${checkHost "moby-next"}
+                ${checkHost "rescue-next"}
+
                 echo "desko: $RC_desko"
                 echo "lappy: $RC_lappy"
                 echo "servo: $RC_servo"
                 echo "moby: $RC_moby"
                 echo "rescue: $RC_rescue"
+
+                echo "desko-next: $RC_desko_next"
+                echo "lappy-next: $RC_lappy_next"
+                echo "servo-next: $RC_servo_next"
+                echo "moby-next: $RC_moby_next"
+                echo "rescue-next: $RC_rescue_next"
+
+                # i don't really care if the -next hosts fail. i build them mostly to keep the cache fresh/ready
                 exit $(($RC_desko | $RC_lappy | $RC_servo | $RC_moby | $RC_rescue))
               ''
             );

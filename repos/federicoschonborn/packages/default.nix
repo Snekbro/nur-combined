@@ -1,99 +1,55 @@
 { pkgs ? import <nixpkgs> { } }: rec {
-  arkade = pkgs.libsForQt5.callPackage ./arkade { };
-  atoms = pkgs.callPackage ./atoms { inherit atoms-core; };
-  atoms-core = pkgs.python3Packages.callPackage ./atoms-core { };
-  blurble = pkgs.callPackage ./blurble { };
-  brisk-menu = pkgs.callPackage ./brisk-menu { };
   bsdutils = pkgs.callPackage ./bsdutils { inherit libxo; };
   cargo-aoc = pkgs.callPackage ./cargo-aoc { };
-  casaos = pkgs.callPackage ./casaos { };
-  chess-clock = pkgs.callPackage ./chess-clock { };
-  chess-clock0_5 = pkgs.callPackage ./chess-clock/0.5.0.nix { };
-  codelite = pkgs.callPackage ./codelite { };
-  devtoolbox = pkgs.callPackage ./devtoolbox {
-    inherit python-daltonlens
-      python-jwt
-      python-lorem
-      python-textstat
-      python-uuid6;
-  };
-  eloquens = pkgs.libsForQt5.callPackage ./eloquens { };
-  fastfetch = pkgs.callPackage ./fastfetch { inherit yyjson; };
-  fielding = pkgs.libsForQt5.callPackage ./fielding { };
+  fastfetch = pkgs.callPackage ./fastfetch { };
   firefox-gnome-theme = pkgs.callPackage ./firefox-gnome-theme { };
   flyaway = pkgs.callPackage ./flyaway { };
-  francis = pkgs.libsForQt5.callPackage ./francis { };
-  game-of-life = pkgs.callPackage ./game-of-life { };
-  gradebook = pkgs.callPackage ./gradebook { };
-  gruvbox-plasma = pkgs.callPackage ./gruvbox-plasma { };
   gtatool = pkgs.callPackage ./gtatool { inherit libgta teem; };
   inko = pkgs.callPackage ./inko { };
-  kommit = pkgs.libsForQt5.callPackage ./kommit { };
+  irust = pkgs.callPackage ./irust { };
   kuroko = pkgs.callPackage ./kuroko { };
   libgta = pkgs.callPackage ./libgta { };
   libtgd = pkgs.callPackage ./libtgd { inherit libgta; };
-  libxfce4windowing = pkgs.callPackage ./libxfce4windowing { };
   libxo = pkgs.callPackage ./libxo { };
-  libzypp = pkgs.callPackage ./libzypp { libsolv = libsolv-libzypp; };
-  licentia = pkgs.libsForQt5.callPackage ./licentia { };
-  liquidshell = pkgs.libsForQt5.callPackage ./liquidshell { };
-  magpie_v1 = pkgs.callPackage ./magpie_v1 { wlroots = wlroots_0_17; };
-  marknote = pkgs.libsForQt5.callPackage ./marknote { };
-  metronome = pkgs.callPackage ./metronome { };
+  libzypp = pkgs.callPackage ./libzypp { };
+  magpie1 = pkgs.callPackage ./magpie1 { inherit wlroots_0_17; };
   minesector = pkgs.callPackage ./minesector { };
   morewaita = pkgs.callPackage ./morewaita { };
   moss = pkgs.callPackage ./moss { };
   mucalc = pkgs.callPackage ./mucalc { };
-  notae = pkgs.libsForQt5.callPackage ./notae { };
   opensurge = pkgs.callPackage ./opensurge { inherit surgescript; };
   qv = pkgs.qt6.callPackage ./qv { inherit libtgd; };
-  rollit = pkgs.callPackage ./rollit { };
-  rollit3_2 = pkgs.callPackage ./rollit/3.2.0.nix { };
-  share-preview = pkgs.callPackage ./share-preview { };
-  share-preview0_3 = pkgs.callPackage ./share-preview/0.3.0.nix { };
   srb2p = pkgs.callPackage ./srb2p { };
   surgescript = pkgs.callPackage ./surgescript { };
   teem = pkgs.callPackage ./teem { };
-  telegraph = pkgs.callPackage ./telegraph { };
-  textsnatcher = pkgs.callPackage ./textsnatcher { };
   thunderbird-gnome-theme = pkgs.callPackage ./thunderbird-gnome-theme { };
-  upkg = pkgs.callPackage ./upkg { };
   usysconf = pkgs.callPackage ./usysconf { };
   wisp = pkgs.callPackage ./wisp { };
   waycheck = pkgs.qt6.callPackage ./waycheck { };
   xdg-terminal-exec = pkgs.callPackage ./xdg-terminal-exec { };
-  yyjson = pkgs.callPackage ./yyjson { };
   zypper = pkgs.callPackage ./zypper { inherit libzypp; };
 
-  python-daltonlens = pkgs.python3Packages.callPackage ./python-daltonlens { };
-  python-jwt = pkgs.python3Packages.callPackage ./python-jwt { };
-  python-lorem = pkgs.python3Packages.callPackage ./python-lorem { };
-  python-textstat = pkgs.python3Packages.callPackage ./python-textstat { };
-  python-uuid6 = pkgs.python3Packages.callPackage ./python-uuid6 { };
-
-  # Overrides
-  wlroots_0_17 = pkgs.wlroots.overrideAttrs (oldAttrs: {
-    version = "0.17.0-dev";
+  wlroots_0_17 = if pkgs?wlroots_0_17 then pkgs.wlroots_0_17 else
+  pkgs.wlroots_0_16.overrideAttrs (prevAttrs: {
+    version = "0.17.1";
     src = pkgs.fetchFromGitLab {
       domain = "gitlab.freedesktop.org";
       owner = "wlroots";
       repo = "wlroots";
-      rev = "b0bd86285f0a74d9fbb32d46113fd93f1740896b";
-      hash = "sha256-45cJ0vJmbR9Li8pyvmWxI/DnQrl4ItEx/nQE2tLUdjg=";
+      rev = "3f2aced8c6fd00b0b71da24c790850af2004052b";
+      hash = "sha256-Z0gWM7AQqJOSr2maUtjdgk/MF6pyeyFMMTaivgt+RMI=";
     };
-    buildInputs = (oldAttrs.buildInputs or [ ]) ++ (with pkgs;[
-      hwdata
-      libdisplay-info
-    ]);
+    buildInputs = (prevAttrs.buildInputs or [ ]) ++ [
+      pkgs.hwdata
+      pkgs.libdisplay-info
+    ];
   });
 
   # Variants
-  fastfetchFull = pkgs.lib.warn "fastfetchFull has been replaced by fastfetch, which will conditionally enable features based on platform support" fastfetch;
-
-  fastfetchMinimal = (fastfetch.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-minimal";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with all features disabled)";
+  fastfetchMinimal = (fastfetch.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-minimal";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with all features disabled)";
       mainProgram = "fastfetch";
     };
   })).override {
@@ -124,10 +80,10 @@
     enableDirectxHeaders = false;
   };
 
-  gtatoolFull = (gtatool.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-full";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with all features enabled)";
+  gtatoolFull = (gtatool.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-full";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with all features enabled)";
     };
   })).override {
     # Broken
@@ -155,10 +111,10 @@
     withTeem = true;
   };
 
-  libtgdFull = (libtgd.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-full";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with all features enabled)";
+  libtgdFull = (libtgd.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-full";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with all features enabled)";
     };
   })).override {
     withCfitsio = true;
@@ -182,30 +138,30 @@
     withTiff = true;
   };
 
-  teemFull = (teem.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-full";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with all features enabled)";
+  teemFull = (teem.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-full";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with all features enabled)";
     };
   })).override {
     withLevmar = true;
     withFftw3 = true;
   };
 
-  teemExperimental = (teem.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-experimental";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with experimental libraries and applications enabled)";
+  teemExperimental = (teem.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-experimental";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with experimental libraries and applications enabled)";
     };
   })).override {
     withExperimentalLibs = true;
     withExperimentalApps = true;
   };
 
-  teemExperimentalFull = (teem.overrideAttrs (oldAttrs: {
-    pname = "${oldAttrs.pname}-experimental-full";
-    meta = oldAttrs.meta // {
-      description = "${oldAttrs.meta.description} (with experimental libraries and applications, and all features enabled)";
+  teemExperimentalFull = (teem.overrideAttrs (prevAttrs: {
+    pname = "${prevAttrs.pname}-experimental-full";
+    meta = prevAttrs.meta // {
+      description = "${prevAttrs.meta.description} (with experimental libraries and applications, and all features enabled)";
     };
   })).override {
     withLevmar = true;
@@ -213,14 +169,4 @@
     withExperimentalLibs = true;
     withExperimentalApps = true;
   };
-
-  libsolv-libzypp = pkgs.libsolv.overrideAttrs (oldAttrs: {
-    pname = "libsolv-libzypp";
-    cmakeFlags = oldAttrs.cmakeFlags ++ [
-      "-DENABLE_HELIXREPO=true"
-    ];
-    meta = oldAttrs.meta // {
-      description = oldAttrs.meta.description + " (for LibZYpp)";
-    };
-  });
 }

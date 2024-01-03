@@ -5,6 +5,7 @@
     ./fs.nix
     ./hardware
     ./home
+    ./hostnames.nix
     ./hosts.nix
     ./ids.nix
     ./machine-id.nix
@@ -25,22 +26,42 @@
   sane.programs.sysadminUtils.enableFor.system = lib.mkDefault true;
   sane.programs.consoleUtils.enableFor.user.colin = lib.mkDefault true;
 
-  nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.allowBroken = true;  # NIXPKGS_ALLOW_BROKEN
+  nixpkgs.config.allowUnfree = true;  # NIXPKGS_ALLOW_UNFREE=1
+  nixpkgs.config.allowBroken = true;  # NIXPKGS_ALLOW_BROKEN=1
 
   # time.timeZone = "America/Los_Angeles";
   time.timeZone = "Etc/UTC";  # DST is too confusing for me => use a stable timezone
 
-  # allow `nix flake ...` command
-  # TODO: is this still required?
   nix.extraOptions = ''
+    # see: `man nix.conf`
+    # useful when a remote builder has a faster internet connection than me
+    builders-use-substitutes = true  # default: false
+    # maximum seconds to wait when connecting to binary substituter
+    connect-timeout = 3  # default: 0
+    # download-attempts = 5  # default: 5
+    # allow `nix flake ...` command
     experimental-features = nix-command flakes
+    # whether to build from source when binary substitution fails
+    fallback = true  # default: false
+    # whether to keep building dependencies if any other one fails
+    keep-going = true  # default: false
+    # whether to keep build-only dependencies of GC roots (e.g. C compiler) when doing GC
+    keep-outputs = true  # default: false
+    # how many lines to show from failed build
+    log-lines = 30  # default: 10
+    # narinfo-cache-negative-ttl = 3600  # default: 3600
+    # whether to use ~/.local/state/nix/profile instead of ~/.nix-profile, etc
+    use-xdg-base-directories = true  # default: false
+    # whether to warn if repository has uncommited changes
+    warn-dirty = false  # default: true
   '';
   # hardlinks identical files in the nix store to save 25-35% disk space.
   # unclear _when_ this occurs. it's not a service.
   # does the daemon continually scan the nix store?
   # does the builder use some content-addressed db to efficiently dedupe?
   nix.settings.auto-optimise-store = true;
+  # TODO: see if i can remove this?
+  nix.settings.trusted-users = [ "root" ];
 
   services.journald.extraConfig = ''
     # docs: `man journald.conf`
@@ -73,7 +94,21 @@
     text = ''
       # show which packages changed versions or are new/removed in this upgrade
       # source: <https://github.com/luishfonseca/dotfiles/blob/32c10e775d9ec7cc55e44592a060c1c9aadf113e/modules/upgrade-diff.nix>
-      ${pkgs.nvd}/bin/nvd --nix-bin-dir=${pkgs.nix}/bin diff /run/current-system "$systemConfig"
+      # modified to not error on boot (when /run/current-system doesn't exist)
+      if [ -d /run/current-system ]; then
+        ${pkgs.nvd}/bin/nvd --nix-bin-dir=${pkgs.nix}/bin diff /run/current-system "$systemConfig"
+      fi
+    '';
+  };
+  system.activationScripts.notifyActive = {
+    text = ''
+      # send a notification to any sway users logged in, that the system has been activated/upgraded.
+      # this probably doesn't work if more than one sway session exists on the system.
+      _notifyActiveSwaySock="$(echo /run/user/*/sway-ipc.*.sock)"
+      if [ -e "$_notifyActiveSwaySock" ]; then
+        SWAYSOCK="$_notifyActiveSwaySock" ${pkgs.sway}/bin/swaymsg -- exec \
+          "${pkgs.libnotify}/bin/notify-send 'nixos activated' 'version: $(cat $systemConfig/nixos-version)'"
+      fi
     '';
   };
 

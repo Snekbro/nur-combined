@@ -17,9 +17,15 @@ in
     # Set-up media group
     users.groups.media = { };
 
-    my.services.nginx.virtualHosts = [
-      {
-        subdomain = "jellyfin";
+    systemd.services.jellyfin = {
+      serviceConfig = {
+        # Loose umask to make Jellyfin metadata more broadly readable
+        UMask = lib.mkForce "0002";
+      };
+    };
+
+    my.services.nginx.virtualHosts = {
+      jellyfin = {
         port = 8096;
         extraConfig = {
           locations."/" = {
@@ -33,7 +39,7 @@ in
             proxyWebsockets = true;
           };
         };
-      }
-    ];
+      };
+    };
   };
 }

@@ -129,6 +129,7 @@ in
             { class = "^Thunderbird$"; instance = "Mailnews"; window_role = "filterlist"; }
             { class = "^Pavucontrol.*$"; }
             { class = "^Arandr$"; }
+            { class = ".?blueman-manager.*$"; }
           ];
         };
 
@@ -196,7 +197,7 @@ in
                 inherit (config.my.home.bluetooth) enable;
                 prog = lib.getExe pkgs.rofi-bluetooth;
               in
-              lib.mkIf enable "exec ${prog}";
+              lib.mkIf enable "exec ${prog} -i";
           })
           (
             # Changing container focus

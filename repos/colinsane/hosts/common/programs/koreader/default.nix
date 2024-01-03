@@ -1,9 +1,21 @@
+# docs:
+# - <https://koreader.rocks/user_guide/>
+# - <https://github.com/koreader/koreader/wiki>
+#
+# post-installation setup:
+# - download dictionaries:
+#   - search icon > settings > dictionary settings > download dictionaries
+#   - these are stored in `~/.config/koreader/data/dict`
+# - configure defaults:
+#   - edit keys in ~/.config/koreader/settings.reader.lua
+#     - default font size: `["copt_font_size"] = 28,`
+#     - home dir: `["home_dir"] = "/home/colin/Books",`
 { config, lib, pkgs, sane-lib, ... }:
 
 let
   feeds = sane-lib.feeds;
   allFeeds = config.sane.feeds;
-  wantedFeeds = feeds.filterByFormat [ "image" "text" ] allFeeds;
+  wantedFeeds = feeds.filterByFormat [ "text" ] allFeeds;
   koreaderRssEntries = builtins.map (feed:
     # format:
     # { "<rss/atom url>", limit = <int>, download_full_article=<bool>, include_images=<bool>, enable_filter=<bool>, filter_element = "<css selector>"},
@@ -14,7 +26,7 @@ let
     # enable_filter         = true => only render content that matches the filter_element css selector.
     let fields = [
       (lib.escapeShellArg feed.url)
-      "limit = 5"
+      "limit = 20"
       "download_full_article = true"
       "include_images = true"
       "enable_filter = false"
@@ -26,8 +38,12 @@ in {
     package = pkgs.koreader-from-src;
     # koreader applies these lua "patches" at boot:
     # - <https://github.com/koreader/koreader/wiki/User-patches>
-    # - 2023/10/29: koreader code hasn't changed, but somehow FTP browser seems usable even without the isConnected patch now.
+    # the naming is IMPORTANT. these must start with a `2-` in order to be invoked during the right initialization phase
+    #
+    # 2023/10/29: koreader code hasn't changed, but somehow FTP browser seems usable even without the isConnected patch now.
     # fs.".config/koreader/patches/2-colin-NetworkManager-isConnected.lua".symlink.target = "${./2-colin-NetworkManager-isConnected.lua}";
+
+    fs.".config/koreader/patches/2-02-colin-impl-clipboard-ops.lua".symlink.target = "${./2-02-colin-impl-clipboard-ops.lua}";
 
     # koreader news plugin, enabled by default. file format described here:
     # - <repo:koreader/koreader:plugins/newsdownloader.koplugin/feed_config.lua>

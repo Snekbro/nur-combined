@@ -41,17 +41,14 @@ in
       ensureDatabases = [ "drone" ];
       ensureUsers = [{
         name = "drone";
-        ensurePermissions = {
-          "DATABASE drone" = "ALL PRIVILEGES";
-        };
+        ensureDBOwnership = true;
       }];
     };
 
-    my.services.nginx.virtualHosts = [
-      {
-        subdomain = "drone";
+    my.services.nginx.virtualHosts = {
+      drone = {
         inherit (cfg) port;
-      }
-    ];
+      };
+    };
   };
 }

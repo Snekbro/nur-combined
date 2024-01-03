@@ -18,6 +18,8 @@
     zoom-us
     tdesktop
     teams
+    unstable.srain
+    unstable.tuba
 
     unstable.himalaya
   ];

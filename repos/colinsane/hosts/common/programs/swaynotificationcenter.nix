@@ -17,6 +17,9 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.sane.programs.swaynotificationcenter;
+
+  mprisIconSize = 48;
+
   fbcli-wrapper = pkgs.writeShellApplication {
     name = "swaync-fbcli";
     runtimeInputs = [
@@ -134,6 +137,12 @@ in
           hash = "sha256-Y8fiZbAP9yGOVU3rOkZKO8TnPPlrGpINWYGaqeeNzF0=";
         })
       ];
+      postPatch = (upstream.postPatch or "") + ''
+        # XXX: this might actually be changing the DPI, not the scaling...
+        # in that case, it might be possible to do this in CSS
+        substituteInPlace src/controlCenter/widgets/mpris/mpris_player.ui \
+          --replace '96' '${builtins.toString mprisIconSize}'
+      '';
     }));
     suggestedPrograms = [ "feedbackd" ];
     fs.".config/swaync/style.css".symlink.text = ''
@@ -155,6 +164,9 @@ in
       .widget-buttons-grid>flowbox>flowboxchild>button.toggle {
         /* text color for inactive buttons, and "Clear All" button.*/
         color: rgb(172, 172, 172);
+        /* padding defaults to 16px; tighten, so i can squish it all onto one row */
+        padding-left: 0px;
+        padding-right: 0px;
       }
       .widget-buttons-grid>flowbox>flowboxchild>button.toggle.active {
         color: rgb(255, 255, 255);
@@ -215,10 +227,37 @@ in
         # - SWAYNC_REPLACES_ID
         # - SWAYNC_ID
         # - SWAYNC_SUMMARY
-        incoming-im = {
+
+        # rules to use for testing. trigger with:
+        # - `notify-send test test:message` (etc)
+        # should also be possible to trigger via any messaging app
+        fbcli-test-im = {
+          body = "test:message";
+          exec = "${fbcli} --event proxied-message-new-instant";
+        };
+        fbcli-test-call = {
+          body = "test:call";
+          exec = "${fbcli} --event phone-incoming-call -t 20";
+        };
+        fbcli-test-call-stop = {
+          body = "test:call-stop";
+          exec = "${fbcli-stop} --event phone-incoming-call -t 20";
+        };
+        fbcli-test-timer = {
+          body = "test:timer";
+          exec = "${fbcli} --event timeout-completed";
+        };
+
+        incoming-im-known-app-name = {
           # trigger notification sound on behalf of these IM clients.
-          app-name = "(Chats|Dino|discord|Element|Fractal)";
+          app-name = "(Chats|Dino|discord|Element|Fractal|gtkcord4)";
           body = "^(?!Incoming call).*$";  #< don't match Dino Incoming calls
+          exec = "${fbcli} --event proxied-message-new-instant";
+        };
+        incoming-im-known-desktop-entry = {
+          # trigger notification sound on behalf of these IM clients.
+          # these clients don't have an app-name (listed as "<unknown>"), but do have a desktop-entry
+          desktop-entry = "com.github.uowuo.abaddon";
           exec = "${fbcli} --event proxied-message-new-instant";
         };
         incoming-call = {
@@ -325,13 +364,13 @@ in
           lib.optionals config.sane.programs.eg25-control.enabled [
             {
               type = "toggle";
-              label = "gps";  # GPS services; other icons: ⌖
+              label = "";  # GPS services; other icons: gps, ⌖, 🛰, 🌎, 
               command = "/run/wrappers/bin/sudo ${systemctl-toggle}/bin/systemctl-toggle eg25-control-gps";
               active = "${pkgs.systemd}/bin/systemctl is-active eg25-control-gps.service";
             }
             {
               type = "toggle";
-              label = "5g";
+              label = "󰺐";  # icons: 5g, 📡, 📱, ᯤ, ⚡, , 🌐, 📶, 🗼, 󰀂, , 󰺐, 󰩯
               # modem and NetworkManager auto-establishes a connection when powered.
               # though some things like `wg-home` VPN tunnel will remain routed over the old interface.
               command = "/run/wrappers/bin/sudo ${systemctl-toggle}/bin/systemctl-toggle eg25-control-powered";
@@ -354,9 +393,31 @@ in
           ] ++ lib.optionals config.sane.programs."gnome.geary".enabled [
             {
               type = "toggle";
-              label = "[E]";  # email (Geary); other icons: ✉, 📧
+              label = "󰇮";  # email (Geary); other icons: ✉, [E], 📧, 󰇮
               command = "${systemctl-toggle}/bin/systemctl-toggle --user geary";
               active = "${pkgs.systemd}/bin/systemctl is-active --user geary";
+            }
+          # ] ++ lib.optionals config.sane.programs.abaddon.enabled [
+          #   # XXX: disabled in favor of gtkcord4: abaddon has troubles auto-connecting at start
+          #   {
+          #     type = "toggle";
+          #     label = "󰊴";  # Discord chat client; icons: 󰊴, 🎮
+          #     command = "${systemctl-toggle}/bin/systemctl-toggle --user abaddon";
+          #     active = "${pkgs.systemd}/bin/systemctl is-active --user abaddon";
+          #   }
+          ] ++ lib.optionals config.sane.programs.gtkcord4.enabled [
+            {
+              type = "toggle";
+              label = "󰊴";  # Discord chat client; icons: 󰊴, 🎮
+              command = "${systemctl-toggle}/bin/systemctl-toggle --user gtkcord4";
+              active = "${pkgs.systemd}/bin/systemctl is-active --user gtkcord4";
+            }
+          ] ++ lib.optionals config.sane.programs.signal-desktop.enabled [
+            {
+              type = "toggle";
+              label = "💬";  # Signal messenger; other icons: 󰍦
+              command = "${systemctl-toggle}/bin/systemctl-toggle --user signal-desktop";
+              active = "${pkgs.systemd}/bin/systemctl is-active --user signal-desktop";
             }
           ] ++ lib.optionals config.sane.programs.dino.enabled [
             {
@@ -383,7 +444,7 @@ in
           clear-all-button = true;
         };
         mpris = {
-          image-size = 64;
+          image-size = mprisIconSize;
           image-radius = 8;
         };
         title = {

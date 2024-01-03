@@ -2,7 +2,6 @@
 , stdenv
 , fetchFromGitHub
 , cmake
-, darwin
 , ninja
 , pkg-config
 , yyjson
@@ -60,13 +59,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fastfetch";
-  version = "2.2.3";
+  version = "2.4.0";
 
   src = fetchFromGitHub {
     owner = "LinusDierheimer";
     repo = "fastfetch";
     rev = finalAttrs.version;
-    hash = "sha256-JaD0R1vfHoWMhipMtTW0dlggR7RbD2evHfHrjoZJBmk=";
+    hash = "sha256-LHRbobgBXGjoLQXC+Gy03aNrTyjn1loVMbj0qv3HObQ=";
   };
 
   nativeBuildInputs = [
@@ -79,7 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     yyjson
   ]
   ++ lib.optional enableLibpci pciutils
-  ++ lib.optionals enableVulkan ([ vulkan-loader ] ++ lib.optional stdenv.isDarwin darwin.moltenvk)
+  ++ lib.optional enableVulkan vulkan-loader
   ++ lib.optional enableWayland wayland
   ++ lib.optional (enableXcb || enableXcbRandr) xorg.libxcb
   ++ lib.optional enableXrandr xorg.libXrandr
@@ -101,16 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableFreetype freetype
   ++ lib.optional enablePulse pulseaudio
   ++ lib.optional enableDdcutil ddcutil
-  ++ lib.optional enableDirectxHeaders directx-headers
-  ++ lib.optionals stdenv.isDarwin (with darwin; [ objc4 ] ++ (
-    # Apparently we need these even if the features are disabled.
-    with darwin.apple_sdk.frameworks; [
-      CoreGraphics
-      CoreVideo
-      Foundation
-      OpenCL
-    ]
-  ));
+  ++ lib.optional enableDirectxHeaders directx-headers;
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=uninitialized";
 
@@ -159,7 +149,5 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/LinusDierheimer/fastfetch/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ federicoschonborn ];
-    # /tmp/nix-build-fastfetch-minimal-2.1.0.drv-0/source/src/detection/disk/disk_bsd.c:37:27: error: use of undeclared identifier 'MNT_REMOVABLE'
-    broken = stdenv.isDarwin;
   };
 })

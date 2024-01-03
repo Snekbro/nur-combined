@@ -28,10 +28,10 @@
 # - startup
 #   - daemon based (lisgsd, idle_locker, statusbar_periodics)
 #   - auto-started at login
-#   - managable by `sxmo_daemons.sh`
-#     - list available daemons: `sxmo_daemons.sh list`
-#     - query if a daemon is active: `sxmo_daemons.sh running <my-daemon>`
-#     - start daemon: `sxmo_daemons.sh start <my-daemon>`
+#   - managable by `sxmo_jobs.sh`
+#     - list available daemons: `sxmo_jobs.sh list`
+#     - query if a daemon is active: `sxmo_jobs.sh running <my-daemon>`
+#     - start daemon: `sxmo_jobs.sh start <my-daemon>`
 #   - managable by `superctl`
 #     - `superctl status`
 # - user hooks:
@@ -68,9 +68,14 @@ let
   '';
 
   hookPkgs = {
+    block_suspend = pkgs.static-nix-shell.mkBash {
+      pname = "sxmo_hook_block_suspend.sh";
+      pkgs = [ "procps" ];
+      src = ./hooks;
+    };
     inputhandler = pkgs.static-nix-shell.mkBash {
       pname = "sxmo_hook_inputhandler.sh";
-      pkgs = [ "coreutils" ];
+      pkgs = [ "coreutils" "playerctl" "pulseaudio" ];
       src = ./hooks;
     };
     postwake = pkgs.static-nix-shell.mkBash {
@@ -80,11 +85,6 @@ let
     };
     rotate = pkgs.static-nix-shell.mkBash {
       pname = "sxmo_hook_rotate.sh";
-      pkgs = [ "sway" ];
-      src = ./hooks;
-    };
-    screenoff = pkgs.static-nix-shell.mkBash {
-      pname = "sxmo_hook_screenoff.sh";
       pkgs = [ "sway" ];
       src = ./hooks;
     };
@@ -130,7 +130,7 @@ in
     };
     sane.gui.sxmo.package = mkOption {
       type = types.package;
-      default = pkgs.sxmo-utils-latest.override { preferSystemd = true; };
+      default = pkgs.sxmo-utils.override { preferSystemd = true; };
       description = ''
         sxmo base scripts and hooks collection.
         consider overriding the outputs under /share/sxmo/default_hooks
@@ -150,7 +150,7 @@ in
         # by including hooks here, updating the sxmo package also updates the hooks
         # without requiring any reboot
         "sxmo_hook_apps.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_apps.sh";
-        "sxmo_hook_block_suspend.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_block_suspend.sh";
+        # "sxmo_hook_block_suspend.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_block_suspend.sh";
         "sxmo_hook_call_audio.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_call_audio.sh";
         "sxmo_hook_contextmenu_fallback.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_contextmenu_fallback.sh";
         "sxmo_hook_contextmenu.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_contextmenu.sh";
@@ -176,6 +176,7 @@ in
         "sxmo_hook_restart_modem_daemons.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_restart_modem_daemons.sh";
         "sxmo_hook_ring.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_ring.sh";
         "sxmo_hook_rotate.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_rotate.sh";
+        "sxmo_hook_screenoff.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_screenoff.sh";
         "sxmo_hook_scripts.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_scripts.sh";
         "sxmo_hook_sendsms.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_sendsms.sh";
         "sxmo_hook_smslog.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_smslog.sh";
@@ -186,10 +187,10 @@ in
         "sxmo_hook_tailtextlog.sh" = "${package}/share/sxmo/default_hooks/sxmo_hook_tailtextlog.sh";
       } // {
         # default hooks for this nix module, not upstreamable
+        "sxmo_hook_block_suspend.sh" = "${hookPkgs.block_suspend}/bin/sxmo_hook_block_suspend.sh";
         "sxmo_hook_inputhandler.sh" = "${hookPkgs.inputhandler}/bin/sxmo_hook_inputhandler.sh";
         "sxmo_hook_postwake.sh" = "${hookPkgs.postwake}/bin/sxmo_hook_postwake.sh";
         "sxmo_hook_rotate.sh" = "${hookPkgs.rotate}/bin/sxmo_hook_rotate.sh";
-        "sxmo_hook_screenoff.sh" = "${hookPkgs.screenoff}/bin/sxmo_hook_screenoff.sh";
         "sxmo_hook_start.sh" = "${hookPkgs.start}/bin/sxmo_hook_start.sh";
         "sxmo_suspend.sh" = "${hookPkgs.suspend}/bin/sxmo_suspend.sh";
       };
@@ -234,6 +235,10 @@ in
             SXMO_DISABLE_CONFIGVERSION_CHECK = mkSettingsOpt "1" "allow omitting the configversion line from user-provided sxmo dotfiles";
             SXMO_UNLOCK_IDLE_TIME = mkSettingsOpt "300" "how many seconds of inactivity before locking the screen";  # lock -> screenoff happens 8s later, not configurable
             # SXMO_WM = mkSettingsOpt "sway" "sway or dwm. ordinarily initialized by sxmo_{x,w}init.sh";
+            SXMO_NO_AUDIO = mkSettingsOpt "" "don't start pipewire/pulseaudio in sxmo_hook_start.sh, don't show audio in statusbar, disable audio menu";
+            SXMO_STATES = mkSettingsOpt "unlock screenoff" "list of states the device should support (unlock, lock, screenoff)";
+            SXMO_SWAY_SCALE = mkSettingsOpt "1" "sway output scale";
+            SXMO_WOB_DISABLE = mkSettingsOpt "" "disable the on-screen volume display";
           };
       };
       default = {};
@@ -250,6 +255,10 @@ in
     };
   };
 
+  imports = [
+    ./bonsai.nix
+  ];
+
   config = lib.mkMerge [
     {
       sane.programs.sxmoApps = {
@@ -257,13 +266,17 @@ in
         suggestedPrograms = [
           "guiApps"
           "bemenu"  # specifically to import its theming
-          "sfeed"      # want this here so that the user's ~/.sfeed/sfeedrc gets created
-          # "superd"     # make superctl (used by sxmo) be on PATH
+          "sfeed"   # want this here so that the user's ~/.sfeed/sfeedrc gets created
+          # "superd"  # make superctl (used by sxmo) be on PATH
+          # "sway-autoscaler"
+          "wob"  # volume/brightness on-screen display
         ];
 
         persist.byStore.cryptClearOnBoot = [
           # builds to be 10's of MB per day
           # ".local/state/superd/logs"
+          ".local/share/sxmo/modem"  # SMS
+          ".local/share/sxmo/notifications" # so i can see new SMS messages. not sure actually if this needs persisting or if it'll re-hydrate from modem.
         ];
       };
     }
@@ -283,7 +296,7 @@ in
           enable = true;
           # we manage the greeter ourselves  (TODO: merge this into sway config as well)
           useGreeter = false;
-          waybar.top = import ./waybar-top.nix;
+          waybar.top = import ./waybar-top.nix { inherit pkgs; };
           # reset extra waybar style
           waybar.extra_style = "";
           config = {
@@ -297,7 +310,12 @@ in
             # these could be added, but i don't see much benefit.
             font = "pango:monospace 10";
             mod = "Mod1";  # prefer Alt
-            # xwayland = false;  # disable to reduce RAM usage. N.B.: xwayland is needed for electron apps!
+            # about xwayland:
+            # - required by many electron apps, though some electron apps support NIXOS_OZONE_WL=1 for native wayland.
+            # - when xwayland is enabled, KOreader incorrectly chooses the X11 backend
+            #   -> slower; blurrier
+            # - xwayland uses a small amount of memory (like 30MiB, IIRC?)
+            xwayland = false;
             workspace_layout = "tabbed";
 
             brightness_down_cmd = "sxmo_brightness.sh down";
@@ -343,7 +361,7 @@ in
 
                   # kill anything leftover from the previous sxmo run. this way we can (try to) be reentrant
                   echo "sxmo_init: killing stale daemons (if active)"
-                  sxmo_daemons.sh stop all
+                  sxmo_jobs.sh stop all
                   pkill bemenu
                   pkill wvkbd
                   pkill superd
@@ -368,13 +386,20 @@ in
                 bindsym button2 kill
                 bindswitch lid:on exec sxmo_wm.sh dpms on
                 bindswitch lid:off exec sxmo_wm.sh dpms off
+
                 exec 'printf %s "$SWAYSOCK" > "$XDG_RUNTIME_DIR"/sxmo.swaysock'
+
+                # XXX(2023/12/04): this shouldn't be necessary, but without this Komikku fails to launch because XDG_SESSION_TYPE is unset
+
+                exec dbus-update-activation-environment --systemd XDG_SESSION_TYPE
                 exec_always ${sxmo_init}
               '';
           };
         };
 
         sane.programs.sxmoApps.enableFor.user.colin = true;
+
+        sane.programs.sway-autoscaler.config.defaultScale = builtins.fromJSON cfg.settings.SXMO_SWAY_SCALE;
 
         # sxmo internally uses doas instead of sudo
         security.doas.enable = true;
@@ -403,6 +428,100 @@ in
           cfg.settings
         );
 
+
+        sane.gui.sxmo.bonsaid.transitions = let
+          doExec = inputName: transitions: {
+            type = "exec";
+            command = [
+              "setsid"
+              "-f"
+              "sxmo_hook_inputhandler.sh"
+              inputName
+            ];
+            inherit transitions;
+          };
+          onDelay = ms: transitions: {
+            type = "delay";
+            delay_duration = ms * 1000000;
+            inherit transitions;
+          };
+          onEvent = eventName: transitions: {
+            type = "event";
+            event_name = eventName;
+            inherit transitions;
+          };
+          friendlyToBonsai = { trigger ? null, terminal ? false, timeout ? {}, power_pressed ? {}, power_released ? {}, voldown_pressed ? {}, voldown_released ? {}, volup_pressed ? {}, volup_released ? {} }@args:
+          if trigger != null then [
+            (doExec trigger (friendlyToBonsai (builtins.removeAttrs args ["trigger"])))
+          ] else let
+            events = [ ]
+              ++ (lib.optional (timeout != {})          (onDelay (timeout.ms or 400) (friendlyToBonsai (builtins.removeAttrs timeout ["ms"]))))
+              ++ (lib.optional (power_pressed != {})    (onEvent "power_pressed" (friendlyToBonsai power_pressed)))
+              ++ (lib.optional (power_released != {})   (onEvent "power_released" (friendlyToBonsai power_released)))
+              ++ (lib.optional (voldown_pressed != {})  (onEvent "voldown_pressed" (friendlyToBonsai voldown_pressed)))
+              ++ (lib.optional (voldown_released != {}) (onEvent "voldown_released" (friendlyToBonsai voldown_released)))
+              ++ (lib.optional (volup_pressed != {})    (onEvent "volup_pressed" (friendlyToBonsai volup_pressed)))
+              ++ (lib.optional (volup_released != {})   (onEvent "volup_released" (friendlyToBonsai volup_released)))
+            ;
+            in assert terminal -> events == []; events;
+
+          # trigger ${button}_hold_N every `holdTime` ms until ${button} is released
+          recurseHold = button: { count ? 1, maxHolds ? 5, prefix ? "", holdTime ? 600, ... }@opts: lib.optionalAttrs (count <= maxHolds) {
+            "${button}_released".terminal = true;  # end the hold -> back to root state
+            timeout = {
+              ms = holdTime;
+              trigger = "${prefix}${button}_hold_${builtins.toString count}";
+            } // (recurseHold button (opts // { count = count+1; }));
+          };
+
+          # trigger volup_tap_N or voldown_tap_N on every tap.
+          # if a volume button is held, then switch into `recurseHold`'s handling instead
+          volumeActions = { count ? 1, maxTaps ? 5, prefix ? "", timeout ? 600, ... }@opts: lib.optionalAttrs (count != maxTaps) {
+            volup_pressed = (recurseHold "volup" opts) // {
+              volup_released = {
+                trigger = "${prefix}volup_tap_${builtins.toString count}";
+                timeout.ms = timeout;
+              } // (volumeActions (opts // { count = count+1; }));
+            };
+            voldown_pressed = (recurseHold "voldown" opts) // {
+              voldown_released = {
+                trigger = "${prefix}voldown_tap_${builtins.toString count}";
+                timeout.ms = timeout;
+              } // (volumeActions (opts // { count = count+1; }));
+            };
+          };
+        in friendlyToBonsai {
+          # map sequences of "events" to an argument to pass to sxmo_hook_inputhandler.sh
+
+          # map: power (short), power (short) x2, power (long)
+          power_pressed.timeout.ms = 900; # press w/o release. this is a long timeout because it's tied to the "kill window" action.
+          power_pressed.timeout.trigger = "powerhold";
+          power_pressed.power_released.timeout.trigger = "powerbutton_one";
+          power_pressed.power_released.timeout.ms = 300;
+          power_pressed.power_released.power_pressed.trigger = "powerbutton_two";
+
+          # map: volume taps and holds
+          volup_pressed = (recurseHold "volup" {}) // {
+            # this either becomes volup_hold_* (via recurseHold, above) or:
+            # - a short volup_tap_1 followed by:
+            #   - a *finalized* volup_1 (i.e. end of action)
+            #   - more taps/holds, in which case we prefix it with `modal_<action>`
+            #     to denote that we very explicitly entered this state.
+            #
+            # it's clunky: i do it this way so that voldown can map to keyboard/terminal in unlock mode
+            #   but trigger media controls in screenoff
+            #   in a way which *still* allows media controls if explicitly entered into via a tap on volup first
+            volup_released = (volumeActions { prefix = "modal_"; }) // {
+              trigger = "volup_tap_1";
+              timeout.ms = 300;
+              timeout.trigger = "volup_1";
+            };
+          };
+          voldown_pressed = (volumeActions {}).voldown_pressed // {
+            trigger = "voldown_start";
+          };
+        };
+
         # sxmo puts in /share/sxmo:
         # - profile.d/sxmo_init.sh
         # - appcfg/
@@ -410,20 +529,11 @@ in
         # - and more
         # environment.pathsToLink = [ "/share/sxmo" ];
 
-        systemd.services."sxmo-set-permissions" = {
-          # TODO: some of these could be modified to be udev rules
-          description = "configure specific /sys and /dev nodes to be writable by sxmo scripts";
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${package}/bin/sxmo_setpermissions.sh";
-          };
-          wantedBy = [ "multi-user.target" ];
-        };
-
         # if superd fails to start a service within 100ms, it'll try to start again
         # the fallout of this is that during intense lag (e.g. OOM or swapping) it can
         # start the service many times.
         # see <repo:craftyguy/superd:internal/cmd/cmd.go>
+        #   startTimerDuration = 100 * time.Millisecond
         # TODO: better fix may be to patch `sxmo_hook_lisgdstart.sh` and force it to behave as a singleton
         # systemd.services."dedupe-sxmo-lisgd" = {
         #   description = "kill duplicate lisgd processes started by superd";
@@ -495,11 +605,7 @@ in
         ];
 
         sane.user.services = let
-          sxmoPath = [
-            "/etc/profiles/per-user/colin"  # so as to launch user-enabled applications (like g4music, etc)
-            "/run/wrappers"  # for doas, and anything else suid
-            "/run/current-system/sw"  # for things installed system-wide, especially flock
-          ] ++ [ package ] ++ package.runtimeDeps;
+          sxmoPath = [ package ] ++ package.runtimeDeps;
           sxmoEnvSetup = ''
             # mimic my sxmo_init.sh a bit. refer to the actual sxmo_init.sh above for details.
             # the specific ordering, and the duplicated profile sourcing, matters.
@@ -531,21 +637,11 @@ in
           sxmo_networkmonitor = sxmoService "networkmonitor";
           sxmo_notificationmonitor = sxmoService "notificationmonitor";
           sxmo_soundmonitor = sxmoService "soundmonitor";
-          sxmo_wob = sxmoService "wob";
+          # sxmo_wob = sxmoService "wob";
           sxmo-x11-status = sxmoService "status_xsetroot";
 
-          bonsaid = {
-            description = "programmable input dispatcher";
-            path = sxmoPath;
-            script = ''
-              ${sxmoEnvSetup}
-              ${pkgs.coreutils}/bin/rm -f $XDG_RUNTIME_DIR/bonsai
-              exec ${pkgs.bonsai}/bin/bonsaid -t $XDG_CONFIG_HOME/sxmo/bonsai_tree.json
-            '';
-            serviceConfig.Type = "simple";
-            serviceConfig.Restart = "always";
-            serviceConfig.RestartSec = "5s";
-          };
+          bonsaid.path = sxmoPath;
+          bonsaid.script = lib.mkBefore sxmoEnvSetup;
         };
       }
 

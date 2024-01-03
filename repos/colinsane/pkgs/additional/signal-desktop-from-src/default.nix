@@ -70,6 +70,11 @@
 # - nothing named `webrtc` linked from the signal-desktop appimage
 # - it's like 900MB?? https://s3.sakamoto.pl/lnl-aports-snapshots/webrtc-5845h.tar.zst
 # - not in crates.io
+#
+#
+# HOW TO UPDATE
+# - `nix run '.#update.pkgs.signal-desktop-from-src'`
+# - delete `env.yarnOfflineCache.hash` and rebuild it
 
 
 { lib
@@ -79,40 +84,35 @@
 , atk
 , autoPatchelfHook
 , bash
-# , callPackage
+, buildPackages
 , cups
-# , electron_25
-# , electron_26
-# , electron
-# , electron_25-bin
 , electron_27-bin
-# , electron-bin
 , fetchurl
 , fetchFromGitHub
 , fetchYarnDeps
 , flac
 , fixup_yarn_lock
 , gdk-pixbuf
+, git
+, gitUpdater
 , gnused
 , gtk3
 , icu
 , libpulseaudio
 , libwebp
 , libxslt
-, makeWrapper
+, makeShellWrapper
 , mesa
-, nodejs  # version 18
-# , nodejs_latest
+, nodejs_18
 , nspr
 , nss
 , pango
 , python3
-# , signal-desktop
 # , sqlite
 # , sqlcipher
 , stdenv
-# , substituteAll
 , wrapGAppsHook
+, xdg-utils
 , yarn
 }:
 let
@@ -137,11 +137,11 @@ let
   #   signal_fts5_extension = signal-fts5-extension;
   # };
 
-  nodejs_18_15_0 = nodejs.overrideAttrs (upstream:
+  mkNodeJs = nodejs: nodejs.overrideAttrs (upstream:
     let
-      # 18.15.0 matches the version in package.json
-      version = "18.15.0";
-      hash = "sha256-jkTWUBj/lzKEGVwjGGRpoOpAgul+xCAOX1cG1VhNqjc=";
+      # build with the same nodejs upstream expects in package.json (it will error if the version here is incorrect)
+      version = "18.17.1";
+      hash = "sha256-8hXPA9DwDwesC2dMaBn4BMFULhbxUtoEmAAirsz15lo=";
     in {
       inherit version;
       src = fetchurl {
@@ -150,9 +150,11 @@ let
       };
     }
   );
-  nodejs' = nodejs_18_15_0;
-  # nodejs' = nodejs_latest;
-  yarn' = yarn.override { nodejs = nodejs'; };
+  nodejs' = mkNodeJs nodejs_18;
+  # TODO: possibly i could instead use nodejs-slim (npm-less nodejs)
+  buildNodejs = mkNodeJs buildPackages.nodejs_18;
+
+  buildYarn = buildPackages.yarn.override { nodejs = buildNodejs; };
 
   # package.json locks electron to 25.y.z
   # element-desktop uses electron_26
@@ -171,27 +173,34 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "signal-desktop-from-src";
-  version = "6.38.0";
+  version = "6.42.0";
   src = fetchFromGitHub {
     owner = "signalapp";
     repo = "Signal-Desktop";
+    leaveDotGit = true;  # signal calculates the release date via `git`
     rev = "v${version}";
-    hash = "sha256-wKBhiiZhSivw4NYJ7uQDX8tMKxvMUYnu8cfr0IfjMMk=";
+    hash = "sha256-7MiyfdrbPmiENeWlElYNZDIGsbcSHj1d4rdBozE4bN8=";
   };
 
-  # patches = [
-  #   ./debug.patch
-  # ];
+  patches = [
+    # ./debug.patch
+    # fix bug that signal launches in the background on wayland
+    # - <https://github.com/signalapp/Signal-Desktop/issues/6368>
+    # - without this, signal can be started with `signal-desktop & ; sleep 5; signal-desktop`
+    #   - the second instance wakes the first one, and then exits
+    ./show-on-launch.patch
+  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
     fixup_yarn_lock
+    git  # to calculate build date
     gnused
-    makeWrapper
-    nodejs'  # possibly i could instead use nodejs-slim (npm-less nodejs)
+    makeShellWrapper
+    buildNodejs
     python3
     wrapGAppsHook
-    yarn'
+    buildYarn
   ];
 
   buildInputs = [
@@ -208,6 +217,7 @@ stdenv.mkDerivation rec {
     libwebp
     libxslt
     mesa # for libgbm
+    nodejs'  # to patch in the runtime
     nspr
     nss
     pango
@@ -217,11 +227,16 @@ stdenv.mkDerivation rec {
   ];
 
   env.yarnOfflineCache = fetchYarnDeps {
-    # this might be IFD: if `nix run '.#check.nur'` fails then inline the lock: `yarnLock = ./yarn.lock`
     yarnLock = "${src}/yarn.lock";
-    hash = "sha256-wSX09S+UOBPE3Ozh6+BieADMGG9MO8XnjaHWrxCqfao=";
+    hash = "sha256-QvvtggYnXDjgk2aWsT0kwRE9/DiktlC3a9QACTWN8GU=";
   };
+  # env.SIGNAL_ENV = "production";
+  # env.NODE_ENV = "production";
   # env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+
+  dontWrapGApps = true;
+
+  # NIX_DEBUG = 6;
 
   postPatch = ''
     # fixes build failure:
@@ -236,6 +251,12 @@ stdenv.mkDerivation rec {
 
   configurePhase = ''
     runHook preConfigure
+
+    # XXX: Signal does not let clients connect if they're running a version that's > 90d old.
+    # to calculate the build date, it uses SOURCE_DATE_EPOCH (if set), else `git log`.
+    # nixpkgs sets SOURCE_DATE_EPOCH to 1980/01/01 by default, so unset it so Signal falls back to git date.
+    # see: Signal-Desktop/ts/scripts/get-expire-time.ts
+    export SOURCE_DATE_EPOCH=
 
     export HOME=$NIX_BUILD_TOP
     yarn config --offline set yarn-offline-mirror $yarnOfflineCache
@@ -255,6 +276,7 @@ stdenv.mkDerivation rec {
     #   since many of those require network access
     yarn install --offline --frozen-lockfile --ignore-scripts
     patchShebangs node_modules/
+    patchShebangs --build --update node_modules/{bufferutil/node_modules/node-gyp-build/,node-gyp-build,utf-8-validate/node_modules/node-gyp-build}
     # patch these out to remove a runtime reference back to the build bash
     # (better, perhaps, would be for these build scripts to not be included in the asar...)
     sed -i 's:#!.*/bin/bash:#!/bin/sh:g' node_modules/@swc/helpers/scripts/gen.sh
@@ -336,17 +358,40 @@ stdenv.mkDerivation rec {
     # cp -R release/linux-unpacked/locales $out/lib/Signal/locales
 
     mkdir $out/bin
-    makeWrapper ${electron'}/bin/electron $out/bin/signal-desktop \
-      --add-flags $out/lib/Signal/resources/app.asar \
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}" \
-      --inherit-argv0
 
     runHook postInstall
   '';
 
-  # passthru = {
-  #   inherit bettersqlitePatch signal-fts5-extension;
-  # };
+  preFixup = ''
+    # fixup the app.asar to use host nodejs
+    ${buildPackages.asar}/bin/asar extract $out/lib/Signal/resources/app.asar unpacked
+    rm $out/lib/Signal/resources/app.asar
+    patchShebangs --host --update unpacked
+    ${buildPackages.asar}/bin/asar pack unpacked $out/lib/Signal/resources/app.asar
+
+    # XXX: add --ozone-platform-hint=auto to make it so that NIXOS_OZONE_WL isn't *needed*.
+    # electron should auto-detect x11 v.s. wayland: launching with `NIXOS_OZONE_WL=1` is an optional way to force it when debugging.
+    # xdg-utils: needed for ozone-platform-hint=auto to work
+    # else `LaunchProcess: failed to execvp: xdg-settings`
+    makeShellWrapper ${electron'}/bin/electron $out/bin/signal-desktop \
+      "''${gappsWrapperArgs[@]}" \
+      --add-flags $out/lib/Signal/resources/app.asar \
+      --suffix PATH : ${lib.makeBinPath [ xdg-utils ]} \
+      --add-flags --ozone-platform-hint=auto \
+      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform=wayland --enable-features=WaylandWindowDecorations}}" \
+      --inherit-argv0
+  '';
+
+  passthru = {
+    # inherit bettersqlitePatch signal-fts5-extension;
+    updateScript = gitUpdater {
+      # TODO: prevent update to betas
+      rev-prefix = "v";
+    };
+    nodejs = nodejs';
+    buildYarn = buildYarn;
+    buildNodejs = buildNodejs;
+  };
 
   meta = {
     description = "Private, simple, and secure messenger";
